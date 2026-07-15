@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI社長と遊ぶ | 佐々木社長AIパロディ（非公式・エンタメ用）</title>
+<style>
+  :root {
+    --brand: #0f5132; --brand2: #1a7a4a; --bg: #f4f6f5; --ink: #1c2321;
+    --user: #d7e8df; --bot: #ffffff; --warn-bg: #fff3cd; --warn-ink: #664d03;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; background: var(--bg); color: var(--ink); height: 100dvh; display: flex; flex-direction: column; }
+  .disclaimer { background: var(--warn-bg); color: var(--warn-ink); font-size: 12px; padding: 8px 16px; text-align: center; line-height: 1.5; border-bottom: 1px solid #e6d9a8; }
+  header { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header .sub { font-size: 11px; opacity: .85; }
+  .mode-badge { margin-left: auto; font-size: 11px; background: rgba(255,255,255,.2); padding: 4px 10px; border-radius: 999px; }
+  main { flex: 1; display: flex; overflow: hidden; }
+  .avatar-pane { width: 300px; min-width: 260px; background: linear-gradient(180deg, #e8f0ec, #d8e6de); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; border-right: 1px solid #cfdcd4; }
+  .avatar-pane .name { font-weight: 700; font-size: 15px; }
+  .avatar-pane .title { font-size: 12px; color: #476156; text-align: center; line-height: 1.6; }
+  .avatar-pane .note { font-size: 10px; color: #6b7f75; text-align: center; line-height: 1.5; }
+  .tts-toggle { font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .chat-pane { flex: 1; display: flex; flex-direction: column; }
+  .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
+  .msg { max-width: 78%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  .msg.user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 4px; }
+  .msg.bot { align-self: flex-start; background: var(--bot); border-bottom-left-radius: 4px; }
+  .msg.bot .who { font-size: 11px; color: var(--brand); font-weight: 700; margin-bottom: 4px; }
+  .typing { align-self: flex-start; color: #7d8f86; font-size: 13px; padding: 8px 16px; }
+  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 10px; }
+  .suggest button { font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--brand2); background: #fff; color: var(--brand); cursor: pointer; }
+  .suggest button:hover { background: #eaf4ee; }
+  .input-bar { display: flex; gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid #dde5e0; }
+  .input-bar input { flex: 1; padding: 12px 16px; border: 1px solid #c6d4cc; border-radius: 10px; font-size: 14px; outline: none; }
+  .input-bar input:focus { border-color: var(--brand2); }
+  .input-bar button { padding: 12px 24px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
+  .input-bar button:disabled { opacity: .5; cursor: default; }
+  @media (max-width: 700px) { .avatar-pane { display: none; } }
+  @keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-2px); } }
+  #avatarPhoto.talking { animation: talk .45s ease-in-out infinite; }
+</style>
+</head>
+<body>
+  <div class="disclaimer">
+    🎭 本アプリは<strong>エンタメ・パロディ用途の非公式ファンコンテンツ</strong>です。公開情報のみから構築したAIによる創作であり、
+    回答は佐々木丈也氏本人の発言・見解ではなく、本人・三井住友カード株式会社の監修や承認を受けたものではありません。
+  </div>
+  <header>
+    <h1>🎭 AI社長と遊ぶ</h1>
+    <span class="sub">陽気なキャッシュレス伝道師・佐々木社長AIパロディ（非公式）</span>
+    <span class="mode-badge" id="modeBadge">接続中…</span>
+  </header>
+  <main>
+    <aside class="avatar-pane">
+      <!-- 本人許諾済みの写真（public/avatar.png + config.json の consentConfirmed:true）があれば表示 -->
+      <img id="avatarPhoto" alt="AI社長のアバター写真" style="display:none; width:200px; height:230px; object-fit:cover; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,.15);">
+      <!-- 汎用イラストアバター（許諾前のデフォルト。実在人物の肖像は再現しない） -->
+      <svg id="avatar" width="200" height="230" viewBox="0 0 200 230" aria-label="AI社長のイラストアバター">
+        <ellipse cx="100" cy="222" rx="70" ry="8" fill="rgba(0,0,0,.08)"/>
+        <!-- スーツ -->
+        <path d="M40 230 Q40 160 100 158 Q160 160 160 230 Z" fill="#2b3a4a"/>
+        <path d="M88 160 L100 178 L112 160 L112 230 L88 230 Z" fill="#fff"/>
+        <path d="M96 178 L104 178 L106 210 L100 222 L94 210 Z" fill="#8a1f2d"/>
+        <!-- 首 -->
+        <rect x="88" y="132" width="24" height="30" rx="10" fill="#e8b98f"/>
+        <!-- 顔 -->
+        <g id="head">
+          <ellipse cx="100" cy="95" rx="46" ry="50" fill="#f0c49a"/>
+          <!-- 髪（白髪まじり） -->
+          <path d="M54 88 Q52 40 100 38 Q148 40 146 88 Q140 60 100 56 Q60 60 54 88 Z" fill="#5a5f66"/>
+          <!-- 耳 -->
+          <ellipse cx="54" cy="98" rx="7" ry="11" fill="#e8b98f"/>
+          <ellipse cx="146" cy="98" rx="7" ry="11" fill="#e8b98f"/>
+          <!-- 眉 -->
+          <rect x="68" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+          <rect x="110" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+          <!-- 目（まばたき） -->
+          <g id="eyes">
+            <ellipse cx="79" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+            <ellipse cx="121" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+            <circle cx="81" cy="92" r="1.8" fill="#fff"/>
+            <circle cx="123" cy="92" r="1.8" fill="#fff"/>
+          </g>
+          <g id="eyesClosed" style="display:none">
+            <path d="M73 94 Q79 97 85 94" stroke="#2c2c2c" stroke-width="2" fill="none"/>
+            <path d="M115 94 Q121 97 127 94" stroke="#2c2c2c" stroke-width="2" fill="none"/>
+          </g>
+          <!-- メガネ -->
+          <g stroke="#3a3f45" stroke-width="2.5" fill="none">
+            <rect x="66" y="84" width="26" height="20" rx="8"/>
+            <rect x="108" y="84" width="26" height="20" rx="8"/>
+            <line x1="92" y1="92" x2="108" y2="92"/>
+          </g>
+          <!-- 鼻 -->
+          <path d="M100 100 Q104 110 99 114" stroke="#d9a577" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- 口（発話アニメ） -->
+          <g id="mouth">
+            <path id="mouthShape" d="M86 124 Q100 132 114 124" stroke="#b06a4a" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </g>
+        </g>
+      </svg>
+      <div class="name" id="avatarName">AI社長（シミュレーション）</div>
+      <div class="title" id="avatarTitle">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small id="avatarNote">※イラストは実在の容姿を再現していません</small></div>
+      <label class="tts-toggle"><input type="checkbox" id="ttsToggle"> 音声で読み上げる（汎用音声）</label>
+      <div class="note">音声は端末標準の合成音声です。本人の声のクローンではありません。</div>
+    </aside>
+    <section class="chat-pane">
+      <div class="messages" id="messages"></div>
+      <div class="suggest" id="suggest">
+        <button>🎋 今日の社長おみくじ</button>
+        <button>💳 キャッシュレス度を診断して</button>
+        <button>💡 社長クイズを出して</button>
+        <button>🍜 ランチ何にするか決めて</button>
+        <button>😮‍💨 やる気が出ません…</button>
+        <button>🏢 なぜこの会社に入ったの？</button>
+      </div>
+      <form class="input-bar" id="chatForm">
+        <input id="input" type="text" placeholder="AI社長になんでも話しかけてみましょう（悩み相談も雑談もOK）" autocomplete="off">
+        <button id="sendBtn" type="submit">送信</button>
+      </form>
+    </section>
+  </main>
+
+<script>
+const messagesEl = document.getElementById("messages");
+const form = document.getElementById("chatForm");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("sendBtn");
+const modeBadge = document.getElementById("modeBadge");
+const ttsToggle = document.getElementById("ttsToggle");
+const history = [];
+
+// --- アバターアニメーション ---
+const eyes = document.getElementById("eyes");
+const eyesClosed = document.getElementById("eyesClosed");
+const mouthShape = document.getElementById("mouthShape");
+const MOUTH_CLOSED = "M86 124 Q100 132 114 124";
+const MOUTH_OPEN = "M86 122 Q100 138 114 122 Q100 130 86 122";
+let speaking = false;
+
+setInterval(() => { // まばたき
+  eyes.style.display = "none"; eyesClosed.style.display = "";
+  setTimeout(() => { eyes.style.display = ""; eyesClosed.style.display = "none"; }, 140);
+}, 3200 + Math.random() * 1500);
+
+const avatarPhoto = document.getElementById("avatarPhoto");
+const avatarSvg = document.getElementById("avatar");
+let photoMode = false;
+
+setInterval(() => { // 口パク（写真モードでは軽い揺れアニメーション）
+  if (photoMode) {
+    avatarPhoto.classList.toggle("talking", speaking);
+  } else {
+    mouthShape.setAttribute("d", speaking && Math.random() > 0.35 ? MOUTH_OPEN : MOUTH_CLOSED);
+  }
+}, 130);
+
+// サーバー設定を取得（表示名・写真アバター・動作モード）
+fetch("/api/config").then(r => r.json()).then(cfg => {
+  document.getElementById("avatarName").textContent = cfg.displayName || "AI社長";
+  if (cfg.personName) {
+    document.getElementById("avatarTitle").innerHTML =
+      `モデル：${cfg.personName}氏<br>${cfg.personTitle || ""}<br><small id="avatarNote"></small>`;
+  }
+  const note = document.getElementById("avatarNote");
+  if (cfg.avatarUrl) {
+    avatarPhoto.src = cfg.avatarUrl;
+    avatarPhoto.style.display = "";
+    avatarSvg.style.display = "none";
+    photoMode = true;
+    if (note) note.textContent = "※本人許諾済みの写真を表示しています";
+  } else if (note) {
+    note.textContent = "※イラストは実在の容姿を再現していません";
+  }
+  modeBadge.textContent = cfg.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+}).catch(() => {});
+
+function startSpeaking(text) {
+  speaking = true;
+  if (ttsToggle.checked && "speechSynthesis" in window) {
+    const u = new SpeechSynthesisUtterance(text.replace(/※.*$/s, ""));
+    u.lang = "ja-JP"; u.rate = 1.0;
+    const v = speechSynthesis.getVoices().find(v => v.lang.startsWith("ja"));
+    if (v) u.voice = v;
+    u.onend = () => { speaking = false; };
+    speechSynthesis.speak(u);
+    setTimeout(() => { speaking = false; }, 60000); // 保険
+  } else {
+    setTimeout(() => { speaking = false; }, Math.min(text.length * 90, 12000));
+  }
+}
+
+// --- チャット ---
+function addMsg(role, text) {
+  const div = document.createElement("div");
+  div.className = "msg " + (role === "user" ? "user" : "bot");
+  if (role === "assistant") {
+    const who = document.createElement("div");
+    who.className = "who"; who.textContent = "AI社長";
+    div.appendChild(who);
+  }
+  div.appendChild(document.createTextNode(text));
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+async function send(text) {
+  if (!text.trim()) return;
+  addMsg("user", text);
+  history.push({ role: "user", content: text });
+  input.value = ""; sendBtn.disabled = true;
+  const typing = document.createElement("div");
+  typing.className = "typing"; typing.textContent = "AI社長が考えています…";
+  messagesEl.appendChild(typing);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ messages: history }),
+    });
+    const data = await res.json();
+    typing.remove();
+    if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
+    history.push({ role: "assistant", content: data.reply });
+    addMsg("assistant", data.reply);
+    modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+    startSpeaking(data.reply);
+  } catch (e) {
+    typing.remove();
+    addMsg("assistant", "通信エラーが発生しました。");
+  } finally {
+    sendBtn.disabled = false; input.focus();
+  }
+}
+
+form.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+document.getElementById("suggest").addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") send(e.target.textContent);
+});
+
+addMsg("assistant",
+  "やあ、ようこそ！私は三井住友カードの佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。本人ではありませんが、サービス精神は本物です。\n\nおみくじ、キャッシュレス度診断、社長クイズ、ランチ選び、人生相談…なんでもどうぞ。ただし先に言っておきます。どんな話も、最後はだいたいキャッシュレスの話になります。");
+modeBadge.textContent = "待機中";
+</script>
+</body>
+</html>

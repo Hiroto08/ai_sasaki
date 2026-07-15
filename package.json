@@ -1,0 +1,15 @@
+{
+  "name": "ai-ceo-avatar-app",
+  "version": "0.1.0",
+  "description": "AI社長と遊ぶ（佐々木社長AIパロディ / 非公式・エンタメ用モック）",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "demo": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "UNLICENSED"
+}
