@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI社長 | 三井住友カード 佐々木社長シミュレーター（非公式モック）</title>
+<title>AI社長と遊ぶ | 佐々木社長AIパロディ（非公式・エンタメ用）</title>
 <style>
   :root {
     --brand: #0f5132; --brand2: #1a7a4a; --bg: #f4f6f5; --ink: #1c2321;
@@ -42,12 +42,12 @@
 </head>
 <body>
   <div class="disclaimer">
-    ⚠️ 本アプリは<strong>公開情報のみから構築した非公式のAIシミュレーション（社内検証用モック）</strong>です。
-    表示される回答は佐々木丈也氏本人の発言・見解ではなく、本人・三井住友カード株式会社の監修や承認を受けたものではありません。
+    🎭 本アプリは<strong>エンタメ・パロディ用途の非公式ファンコンテンツ</strong>です。公開情報のみから構築したAIによる創作であり、
+    回答は佐々木丈也氏本人の発言・見解ではなく、本人・三井住友カード株式会社の監修や承認を受けたものではありません。
   </div>
   <header>
-    <h1>AI社長に聞いてみる</h1>
-    <span class="sub">佐々木丈也 社長シミュレーター（三井住友カード / 非公式）</span>
+    <h1>🎭 AI社長と遊ぶ</h1>
+    <span class="sub">陽気なキャッシュレス伝道師・佐々木社長AIパロディ（非公式）</span>
     <span class="mode-badge" id="modeBadge">接続中…</span>
   </header>
   <main>
@@ -105,14 +105,15 @@
     <section class="chat-pane">
       <div class="messages" id="messages"></div>
       <div class="suggest" id="suggest">
-        <button>キャッシュレスの次の一手は？</button>
-        <button>Vポイント統合の狙いは？</button>
-        <button>大切にしているマーケティングの考え方は？</button>
-        <button>なぜこの会社に入社したのですか？</button>
-        <button>AI・データ活用で意識していることは？</button>
+        <button>🎋 今日の社長おみくじ</button>
+        <button>💳 キャッシュレス度を診断して</button>
+        <button>💡 社長クイズを出して</button>
+        <button>🍜 ランチ何にするか決めて</button>
+        <button>😮‍💨 やる気が出ません…</button>
+        <button>🏢 なぜこの会社に入ったの？</button>
       </div>
       <form class="input-bar" id="chatForm">
-        <input id="input" type="text" placeholder="AI社長に質問してみましょう（例：この企画、社長ならどう見ますか？）" autocomplete="off">
+        <input id="input" type="text" placeholder="AI社長になんでも話しかけてみましょう（悩み相談も雑談もOK）" autocomplete="off">
         <button id="sendBtn" type="submit">送信</button>
       </form>
     </section>
@@ -209,7 +210,7 @@ document.getElementById("suggest").addEventListener("click", (e) => {
 });
 
 addMsg("assistant",
-  "こんにちは。私は、公開されているインタビューや講演の情報をもとに、三井住友カードの佐々木社長の考え方をシミュレーションするAIです。本人の発言ではありませんが、「社長ならどう考えるか」の壁打ち相手として、キャッシュレス戦略、Vポイント、マーケティングの考え方など、何でも聞いてください。");
+  "やあ、ようこそ！私は三井住友カードの佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。本人ではありませんが、サービス精神は本物です。\n\nおみくじ、キャッシュレス度診断、社長クイズ、ランチ選び、人生相談…なんでもどうぞ。ただし先に言っておきます。どんな話も、最後はだいたいキャッシュレスの話になります。");
 modeBadge.textContent = "待機中";
 </script>
 </body>
