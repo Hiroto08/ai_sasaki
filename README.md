@@ -98,6 +98,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
 | `data/persona.md` | ペルソナ定義（口調・価値観・ガードレール）＝システムプロンプト |
 | `data/knowledge.md` | 公開情報ナレッジベース（出典付き） |
+| `docs/APP_DESIGN.md` | **イベント版 要件定義・設計書**（QR入場・合言葉・辛口モード・無料枠構成） |
 | `docs/PLAN.md` | 構築計画書（事例リサーチ・アーキテクチャ・ロードマップ） |
 | `docs/PERSONA_RESEARCH.md` | 佐々木氏の公開情報リサーチまとめと法的留意点 |
 
