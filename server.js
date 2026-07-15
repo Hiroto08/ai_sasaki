@@ -1,7 +1,7 @@
 // AI社長アプリ - 依存ゼロの Node.js サーバー
-// 起動: node server.js  (PORT, ANTHROPIC_API_KEY, MODEL は環境変数で指定)
+// 起動: node server.js  (PORT, GEMINI_API_KEY, MODEL は環境変数で指定)
 //
-// ANTHROPIC_API_KEY があれば Claude API で応答を生成し、
+// GEMINI_API_KEY があれば Google Gemini API で応答を生成し、
 // なければ公開情報ベースのデモ応答（キーワードマッチ）で動作する。
 
 const http = require("http");
@@ -21,8 +21,9 @@ const path = require("path");
 })();
 
 const PORT = process.env.PORT || 3000;
-const API_KEY = process.env.ANTHROPIC_API_KEY || "";
-const MODEL = process.env.MODEL || "claude-sonnet-5";
+// GEMINI_API_KEY を優先。互換のため GOOGLE_API_KEY も受け付ける。
+const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
+const MODEL = process.env.MODEL || "gemini-2.5-flash";
 
 const persona = fs.readFileSync(path.join(__dirname, "data", "persona.md"), "utf8");
 const knowledge = fs.readFileSync(path.join(__dirname, "data", "knowledge.md"), "utf8");
@@ -163,25 +164,34 @@ function demoReply(text) {
   return pick(DEMO_FALLBACKS);
 }
 
-// ---- Claude API 呼び出し ----
-async function claudeReply(messages, systemPrompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+// ---- Google Gemini API 呼び出し ----
+async function geminiReply(messages, systemPrompt) {
+  // Gemini は role が "user" / "model"。assistant を model に変換する。
+  const contents = messages.map((m) => ({
+    role: m.role === "assistant" ? "model" : "user",
+    parts: [{ text: m.content }],
+  }));
+  const url =
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`;
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
+      "x-goog-api-key": API_KEY,
     },
     body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 1024,
-      system: systemPrompt,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents,
+      generationConfig: { maxOutputTokens: 1024, temperature: 0.9 },
     }),
   });
-  if (!res.ok) throw new Error(`Anthropic API ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
   const data = await res.json();
-  return data.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+  const cand = data.candidates && data.candidates[0];
+  const parts = (cand && cand.content && cand.content.parts) || [];
+  const text = parts.map((p) => p.text || "").join("").trim();
+  if (!text) throw new Error("Gemini API から空の応答が返りました: " + JSON.stringify(data).slice(0, 300));
+  return text;
 }
 
 // ---- HTTPサーバー ----
@@ -216,10 +226,10 @@ const server = http.createServer(async (req, res) => {
         let reply, mode;
         if (API_KEY) {
           try {
-            reply = await claudeReply(messages, buildSystemPrompt(loadConfig()));
+            reply = await geminiReply(messages, buildSystemPrompt(loadConfig()));
             mode = "ai";
           } catch (e) {
-            console.error("Claude API error:", e.message);
+            console.error("Gemini API error:", e.message);
             reply = demoReply(messages[messages.length - 1].content);
             mode = "demo-fallback";
           }
@@ -256,5 +266,5 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, () => {
   console.log(`AI社長アプリ起動: http://localhost:${PORT}`);
-  console.log(`モード: ${API_KEY ? `Claude API (${MODEL})` : "デモ（ANTHROPIC_API_KEY 未設定）"}`);
+  console.log(`モード: ${API_KEY ? `Gemini API (${MODEL})` : "デモ（GEMINI_API_KEY 未設定）"}`);
 });

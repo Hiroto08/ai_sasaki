@@ -34,25 +34,26 @@ npm start        # または node server.js
 → http://localhost:3000 を開く。この時点では**デモモード**（APIキー不要・
 定型応答・ネット接続不要）で動く。
 
-### AI応答モードにする（Claude APIを繋ぐ）
+### AI応答モードにする（Gemini APIを繋ぐ）
 
 ```bash
 cp .env.example .env
-# .env を開いて ANTHROPIC_API_KEY=sk-ant-... を設定
+# .env を開いて GEMINI_API_KEY=... を設定
 npm start
 ```
 
-または環境変数で直接 `ANTHROPIC_API_KEY=sk-ant-... npm start`。
-起動時のコンソールに現在のモード（デモ / Claude API）が表示される。
+または環境変数で直接 `GEMINI_API_KEY=... npm start`。
+APIキーは [Google AI Studio](https://aistudio.google.com/apikey) で取得できる。
+起動時のコンソールに現在のモード（デモ / Gemini API）が表示される。
 データ・設定・UIはすべてローカル完結で、外部に接続するのはAI応答モード時の
-Claude API（`api.anthropic.com`）のみ。
+Gemini API（`generativelanguage.googleapis.com`）のみ。
 
 ### .env の設定項目
 
 | 変数 | 内容 | 既定値 |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Claude APIキー。未設定ならデモモード | （なし） |
-| `MODEL` | 使用モデル | `claude-sonnet-5` |
+| `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
+| `MODEL` | 使用モデル | `gemini-2.5-flash` |
 | `PORT` | 待ち受けポート | `3000` |
 
 ## 口癖のパラメーター設定（data/config.json）
@@ -92,7 +93,7 @@ Claude API（`api.anthropic.com`）のみ。
 
 | ファイル | 内容 |
 |---|---|
-| `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でClaude API or デモ応答 |
+| `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
 | `data/persona.md` | ペルソナ定義（口調・価値観・ガードレール）＝システムプロンプト |
@@ -105,7 +106,7 @@ Claude API（`api.anthropic.com`）のみ。
 ```
 ユーザー質問
   → server.js /api/chat
-  → システムプロンプト（persona.md + knowledge.md）+ 会話履歴 を Claude API へ
+  → システムプロンプト（persona.md + knowledge.md）+ 会話履歴 を Gemini API へ
   → 「公開発言に基づく社長らしい回答」を生成（未公開情報はガードレールで回答拒否）
   → フロントでアバターが口パク + 任意で汎用TTS読み上げ
 ```
