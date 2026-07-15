@@ -15,13 +15,62 @@ const MODEL = process.env.MODEL || "claude-sonnet-5";
 const persona = fs.readFileSync(path.join(__dirname, "data", "persona.md"), "utf8");
 const knowledge = fs.readFileSync(path.join(__dirname, "data", "knowledge.md"), "utf8");
 
-const SYSTEM_PROMPT = [
-  persona,
-  "\n---\n以下はあなたが参照できる公開情報ナレッジベースです。回答はこの範囲を優先してください。\n",
-  knowledge,
-  "\n---\n回答は日本語で、話し言葉として自然な長さ（3〜6文程度、おみくじ・クイズ等はフォーマット優先）にしてください。",
-  "エンタメモードのキャラクター設定を最優先し、楽しく、しかし品位を保って応答してください。",
-].join("\n");
+// ---- 口調・表示パラメーター（data/config.json） ----
+// 毎リクエスト読み直すので、編集すれば再起動なしで次の応答から反映される。
+const CONFIG_PATH = path.join(__dirname, "data", "config.json");
+const DEFAULT_CONFIG = {
+  displayName: "AI社長（シミュレーション）",
+  personName: "",
+  personTitle: "",
+  speechStyle: {},
+  avatar: { image: null, consentConfirmed: false },
+};
+function loadConfig() {
+  try {
+    return { ...DEFAULT_CONFIG, ...JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8")) };
+  } catch (e) {
+    console.error("config.json 読み込み失敗（デフォルト値で継続）:", e.message);
+    return DEFAULT_CONFIG;
+  }
+}
+
+// 許諾済み(consentConfirmed) かつ ファイル実在 のときだけ写真アバターを返す
+function avatarUrl(config) {
+  const a = config.avatar || {};
+  if (!a.consentConfirmed || !a.image) return null;
+  const file = path.join(__dirname, "public", path.basename(a.image));
+  return fs.existsSync(file) ? "/" + path.basename(a.image) : null;
+}
+
+function speechStyleSection(config) {
+  const s = config.speechStyle || {};
+  const list = (arr) => (Array.isArray(arr) && arr.length ? arr.map((x) => `「${x}」`).join("、") : "（未設定）");
+  return [
+    "## 口調パラメーター（data/config.json で管理。最優先で反映すること）",
+    `- 一人称：${s.firstPerson || "私"}`,
+    `- 顧客の呼び方：${s.customerWord || "お客様"}`,
+    `- 丁寧さ：${s.politeness || "です・ます調"}`,
+    `- 口癖・キーフレーズ（会話に自然に織り交ぜる）：${list(s.catchphrases)}`,
+    `- 特徴的な語尾（設定があれば必ず使う）：${list(s.sentenceEndings)}`,
+    `- つなぎ言葉・話し始めの癖：${list(s.fillerPhrases)}`,
+    s.praiseStyle ? `- 褒め方の癖：${s.praiseStyle}` : "",
+    s.scoldStyle ? `- 注意・指摘の仕方：${s.scoldStyle}` : "",
+    Array.isArray(s.ngWords) && s.ngWords.length ? `- 使わない言葉（NGワード）：${list(s.ngWords)}` : "",
+    s.notes ? `- 話し方の補足：${s.notes}` : "",
+    "※「（未設定）」の項目は無理に創作せず、自然な丁寧語で話すこと。",
+  ].filter(Boolean).join("\n");
+}
+
+function buildSystemPrompt(config) {
+  return [
+    persona,
+    "\n---\n" + speechStyleSection(config),
+    "\n---\n以下はあなたが参照できる公開情報ナレッジベースです。回答はこの範囲を優先してください。\n",
+    knowledge,
+    "\n---\n回答は日本語で、話し言葉として自然な長さ（3〜6文程度、おみくじ・クイズ等はフォーマット優先）にしてください。",
+    "エンタメモードのキャラクター設定を最優先し、楽しく、しかし品位を保って応答してください。",
+  ].join("\n");
+}
 
 // ---- エンタメ機能のデモコンテンツ ----
 const OMIKUJI = [
@@ -103,7 +152,7 @@ function demoReply(text) {
 }
 
 // ---- Claude API 呼び出し ----
-async function claudeReply(messages) {
+async function claudeReply(messages, systemPrompt) {
   const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -114,7 +163,7 @@ async function claudeReply(messages) {
     body: JSON.stringify({
       model: MODEL,
       max_tokens: 1024,
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: messages.map((m) => ({ role: m.role, content: m.content })),
     }),
   });
@@ -127,6 +176,21 @@ async function claudeReply(messages) {
 const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".svg": "image/svg+xml", ".png": "image/png" };
 
 const server = http.createServer(async (req, res) => {
+  // フロント表示用の設定（表示名・写真アバターの有無など）
+  if (req.method === "GET" && req.url === "/api/config") {
+    const config = loadConfig();
+    res.writeHead(200, { "content-type": "application/json" });
+    return res.end(
+      JSON.stringify({
+        displayName: config.displayName,
+        personName: config.personName,
+        personTitle: config.personTitle,
+        avatarUrl: avatarUrl(config),
+        mode: API_KEY ? "ai" : "demo",
+      })
+    );
+  }
+
   if (req.method === "POST" && req.url === "/api/chat") {
     let body = "";
     req.on("data", (c) => (body += c));
@@ -140,7 +204,7 @@ const server = http.createServer(async (req, res) => {
         let reply, mode;
         if (API_KEY) {
           try {
-            reply = await claudeReply(messages);
+            reply = await claudeReply(messages, buildSystemPrompt(loadConfig()));
             mode = "ai";
           } catch (e) {
             console.error("Claude API error:", e.message);

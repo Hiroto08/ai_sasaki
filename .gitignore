@@ -1,0 +1,6 @@
+# 本人許諾済みの写真はリポジトリにコミットしない（ローカル配置のみ）
+public/avatar.png
+public/*.png
+
+node_modules/
+.env

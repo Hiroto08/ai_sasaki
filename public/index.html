@@ -38,6 +38,8 @@
   .input-bar button { padding: 12px 24px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
   .input-bar button:disabled { opacity: .5; cursor: default; }
   @media (max-width: 700px) { .avatar-pane { display: none; } }
+  @keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-2px); } }
+  #avatarPhoto.talking { animation: talk .45s ease-in-out infinite; }
 </style>
 </head>
 <body>
@@ -52,7 +54,9 @@
   </header>
   <main>
     <aside class="avatar-pane">
-      <!-- 汎用イラストアバター（実在人物の肖像は本人同意がないため使用しない） -->
+      <!-- 本人許諾済みの写真（public/avatar.png + config.json の consentConfirmed:true）があれば表示 -->
+      <img id="avatarPhoto" alt="AI社長のアバター写真" style="display:none; width:200px; height:230px; object-fit:cover; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,.15);">
+      <!-- 汎用イラストアバター（許諾前のデフォルト。実在人物の肖像は再現しない） -->
       <svg id="avatar" width="200" height="230" viewBox="0 0 200 230" aria-label="AI社長のイラストアバター">
         <ellipse cx="100" cy="222" rx="70" ry="8" fill="rgba(0,0,0,.08)"/>
         <!-- スーツ -->
@@ -97,8 +101,8 @@
           </g>
         </g>
       </svg>
-      <div class="name">AI社長（シミュレーション）</div>
-      <div class="title">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small>※イラストは実在の容姿を再現していません</small></div>
+      <div class="name" id="avatarName">AI社長（シミュレーション）</div>
+      <div class="title" id="avatarTitle">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small id="avatarNote">※イラストは実在の容姿を再現していません</small></div>
       <label class="tts-toggle"><input type="checkbox" id="ttsToggle"> 音声で読み上げる（汎用音声）</label>
       <div class="note">音声は端末標準の合成音声です。本人の声のクローンではありません。</div>
     </aside>
@@ -141,9 +145,37 @@ setInterval(() => { // まばたき
   setTimeout(() => { eyes.style.display = ""; eyesClosed.style.display = "none"; }, 140);
 }, 3200 + Math.random() * 1500);
 
-setInterval(() => { // 口パク
-  mouthShape.setAttribute("d", speaking && Math.random() > 0.35 ? MOUTH_OPEN : MOUTH_CLOSED);
+const avatarPhoto = document.getElementById("avatarPhoto");
+const avatarSvg = document.getElementById("avatar");
+let photoMode = false;
+
+setInterval(() => { // 口パク（写真モードでは軽い揺れアニメーション）
+  if (photoMode) {
+    avatarPhoto.classList.toggle("talking", speaking);
+  } else {
+    mouthShape.setAttribute("d", speaking && Math.random() > 0.35 ? MOUTH_OPEN : MOUTH_CLOSED);
+  }
 }, 130);
+
+// サーバー設定を取得（表示名・写真アバター・動作モード）
+fetch("/api/config").then(r => r.json()).then(cfg => {
+  document.getElementById("avatarName").textContent = cfg.displayName || "AI社長";
+  if (cfg.personName) {
+    document.getElementById("avatarTitle").innerHTML =
+      `モデル：${cfg.personName}氏<br>${cfg.personTitle || ""}<br><small id="avatarNote"></small>`;
+  }
+  const note = document.getElementById("avatarNote");
+  if (cfg.avatarUrl) {
+    avatarPhoto.src = cfg.avatarUrl;
+    avatarPhoto.style.display = "";
+    avatarSvg.style.display = "none";
+    photoMode = true;
+    if (note) note.textContent = "※本人許諾済みの写真を表示しています";
+  } else if (note) {
+    note.textContent = "※イラストは実在の容姿を再現していません";
+  }
+  modeBadge.textContent = cfg.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+}).catch(() => {});
 
 function startSpeaking(text) {
   speaking = true;
