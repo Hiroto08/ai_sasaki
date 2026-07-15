@@ -26,8 +26,8 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 必要なのは Node.js 18+ だけ。`npm install` 不要（依存パッケージゼロ）。
 
 ```bash
-git clone https://github.com/Hiroto08/card_entry_mock.git
-cd card_entry_mock
+git clone https://github.com/Hiroto08/ai_sasaki.git
+cd ai_sasaki
 npm start        # または node server.js
 ```
 
