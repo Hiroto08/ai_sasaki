@@ -21,19 +21,39 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | 💡 社長クイズ | 「クイズ出して」→ 決済・会社にまつわる三択クイズ |
 | 🍜 なんでも相談 | ランチ選び・恋愛相談・やる気が出ない…なんでもOK。ただし最後はだいたいキャッシュレスの話になる |
 
-## 起動方法（完全ローカル動作）
+## クイックスタート（完全ローカル動作）
+
+必要なのは Node.js 18+ だけ。`npm install` 不要（依存パッケージゼロ）。
 
 ```bash
-# デモモード（APIキー不要・定型応答。ネット接続も不要）
-node server.js
-
-# AI応答モード（Claude APIだけを外部接続。キーを設定するだけ）
-ANTHROPIC_API_KEY=sk-ant-... node server.js
+git clone https://github.com/Hiroto08/card_entry_mock.git
+cd card_entry_mock
+npm start        # または node server.js
 ```
 
-http://localhost:3000 を開く。依存パッケージなし（Node.js 18+ のみ）。
+→ http://localhost:3000 を開く。この時点では**デモモード**（APIキー不要・
+定型応答・ネット接続不要）で動く。
+
+### AI応答モードにする（Claude APIを繋ぐ）
+
+```bash
+cp .env.example .env
+# .env を開いて ANTHROPIC_API_KEY=sk-ant-... を設定
+npm start
+```
+
+または環境変数で直接 `ANTHROPIC_API_KEY=sk-ant-... npm start`。
+起動時のコンソールに現在のモード（デモ / Claude API）が表示される。
 データ・設定・UIはすべてローカル完結で、外部に接続するのはAI応答モード時の
 Claude API（`api.anthropic.com`）のみ。
+
+### .env の設定項目
+
+| 変数 | 内容 | 既定値 |
+|---|---|---|
+| `ANTHROPIC_API_KEY` | Claude APIキー。未設定ならデモモード | （なし） |
+| `MODEL` | 使用モデル | `claude-sonnet-5` |
+| `PORT` | 待ち受けポート | `3000` |
 
 ## 口癖のパラメーター設定（data/config.json）
 

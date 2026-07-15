@@ -8,6 +8,18 @@ const http = require("http");
 const fs = require("fs");
 const path = require("path");
 
+// .env があれば読み込む（依存ゼロの簡易パーサー。環境変数が優先）
+(function loadDotenv() {
+  const envPath = path.join(__dirname, ".env");
+  if (!fs.existsSync(envPath)) return;
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const m = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m || line.trim().startsWith("#")) continue;
+    const val = m[2].replace(/^["']|["']$/g, "");
+    if (val && !(m[1] in process.env)) process.env[m[1]] = val;
+  }
+})();
+
 const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.ANTHROPIC_API_KEY || "";
 const MODEL = process.env.MODEL || "claude-sonnet-5";
