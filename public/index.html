@@ -37,9 +37,45 @@
   .input-bar input:focus { border-color: var(--brand2); }
   .input-bar button { padding: 12px 24px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
   .input-bar button:disabled { opacity: .5; cursor: default; }
-  @media (max-width: 700px) { .avatar-pane { display: none; } }
   @keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-2px); } }
   #avatarPhoto.talking { animation: talk .45s ease-in-out infinite; }
+
+  /* モードトグル（通常⇔辛口） */
+  .mode-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; user-select: none; }
+  .mode-toggle .switch { position: relative; width: 52px; height: 28px; background: #b9c9c0; border-radius: 999px; cursor: pointer; transition: background .2s; flex-shrink: 0; }
+  .mode-toggle .switch::after { content: "😊"; position: absolute; top: 2px; left: 2px; width: 24px; height: 24px; background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+  .mode-toggle .switch.on { background: #c0392b; }
+  .mode-toggle .switch.on::after { content: "🌶️"; left: 26px; }
+  .mode-toggle .label-spicy { color: #c0392b; font-weight: 700; }
+
+  /* 残回数表示 */
+  .remaining { font-size: 11px; color: #7d8f86; text-align: right; padding: 2px 20px 6px; }
+
+  /* 合言葉入場オーバーレイ */
+  .gate { position: fixed; inset: 0; background: linear-gradient(135deg, #0f5132, #1a7a4a); display: flex; align-items: center; justify-content: center; z-index: 100; padding: 20px; }
+  .gate-card { background: #fff; border-radius: 18px; padding: 32px 28px; max-width: 400px; width: 100%; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,.3); }
+  .gate-card h2 { font-size: 18px; margin-bottom: 6px; }
+  .gate-card .gate-sub { font-size: 12px; color: #667; line-height: 1.7; margin-bottom: 18px; }
+  .gate-card input { width: 100%; padding: 13px 16px; border: 2px solid #c6d4cc; border-radius: 10px; font-size: 16px; text-align: center; outline: none; margin-bottom: 12px; }
+  .gate-card input:focus { border-color: var(--brand2); }
+  .gate-card button { width: 100%; padding: 13px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .gate-card button:disabled { opacity: .5; }
+  .gate-error { color: #c0392b; font-size: 12px; min-height: 18px; margin-top: 10px; }
+  .gate-note { font-size: 10px; color: #99a; margin-top: 14px; line-height: 1.6; }
+  .gate-card svg { width: 110px; height: 126px; }
+
+  /* スマホ：アバターを上部のコンパクトなバーに */
+  @media (max-width: 700px) {
+    main { flex-direction: column; }
+    .chat-pane { min-height: 0; }
+    .avatar-pane { width: 100%; min-width: 0; flex-shrink: 0; flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; padding: 8px 14px; border-right: none; border-bottom: 1px solid #cfdcd4; }
+    .avatar-pane svg, #avatarPhoto { width: 52px !important; height: 60px !important; }
+    .avatar-pane .name { font-size: 12px; }
+    .avatar-pane .title, .avatar-pane .note, .tts-toggle { display: none; }
+    .mode-toggle { margin-left: auto; font-size: 11px; }
+    .msg { max-width: 88%; }
+    header .sub { display: none; }
+  }
 </style>
 </head>
 <body>
@@ -103,6 +139,11 @@
       </svg>
       <div class="name" id="avatarName">AI社長（シミュレーション）</div>
       <div class="title" id="avatarTitle">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small id="avatarNote">※イラストは実在の容姿を再現していません</small></div>
+      <div class="mode-toggle">
+        <span id="modeLabelNormal">😊 通常</span>
+        <div class="switch" id="modeSwitch" role="switch" aria-checked="false" tabindex="0" aria-label="辛口モード切替"></div>
+        <span id="modeLabelSpicy">🌶️ 辛口</span>
+      </div>
       <label class="tts-toggle"><input type="checkbox" id="ttsToggle"> 音声で読み上げる（汎用音声）</label>
       <div class="note">音声は端末標準の合成音声です。本人の声のクローンではありません。</div>
     </aside>
@@ -116,12 +157,42 @@
         <button>😮‍💨 やる気が出ません…</button>
         <button>🏢 なぜこの会社に入ったの？</button>
       </div>
+      <div class="remaining" id="remaining"></div>
       <form class="input-bar" id="chatForm">
         <input id="input" type="text" placeholder="AI社長になんでも話しかけてみましょう（悩み相談も雑談もOK）" autocomplete="off">
         <button id="sendBtn" type="submit">送信</button>
       </form>
     </section>
   </main>
+
+  <!-- 合言葉入場ゲート -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <svg viewBox="0 0 200 230" aria-hidden="true">
+        <ellipse cx="100" cy="95" rx="46" ry="50" fill="#f0c49a"/>
+        <path d="M54 88 Q52 40 100 38 Q148 40 146 88 Q140 60 100 56 Q60 60 54 88 Z" fill="#5a5f66"/>
+        <rect x="68" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+        <rect x="110" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+        <ellipse cx="79" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+        <ellipse cx="121" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+        <g stroke="#3a3f45" stroke-width="2.5" fill="none">
+          <rect x="66" y="84" width="26" height="20" rx="8"/>
+          <rect x="108" y="84" width="26" height="20" rx="8"/>
+          <line x1="92" y1="92" x2="108" y2="92"/>
+        </g>
+        <path d="M100 100 Q104 110 99 114" stroke="#d9a577" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M86 124 Q100 132 114 124" stroke="#b06a4a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <h2>🎭 AI社長と遊ぶ</h2>
+      <div class="gate-sub">入場には<strong>合言葉</strong>が必要です。<br>会場の案内をご確認ください。</div>
+      <form id="gateForm">
+        <input id="gateInput" type="text" placeholder="合言葉を入力" autocomplete="off" autocapitalize="none">
+        <button id="gateBtn" type="submit">入場する</button>
+      </form>
+      <div class="gate-error" id="gateError"></div>
+      <div class="gate-note">本アプリはエンタメ・パロディ用途の非公式ファンコンテンツです。<br>回答はAIによる創作であり、実在の人物・企業の見解ではありません。</div>
+    </div>
+  </div>
 
 <script>
 const messagesEl = document.getElementById("messages");
@@ -131,6 +202,13 @@ const sendBtn = document.getElementById("sendBtn");
 const modeBadge = document.getElementById("modeBadge");
 const ttsToggle = document.getElementById("ttsToggle");
 const history = [];
+
+// 認証トークン（合言葉検証後に発行。タブを閉じるまで有効）
+let token = sessionStorage.getItem("token") || "";
+// 応答モード（normal / spicy）
+let chatMode = sessionStorage.getItem("chatMode") || "normal";
+let greetings = { modeToSpicy: [], modeToNormal: [] };
+const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // --- アバターアニメーション ---
 const eyes = document.getElementById("eyes");
@@ -157,7 +235,7 @@ setInterval(() => { // 口パク（写真モードでは軽い揺れアニメー
   }
 }, 130);
 
-// サーバー設定を取得（表示名・写真アバター・動作モード）
+// サーバー設定を取得（表示名・写真アバター・動作モード・モード定義）
 fetch("/api/config").then(r => r.json()).then(cfg => {
   document.getElementById("avatarName").textContent = cfg.displayName || "AI社長";
   if (cfg.personName) {
@@ -175,7 +253,83 @@ fetch("/api/config").then(r => r.json()).then(cfg => {
     note.textContent = "※イラストは実在の容姿を再現していません";
   }
   modeBadge.textContent = cfg.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+  if (cfg.greetings) greetings = cfg.greetings;
+  if (Array.isArray(cfg.modes)) {
+    const n = cfg.modes.find(m => m.id === "normal");
+    const s = cfg.modes.find(m => m.id === "spicy");
+    if (n) document.getElementById("modeLabelNormal").textContent = `${n.emoji} ${n.label.replace("モード","")}`;
+    if (s) document.getElementById("modeLabelSpicy").textContent = `${s.emoji} ${s.label.replace("モード","")}`;
+  }
 }).catch(() => {});
+
+// --- 合言葉ゲート ---
+const gate = document.getElementById("gate");
+const gateForm = document.getElementById("gateForm");
+const gateInput = document.getElementById("gateInput");
+const gateBtn = document.getElementById("gateBtn");
+const gateError = document.getElementById("gateError");
+
+function openChat(greeting) {
+  gate.style.display = "none";
+  addMsg("assistant", greeting ||
+    "ようこそ！私は佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。なんでもどうぞ。");
+  input.focus();
+}
+
+gateForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const passphrase = gateInput.value.trim();
+  if (!passphrase) return;
+  gateBtn.disabled = true;
+  gateError.textContent = "";
+  try {
+    const res = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ passphrase }),
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      token = data.token;
+      sessionStorage.setItem("token", token);
+      openChat(data.greeting);
+    } else if (res.status === 429) {
+      gateError.textContent = `試行回数が多すぎます。${data.waitSec || 10}秒ほど待ってからお試しください。`;
+    } else {
+      gateError.textContent = "合言葉が違うようです。会場の案内をご確認ください。";
+      gateInput.select();
+    }
+  } catch {
+    gateError.textContent = "通信エラーが発生しました。電波の良い場所でお試しください。";
+  } finally {
+    gateBtn.disabled = false;
+  }
+});
+
+// 既にトークンがあればゲートをスキップ（無効なら初回チャットで401→ゲートに戻る）
+if (token) openChat();
+
+// --- モードトグル（通常⇔辛口） ---
+const modeSwitch = document.getElementById("modeSwitch");
+function renderMode() {
+  modeSwitch.classList.toggle("on", chatMode === "spicy");
+  modeSwitch.setAttribute("aria-checked", chatMode === "spicy" ? "true" : "false");
+}
+function toggleMode() {
+  chatMode = chatMode === "spicy" ? "normal" : "spicy";
+  sessionStorage.setItem("chatMode", chatMode);
+  renderMode();
+  const msgs = chatMode === "spicy" ? greetings.modeToSpicy : greetings.modeToNormal;
+  if (msgs && msgs.length) {
+    const g = rand(msgs);
+    history.push({ role: "assistant", content: g });
+    addMsg("assistant", g);
+    startSpeaking(g);
+  }
+}
+modeSwitch.addEventListener("click", toggleMode);
+modeSwitch.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMode(); } });
+renderMode();
 
 function startSpeaking(text) {
   speaking = true;
@@ -218,21 +372,36 @@ async function send(text) {
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messages: history }),
+      headers: { "content-type": "application/json", "authorization": "Bearer " + token },
+      body: JSON.stringify({ messages: history, mode: chatMode }),
     });
     const data = await res.json();
     typing.remove();
+    if (res.status === 401) {
+      // トークン失効（サーバー再起動等）→ ゲートに戻す
+      token = ""; sessionStorage.removeItem("token");
+      history.pop();
+      gate.style.display = "";
+      gateError.textContent = "セッションが切れました。もう一度合言葉を入力してください。";
+      return;
+    }
     if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
     history.push({ role: "assistant", content: data.reply });
     addMsg("assistant", data.reply);
-    modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+    if (typeof data.remaining === "number") {
+      document.getElementById("remaining").textContent =
+        data.remaining > 0 ? `あと ${data.remaining} 回お話しできます` : "本日の会話上限に達しました";
+      if (data.remaining <= 0) { input.disabled = true; sendBtn.disabled = true; }
+    }
+    if (data.mode === "ai" || data.mode === "demo") {
+      modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+    }
     startSpeaking(data.reply);
   } catch (e) {
     typing.remove();
     addMsg("assistant", "通信エラーが発生しました。");
   } finally {
-    sendBtn.disabled = false; input.focus();
+    if (!input.disabled) { sendBtn.disabled = false; input.focus(); }
   }
 }
 
@@ -241,8 +410,6 @@ document.getElementById("suggest").addEventListener("click", (e) => {
   if (e.target.tagName === "BUTTON") send(e.target.textContent);
 });
 
-addMsg("assistant",
-  "やあ、ようこそ！私は三井住友カードの佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。本人ではありませんが、サービス精神は本物です。\n\nおみくじ、キャッシュレス度診断、社長クイズ、ランチ選び、人生相談…なんでもどうぞ。ただし先に言っておきます。どんな話も、最後はだいたいキャッシュレスの話になります。");
 modeBadge.textContent = "待機中";
 </script>
 </body>

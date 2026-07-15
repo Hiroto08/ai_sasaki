@@ -16,10 +16,16 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 
 | 機能 | 使い方 |
 |---|---|
+| 🔑 合言葉で入場 | QRでアクセス → 合言葉を入力しないとチャットできない（イベント参加者限定） |
+| 🌶️ 辛口モードトグル | スイッチひとつで「愛のあるダメ出しモード」に切替。口癖・口調が変わる |
 | 🎋 社長おみくじ | 「おみくじ」→ 運勢 + キャッシュレス格言 + ラッキー決済手段 |
 | 💳 キャッシュレス度診断 | 「診断して」→ キャッシュレス度○○% と称号を判定 |
 | 💡 社長クイズ | 「クイズ出して」→ 決済・会社にまつわる三択クイズ |
 | 🍜 なんでも相談 | ランチ選び・恋愛相談・やる気が出ない…なんでもOK。ただし最後はだいたいキャッシュレスの話になる |
+
+イベント運用（同時200名・1日限定）を想定し、1人あたり発話上限（既定30回）と毎分制限つき。
+
+**📗 イベントで公開する手順（Google Cloud初心者向け）→ [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md)**
 
 ## クイックスタート（完全ローカル動作）
 
@@ -55,6 +61,10 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
 | `MODEL` | 使用モデル | `gemini-2.5-flash` |
 | `PORT` | 待ち受けポート | `3000` |
+| `PASSPHRASE` | 入場用の合言葉 | `きがきくね` |
+| `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
+| `MAX_TURNS` | 1人あたり発話上限 | `30` |
+| `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |
 
 ## 口癖のパラメーター設定（data/config.json）
 
@@ -96,8 +106,13 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
+| `data/modes/normal.json` `spicy.json` | **通常/辛口モードの口調定義**（トグルで差し替わる部分） |
+| `data/content/*.json` | **おみくじ・クイズ・診断・挨拶・定型応答**（配列追記で増やせる） |
 | `data/persona.md` | ペルソナ定義（口調・価値観・ガードレール）＝システムプロンプト |
 | `data/knowledge.md` | 公開情報ナレッジベース（出典付き） |
+| `Dockerfile` | Cloud Runデプロイ用（依存ゼロのまま） |
+| `scripts/loadtest.js` | 200人同時の負荷テストスクリプト |
+| `docs/DEPLOY_GUIDE.md` | **Google Cloud初心者向けデプロイ手順書** |
 | `docs/APP_DESIGN.md` | **イベント版 要件定義・設計書**（QR入場・合言葉・辛口モード・無料枠構成） |
 | `docs/PLAN.md` | 構築計画書（事例リサーチ・アーキテクチャ・ロードマップ） |
 | `docs/PERSONA_RESEARCH.md` | 佐々木氏の公開情報リサーチまとめと法的留意点 |
