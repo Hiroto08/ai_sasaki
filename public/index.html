@@ -171,6 +171,20 @@
   @keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-2px); } }
   #avatarPhoto.talking { animation: talk .45s ease-in-out infinite; }
 
+  /* 辛口モード：写真（アバター）の周りに赤い覇気が立ち上るアニメーション。
+     box-shadow は overflow:hidden の影響を受けず外側に描画されるため、枠外に赤いオーラが出る。 */
+  @keyframes spicyAura {
+    0%, 100% {
+      box-shadow: 0 0 10px 3px rgba(209,57,31,.55), 0 0 26px 9px rgba(209,57,31,.35), 0 0 46px 16px rgba(209,57,31,.16);
+      border-color: rgba(209,57,31,.5);
+    }
+    50% {
+      box-shadow: 0 0 18px 7px rgba(224,60,33,.95), 0 0 46px 18px rgba(209,57,31,.6), 0 0 84px 32px rgba(209,57,31,.30);
+      border-color: rgba(224,60,33,.9);
+    }
+  }
+  .avatar-frame.aura { animation: spicyAura 1s ease-in-out infinite; }
+
   /* ---- 合言葉入場ゲート ---- */
   .gate {
     position: fixed; inset: 0; z-index: 100; padding: 20px;
@@ -496,20 +510,31 @@ if (token) openChat();
 
 // --- モードトグル（通常⇔辛口） ---
 const modeSwitch = document.getElementById("modeSwitch");
+const avatarFrame = document.querySelector(".avatar-frame");
+// 辛口に切り替えた後、最初のユーザー発話への返答で「森っちなんでいるの？」を出すためのフラグ
+let spicyPunchPending = false;
 function renderMode() {
   modeSwitch.classList.toggle("on", chatMode === "spicy");
   modeSwitch.setAttribute("aria-checked", chatMode === "spicy" ? "true" : "false");
+  // 辛口モード中はアバターの周りに赤い覇気を出す
+  if (avatarFrame) avatarFrame.classList.toggle("aura", chatMode === "spicy");
+}
+function postAssistant(text) {
+  history.push({ role: "assistant", content: text });
+  addMsg("assistant", text);
+  startSpeaking(text);
 }
 function toggleMode() {
   chatMode = chatMode === "spicy" ? "normal" : "spicy";
   sessionStorage.setItem("chatMode", chatMode);
   renderMode();
-  const msgs = chatMode === "spicy" ? greetings.modeToSpicy : greetings.modeToNormal;
-  if (msgs && msgs.length) {
-    const g = rand(msgs);
-    history.push({ role: "assistant", content: g });
-    addMsg("assistant", g);
-    startSpeaking(g);
+  if (chatMode === "spicy") {
+    // 切替直後は一言も出さず、次のユーザー発話への返答で決め台詞を出すよう予約する
+    spicyPunchPending = true;
+  } else {
+    spicyPunchPending = false;
+    const msgs = greetings.modeToNormal;
+    if (msgs && msgs.length) postAssistant(rand(msgs));
   }
 }
 modeSwitch.addEventListener("click", toggleMode);
@@ -532,6 +557,16 @@ function startSpeaking(text) {
 }
 
 // --- チャット ---
+// 「考えています…」インジケーターを表示して要素を返す（呼び出し側で remove する）
+function showThinking() {
+  const typing = document.createElement("div");
+  typing.className = "typing";
+  typing.innerHTML = 'AI社長が考えています <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  messagesEl.appendChild(typing);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return typing;
+}
+
 function addMsg(role, text) {
   const div = document.createElement("div");
   div.className = "msg " + (role === "user" ? "user" : "bot");
@@ -550,11 +585,10 @@ async function send(text) {
   addMsg("user", text);
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
-  const typing = document.createElement("div");
-  typing.className = "typing";
-  typing.innerHTML = 'AI社長が考えています <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
-  messagesEl.appendChild(typing);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  const typing = showThinking();
+  // 辛口切替後の最初の発話なら、2秒考えてから決め台詞→生成回答、の演出を行う
+  const doPunch = spicyPunchPending && chatMode === "spicy";
+  const startT = Date.now();
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -562,14 +596,26 @@ async function send(text) {
       body: JSON.stringify({ messages: history, mode: chatMode }),
     });
     const data = await res.json();
-    typing.remove();
     if (res.status === 401) {
+      typing.remove();
       // トークン失効（サーバー再起動等）→ ゲートに戻す
       token = ""; sessionStorage.removeItem("token");
       history.pop();
       gate.style.display = "";
       gateError.textContent = "セッションが切れました。もう一度合言葉を入力してください。";
       return;
+    }
+    if (doPunch) {
+      // 最低2秒は「考えています」を見せる → 決め台詞を先に出す
+      const wait = 2000 - (Date.now() - startT);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      typing.remove();
+      spicyPunchPending = false;
+      addMsg("assistant", "森っちなんでいるの？"); // 決め台詞は履歴に残さない演出
+      startSpeaking("森っちなんでいるの？");
+      await new Promise((r) => setTimeout(r, 700));
+    } else {
+      typing.remove();
     }
     if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
     history.push({ role: "assistant", content: data.reply });
