@@ -153,7 +153,13 @@ async function geminiReply(messages, systemPrompt) {
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemPrompt }] },
       contents,
-      generationConfig: { maxOutputTokens: 1024, temperature: 0.9 },
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.9,
+        // gemini-2.5系は「思考」トークンも出力枠を消費し、本文が途中で切れる原因になる。
+        // 2〜3行のキャラ会話には思考は不要なので無効化し、枠をすべて本文に使う。
+        thinkingConfig: { thinkingBudget: 0 },
+      },
     }),
   });
   if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
@@ -162,6 +168,11 @@ async function geminiReply(messages, systemPrompt) {
   const parts = (cand && cand.content && cand.content.parts) || [];
   const text = parts.map((p) => p.text || "").join("").trim();
   if (!text) throw new Error("Gemini API から空の応答が返りました: " + JSON.stringify(data).slice(0, 300));
+  // 出力上限で途中終了した場合は、文末が切れて見えるのでその旨を軽く補う
+  if (cand && cand.finishReason === "MAX_TOKENS") {
+    console.warn("Gemini応答が出力上限に達しました（末尾が切れている可能性）");
+    return text.replace(/[、,]\s*$/, "") + "…";
+  }
   return text;
 }
 
