@@ -5,41 +5,245 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI社長と遊ぶ | 佐々木社長AIパロディ（非公式・エンタメ用）</title>
 <style>
+  /* ============================================================
+     デザインシステム：ディープグリーン（信頼）× フレッシュライム（先進）
+     ※特定企業のロゴ・商標は使用しない。配色トーンのみのオリジナルデザイン
+     ============================================================ */
   :root {
-    --brand: #0f5132; --brand2: #1a7a4a; --bg: #f4f6f5; --ink: #1c2321;
-    --user: #d7e8df; --bot: #ffffff; --warn-bg: #fff3cd; --warn-ink: #664d03;
+    --deep: #00432e;          /* 基調：ディープグリーン */
+    --deep-2: #005a3d;
+    --deep-3: #0a6b4a;
+    --lime: #b8d935;          /* アクセント：フレッシュライム */
+    --lime-soft: #dceb9e;
+    --lime-tint: #f4f8e4;
+    --ink: #1a2420;
+    --ink-2: #4d5f57;
+    --ink-3: #7d8f86;
+    --bg: #f2f5f1;
+    --card: #ffffff;
+    --line: #e0e8e1;
+    --spicy: #d1391f;
+    --radius: 16px;
+    --shadow-1: 0 1px 2px rgba(0, 40, 25, .05), 0 2px 8px rgba(0, 40, 25, .05);
+    --shadow-2: 0 4px 12px rgba(0, 40, 25, .10), 0 12px 32px rgba(0, 40, 25, .10);
+    --font: "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", "Meiryo", sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif; background: var(--bg); color: var(--ink); height: 100dvh; display: flex; flex-direction: column; }
-  .disclaimer { background: var(--warn-bg); color: var(--warn-ink); font-size: 12px; padding: 8px 16px; text-align: center; line-height: 1.5; border-bottom: 1px solid #e6d9a8; }
-  header { background: linear-gradient(135deg, var(--brand), var(--brand2)); color: #fff; padding: 10px 20px; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 16px; font-weight: 600; }
-  header .sub { font-size: 11px; opacity: .85; }
-  .mode-badge { margin-left: auto; font-size: 11px; background: rgba(255,255,255,.2); padding: 4px 10px; border-radius: 999px; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font); background: var(--bg); color: var(--ink);
+    height: 100dvh; display: flex; flex-direction: column;
+    font-feature-settings: "palt"; letter-spacing: .01em;
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; }
+  :focus-visible { outline: 2px solid var(--deep-3); outline-offset: 2px; }
+
+  /* ---- 免責バナー ---- */
+  .disclaimer {
+    background: #fbf6e3; color: #6b5a1e; font-size: 11px; padding: 7px 16px;
+    text-align: center; line-height: 1.6; border-bottom: 1px solid #eee3bb;
+  }
+  .disclaimer strong { color: #57470f; }
+
+  /* ---- ヘッダー ---- */
+  header {
+    background: linear-gradient(120deg, var(--deep) 0%, var(--deep-2) 60%, var(--deep-3) 100%);
+    color: #fff; padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  header::after { /* ライムのアクセントライン */
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px;
+    background: linear-gradient(90deg, var(--lime) 0%, var(--lime-soft) 45%, transparent 100%);
+  }
+  .brand-mark { width: 26px; height: 26px; flex-shrink: 0; }
+  header h1 { font-size: 16px; font-weight: 700; letter-spacing: .04em; }
+  header .sub { font-size: 11px; opacity: .75; letter-spacing: .02em; }
+  .mode-badge {
+    margin-left: auto; font-size: 11px; font-weight: 600; letter-spacing: .03em;
+    background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25);
+    padding: 4px 12px; border-radius: 999px; backdrop-filter: blur(4px);
+  }
+
   main { flex: 1; display: flex; overflow: hidden; }
-  .avatar-pane { width: 300px; min-width: 260px; background: linear-gradient(180deg, #e8f0ec, #d8e6de); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; gap: 16px; border-right: 1px solid #cfdcd4; }
-  .avatar-pane .name { font-weight: 700; font-size: 15px; }
-  .avatar-pane .title { font-size: 12px; color: #476156; text-align: center; line-height: 1.6; }
-  .avatar-pane .note { font-size: 10px; color: #6b7f75; text-align: center; line-height: 1.5; }
-  .tts-toggle { font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
-  .chat-pane { flex: 1; display: flex; flex-direction: column; }
-  .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 14px; }
-  .msg { max-width: 78%; padding: 12px 16px; border-radius: 14px; font-size: 14px; line-height: 1.8; white-space: pre-wrap; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
-  .msg.user { align-self: flex-end; background: var(--user); border-bottom-right-radius: 4px; }
-  .msg.bot { align-self: flex-start; background: var(--bot); border-bottom-left-radius: 4px; }
-  .msg.bot .who { font-size: 11px; color: var(--brand); font-weight: 700; margin-bottom: 4px; }
-  .typing { align-self: flex-start; color: #7d8f86; font-size: 13px; padding: 8px 16px; }
-  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 10px; }
-  .suggest button { font-size: 12px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--brand2); background: #fff; color: var(--brand); cursor: pointer; }
-  .suggest button:hover { background: #eaf4ee; }
-  .input-bar { display: flex; gap: 10px; padding: 14px 20px; background: #fff; border-top: 1px solid #dde5e0; }
-  .input-bar input { flex: 1; padding: 12px 16px; border: 1px solid #c6d4cc; border-radius: 10px; font-size: 14px; outline: none; }
-  .input-bar input:focus { border-color: var(--brand2); }
-  .input-bar button { padding: 12px 24px; background: var(--brand); color: #fff; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 600; }
-  .input-bar button:disabled { opacity: .5; cursor: default; }
-  @media (max-width: 700px) { .avatar-pane { display: none; } }
+
+  /* ---- アバターパネル ---- */
+  .avatar-pane {
+    width: 300px; min-width: 264px;
+    background:
+      radial-gradient(120% 70% at 50% 0%, var(--lime-tint) 0%, transparent 55%),
+      linear-gradient(180deg, #eef3ec, #e2ebe2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 24px 20px; gap: 14px; border-right: 1px solid var(--line);
+  }
+  .avatar-frame {
+    background: #fff; border-radius: 50% 50% 24px 24px; padding: 14px 14px 0;
+    box-shadow: var(--shadow-1); border: 1px solid var(--line); overflow: hidden;
+  }
+  .avatar-pane .name { font-weight: 700; font-size: 15px; letter-spacing: .03em; }
+  .avatar-pane .title { font-size: 12px; color: var(--ink-2); text-align: center; line-height: 1.7; }
+  .avatar-pane .note { font-size: 10px; color: var(--ink-3); text-align: center; line-height: 1.6; }
+  .tts-toggle { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+
+  /* ---- モードトグル ---- */
+  .mode-toggle {
+    display: flex; align-items: center; gap: 8px; font-size: 12.5px; user-select: none;
+    background: #fff; border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 12px; box-shadow: var(--shadow-1);
+  }
+  .mode-toggle .switch {
+    position: relative; width: 50px; height: 26px; background: #c3cfc5;
+    border-radius: 999px; cursor: pointer; transition: background .25s; flex-shrink: 0;
+  }
+  .mode-toggle .switch::after {
+    content: "😊"; position: absolute; top: 2px; left: 2px; width: 22px; height: 22px;
+    background: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; transition: left .25s cubic-bezier(.4,1.4,.6,1); box-shadow: 0 1px 3px rgba(0,0,0,.25);
+  }
+  .mode-toggle .switch.on { background: var(--spicy); }
+  .mode-toggle .switch.on::after { content: "🌶️"; left: 26px; }
+
+  /* ---- チャット ---- */
+  .chat-pane { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+  .messages { flex: 1; overflow-y: auto; padding: 22px 22px 10px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
+  .messages::-webkit-scrollbar { width: 8px; }
+  .messages::-webkit-scrollbar-thumb { background: #c9d5cb; border-radius: 8px; }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .msg {
+    max-width: 76%; padding: 12px 16px; border-radius: var(--radius);
+    font-size: 14px; line-height: 1.85; white-space: pre-wrap;
+    animation: msgIn .28s ease both;
+  }
+  .msg.user {
+    align-self: flex-end; background: linear-gradient(135deg, var(--deep-2), var(--deep-3));
+    color: #fff; border-bottom-right-radius: 5px; box-shadow: var(--shadow-1);
+  }
+  .msg.bot {
+    align-self: flex-start; background: var(--card); border: 1px solid var(--line);
+    border-bottom-left-radius: 5px; box-shadow: var(--shadow-1);
+  }
+  .msg.bot .who {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: var(--deep-2); font-weight: 700; letter-spacing: .05em; margin-bottom: 5px;
+  }
+  .msg.bot .who::before {
+    content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--lime);
+    transform: rotate(45deg);
+  }
+  .typing { align-self: flex-start; display: flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 12.5px; padding: 10px 16px; }
+  .typing .dots { display: inline-flex; gap: 4px; }
+  .typing .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--deep-3); opacity: .4; animation: bounce 1.2s infinite; }
+  .typing .dots i:nth-child(2) { animation-delay: .15s; }
+  .typing .dots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: none; opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
+
+  /* ---- 提案チップ ---- */
+  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 22px 10px; }
+  .suggest button {
+    font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--card); color: var(--deep-2);
+    cursor: pointer; box-shadow: var(--shadow-1);
+    transition: transform .15s, background .15s, border-color .15s;
+  }
+  .suggest button:hover { background: var(--lime-tint); border-color: var(--lime); transform: translateY(-1px); }
+  .suggest button:active { transform: none; }
+
+  /* ---- 入力バー ---- */
+  .remaining { font-size: 11px; color: var(--ink-3); text-align: right; padding: 0 22px 6px; letter-spacing: .02em; }
+  .input-bar {
+    display: flex; gap: 10px; padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+    background: var(--card); border-top: 1px solid var(--line);
+  }
+  .input-bar input {
+    flex: 1; padding: 13px 18px; border: 1.5px solid var(--line); border-radius: 999px;
+    font-size: 14px; outline: none; background: var(--bg); transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  .input-bar input:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
+  .input-bar button {
+    padding: 13px 26px; background: var(--deep); color: #fff; border: none; border-radius: 999px;
+    font-size: 14px; cursor: pointer; font-weight: 700; letter-spacing: .06em;
+    transition: background .15s, transform .12s; box-shadow: var(--shadow-1);
+  }
+  .input-bar button:hover { background: var(--deep-2); transform: translateY(-1px); }
+  .input-bar button:active { transform: none; }
+  .input-bar button:disabled { opacity: .45; cursor: default; transform: none; }
+
   @keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.02) translateY(-2px); } }
   #avatarPhoto.talking { animation: talk .45s ease-in-out infinite; }
+
+  /* ---- 合言葉入場ゲート ---- */
+  .gate {
+    position: fixed; inset: 0; z-index: 100; padding: 20px;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      radial-gradient(90% 60% at 80% -10%, rgba(184, 217, 53, .22) 0%, transparent 60%),
+      radial-gradient(70% 50% at 10% 110%, rgba(10, 107, 74, .5) 0%, transparent 60%),
+      linear-gradient(150deg, #002d1f 0%, var(--deep) 55%, var(--deep-2) 100%);
+  }
+  .gate::before { /* うっすら光る斜めのライン（先進感の演出） */
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(115deg, transparent 0 90px, rgba(255,255,255,.025) 90px 92px);
+  }
+  @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+  .gate-card {
+    position: relative; background: var(--card); border-radius: 22px; padding: 34px 30px 26px;
+    max-width: 400px; width: 100%; text-align: center; box-shadow: var(--shadow-2);
+    animation: cardIn .45s cubic-bezier(.2,.8,.3,1) both; overflow: hidden;
+  }
+  .gate-card::before { /* カード上端のライムアクセント */
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, var(--deep-2), var(--lime));
+  }
+  .gate-card h2 { font-size: 19px; font-weight: 700; letter-spacing: .05em; margin: 10px 0 6px; }
+  .gate-card .gate-sub { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; margin-bottom: 20px; }
+  .gate-card input {
+    width: 100%; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 12px;
+    font-size: 16px; text-align: center; outline: none; margin-bottom: 12px;
+    background: var(--bg); letter-spacing: .1em; transition: border-color .15s, box-shadow .15s, background .15s;
+  }
+  .gate-card input:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
+  .gate-card button {
+    width: 100%; padding: 14px; border: none; border-radius: 12px;
+    background: linear-gradient(120deg, var(--deep), var(--deep-2)); color: #fff;
+    font-size: 15px; font-weight: 700; letter-spacing: .1em; cursor: pointer;
+    transition: filter .15s, transform .12s; box-shadow: 0 4px 14px rgba(0, 67, 46, .35);
+  }
+  .gate-card button:hover { filter: brightness(1.12); transform: translateY(-1px); }
+  .gate-card button:disabled { opacity: .5; transform: none; }
+  .gate-error { color: var(--spicy); font-size: 12px; min-height: 18px; margin-top: 10px; font-weight: 600; }
+  .gate-note { font-size: 10px; color: #9aa79e; margin-top: 16px; line-height: 1.7; }
+  .gate-badge {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .12em;
+    color: var(--deep-2); background: var(--lime-tint); border: 1px solid var(--lime-soft);
+    border-radius: 999px; padding: 3px 12px;
+  }
+  .gate-card svg { width: 104px; height: 120px; }
+
+  /* ---- スマホ：アバターを上部のコンパクトなバーに ---- */
+  @media (max-width: 700px) {
+    main { flex-direction: column; }
+    .chat-pane { min-height: 0; }
+    .avatar-pane {
+      width: 100%; min-width: 0; flex-shrink: 0; flex-direction: row;
+      justify-content: flex-start; align-items: center; gap: 10px;
+      padding: 8px 14px; border-right: none; border-bottom: 1px solid var(--line);
+    }
+    .avatar-frame { border-radius: 12px; padding: 4px 4px 0; }
+    .avatar-pane svg, #avatarPhoto { width: 46px !important; height: 53px !important; }
+    .avatar-pane .name { font-size: 12px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .avatar-pane .title, .avatar-pane .note, .tts-toggle { display: none; }
+    .mode-toggle { margin-left: auto; font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
+    .mode-toggle span { white-space: nowrap; }
+    .messages { padding: 16px 14px 8px; }
+    .msg { max-width: 88%; font-size: 13.5px; }
+    .suggest { padding: 4px 14px 8px; }
+    header .sub { display: none; }
+    .disclaimer { font-size: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .msg, .gate-card { animation: none; }
+    * { transition: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -48,14 +252,20 @@
     回答は佐々木丈也氏本人の発言・見解ではなく、本人・三井住友カード株式会社の監修や承認を受けたものではありません。
   </div>
   <header>
-    <h1>🎭 AI社長と遊ぶ</h1>
-    <span class="sub">陽気なキャッシュレス伝道師・佐々木社長AIパロディ（非公式）</span>
+    <!-- ブランドマーク（オリジナルの抽象モチーフ。実在企業のロゴではない） -->
+    <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+      <rect x="6" y="6" width="14" height="14" rx="4" transform="rotate(45 13 13)" fill="#b8d935"/>
+      <rect x="13" y="13" width="14" height="14" rx="4" transform="rotate(45 20 20)" fill="rgba(255,255,255,.85)"/>
+    </svg>
+    <h1>AI社長と遊ぶ</h1>
+    <span class="sub">佐々木社長AIパロディ（非公式・エンタメ用）</span>
     <span class="mode-badge" id="modeBadge">接続中…</span>
   </header>
   <main>
     <aside class="avatar-pane">
+      <div class="avatar-frame">
       <!-- 本人許諾済みの写真（public/avatar.png + config.json の consentConfirmed:true）があれば表示 -->
-      <img id="avatarPhoto" alt="AI社長のアバター写真" style="display:none; width:200px; height:230px; object-fit:cover; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,.15);">
+      <img id="avatarPhoto" alt="AI社長のアバター写真" style="display:none; width:200px; height:230px; object-fit:cover; border-radius:12px;">
       <!-- 汎用イラストアバター（許諾前のデフォルト。実在人物の肖像は再現しない） -->
       <svg id="avatar" width="200" height="230" viewBox="0 0 200 230" aria-label="AI社長のイラストアバター">
         <ellipse cx="100" cy="222" rx="70" ry="8" fill="rgba(0,0,0,.08)"/>
@@ -101,8 +311,14 @@
           </g>
         </g>
       </svg>
+      </div>
       <div class="name" id="avatarName">AI社長（シミュレーション）</div>
       <div class="title" id="avatarTitle">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small id="avatarNote">※イラストは実在の容姿を再現していません</small></div>
+      <div class="mode-toggle">
+        <span id="modeLabelNormal">😊 通常</span>
+        <div class="switch" id="modeSwitch" role="switch" aria-checked="false" tabindex="0" aria-label="辛口モード切替"></div>
+        <span id="modeLabelSpicy">🌶️ 辛口</span>
+      </div>
       <label class="tts-toggle"><input type="checkbox" id="ttsToggle"> 音声で読み上げる（汎用音声）</label>
       <div class="note">音声は端末標準の合成音声です。本人の声のクローンではありません。</div>
     </aside>
@@ -116,12 +332,43 @@
         <button>😮‍💨 やる気が出ません…</button>
         <button>🏢 なぜこの会社に入ったの？</button>
       </div>
+      <div class="remaining" id="remaining"></div>
       <form class="input-bar" id="chatForm">
         <input id="input" type="text" placeholder="AI社長になんでも話しかけてみましょう（悩み相談も雑談もOK）" autocomplete="off">
         <button id="sendBtn" type="submit">送信</button>
       </form>
     </section>
   </main>
+
+  <!-- 合言葉入場ゲート -->
+  <div class="gate" id="gate">
+    <div class="gate-card">
+      <svg viewBox="0 0 200 230" aria-hidden="true">
+        <ellipse cx="100" cy="95" rx="46" ry="50" fill="#f0c49a"/>
+        <path d="M54 88 Q52 40 100 38 Q148 40 146 88 Q140 60 100 56 Q60 60 54 88 Z" fill="#5a5f66"/>
+        <rect x="68" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+        <rect x="110" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+        <ellipse cx="79" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+        <ellipse cx="121" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+        <g stroke="#3a3f45" stroke-width="2.5" fill="none">
+          <rect x="66" y="84" width="26" height="20" rx="8"/>
+          <rect x="108" y="84" width="26" height="20" rx="8"/>
+          <line x1="92" y1="92" x2="108" y2="92"/>
+        </g>
+        <path d="M100 100 Q104 110 99 114" stroke="#d9a577" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M86 124 Q100 132 114 124" stroke="#b06a4a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div><span class="gate-badge">UNOFFICIAL PARODY</span></div>
+      <h2>AI社長と遊ぶ</h2>
+      <div class="gate-sub">入場には<strong>合言葉</strong>が必要です。<br>会場の案内をご確認ください。</div>
+      <form id="gateForm">
+        <input id="gateInput" type="text" placeholder="合言葉を入力" autocomplete="off" autocapitalize="none">
+        <button id="gateBtn" type="submit">入場する</button>
+      </form>
+      <div class="gate-error" id="gateError"></div>
+      <div class="gate-note">本アプリはエンタメ・パロディ用途の非公式ファンコンテンツです。<br>回答はAIによる創作であり、実在の人物・企業の見解ではありません。</div>
+    </div>
+  </div>
 
 <script>
 const messagesEl = document.getElementById("messages");
@@ -131,6 +378,13 @@ const sendBtn = document.getElementById("sendBtn");
 const modeBadge = document.getElementById("modeBadge");
 const ttsToggle = document.getElementById("ttsToggle");
 const history = [];
+
+// 認証トークン（合言葉検証後に発行。タブを閉じるまで有効）
+let token = sessionStorage.getItem("token") || "";
+// 応答モード（normal / spicy）
+let chatMode = sessionStorage.getItem("chatMode") || "normal";
+let greetings = { modeToSpicy: [], modeToNormal: [] };
+const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // --- アバターアニメーション ---
 const eyes = document.getElementById("eyes");
@@ -157,7 +411,7 @@ setInterval(() => { // 口パク（写真モードでは軽い揺れアニメー
   }
 }, 130);
 
-// サーバー設定を取得（表示名・写真アバター・動作モード）
+// サーバー設定を取得（表示名・写真アバター・動作モード・モード定義）
 fetch("/api/config").then(r => r.json()).then(cfg => {
   document.getElementById("avatarName").textContent = cfg.displayName || "AI社長";
   if (cfg.personName) {
@@ -175,7 +429,83 @@ fetch("/api/config").then(r => r.json()).then(cfg => {
     note.textContent = "※イラストは実在の容姿を再現していません";
   }
   modeBadge.textContent = cfg.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+  if (cfg.greetings) greetings = cfg.greetings;
+  if (Array.isArray(cfg.modes)) {
+    const n = cfg.modes.find(m => m.id === "normal");
+    const s = cfg.modes.find(m => m.id === "spicy");
+    if (n) document.getElementById("modeLabelNormal").textContent = `${n.emoji} ${n.label.replace("モード","")}`;
+    if (s) document.getElementById("modeLabelSpicy").textContent = `${s.emoji} ${s.label.replace("モード","")}`;
+  }
 }).catch(() => {});
+
+// --- 合言葉ゲート ---
+const gate = document.getElementById("gate");
+const gateForm = document.getElementById("gateForm");
+const gateInput = document.getElementById("gateInput");
+const gateBtn = document.getElementById("gateBtn");
+const gateError = document.getElementById("gateError");
+
+function openChat(greeting) {
+  gate.style.display = "none";
+  addMsg("assistant", greeting ||
+    "ようこそ！私は佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。なんでもどうぞ。");
+  input.focus();
+}
+
+gateForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const passphrase = gateInput.value.trim();
+  if (!passphrase) return;
+  gateBtn.disabled = true;
+  gateError.textContent = "";
+  try {
+    const res = await fetch("/api/verify", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ passphrase }),
+    });
+    const data = await res.json();
+    if (res.ok && data.token) {
+      token = data.token;
+      sessionStorage.setItem("token", token);
+      openChat(data.greeting);
+    } else if (res.status === 429) {
+      gateError.textContent = `試行回数が多すぎます。${data.waitSec || 10}秒ほど待ってからお試しください。`;
+    } else {
+      gateError.textContent = "合言葉が違うようです。会場の案内をご確認ください。";
+      gateInput.select();
+    }
+  } catch {
+    gateError.textContent = "通信エラーが発生しました。電波の良い場所でお試しください。";
+  } finally {
+    gateBtn.disabled = false;
+  }
+});
+
+// 既にトークンがあればゲートをスキップ（無効なら初回チャットで401→ゲートに戻る）
+if (token) openChat();
+
+// --- モードトグル（通常⇔辛口） ---
+const modeSwitch = document.getElementById("modeSwitch");
+function renderMode() {
+  modeSwitch.classList.toggle("on", chatMode === "spicy");
+  modeSwitch.setAttribute("aria-checked", chatMode === "spicy" ? "true" : "false");
+}
+function toggleMode() {
+  chatMode = chatMode === "spicy" ? "normal" : "spicy";
+  sessionStorage.setItem("chatMode", chatMode);
+  renderMode();
+  const msgs = chatMode === "spicy" ? greetings.modeToSpicy : greetings.modeToNormal;
+  if (msgs && msgs.length) {
+    const g = rand(msgs);
+    history.push({ role: "assistant", content: g });
+    addMsg("assistant", g);
+    startSpeaking(g);
+  }
+}
+modeSwitch.addEventListener("click", toggleMode);
+modeSwitch.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMode(); } });
+renderMode();
 
 function startSpeaking(text) {
   speaking = true;
@@ -212,27 +542,43 @@ async function send(text) {
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
   const typing = document.createElement("div");
-  typing.className = "typing"; typing.textContent = "AI社長が考えています…";
+  typing.className = "typing";
+  typing.innerHTML = 'AI社長が考えています <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
   messagesEl.appendChild(typing);
   messagesEl.scrollTop = messagesEl.scrollHeight;
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ messages: history }),
+      headers: { "content-type": "application/json", "authorization": "Bearer " + token },
+      body: JSON.stringify({ messages: history, mode: chatMode }),
     });
     const data = await res.json();
     typing.remove();
+    if (res.status === 401) {
+      // トークン失効（サーバー再起動等）→ ゲートに戻す
+      token = ""; sessionStorage.removeItem("token");
+      history.pop();
+      gate.style.display = "";
+      gateError.textContent = "セッションが切れました。もう一度合言葉を入力してください。";
+      return;
+    }
     if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
     history.push({ role: "assistant", content: data.reply });
     addMsg("assistant", data.reply);
-    modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+    if (typeof data.remaining === "number") {
+      document.getElementById("remaining").textContent =
+        data.remaining > 0 ? `あと ${data.remaining} 回お話しできます` : "本日の会話上限に達しました";
+      if (data.remaining <= 0) { input.disabled = true; sendBtn.disabled = true; }
+    }
+    if (data.mode === "ai" || data.mode === "demo") {
+      modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
+    }
     startSpeaking(data.reply);
   } catch (e) {
     typing.remove();
     addMsg("assistant", "通信エラーが発生しました。");
   } finally {
-    sendBtn.disabled = false; input.focus();
+    if (!input.disabled) { sendBtn.disabled = false; input.focus(); }
   }
 }
 
@@ -241,8 +587,6 @@ document.getElementById("suggest").addEventListener("click", (e) => {
   if (e.target.tagName === "BUTTON") send(e.target.textContent);
 });
 
-addMsg("assistant",
-  "やあ、ようこそ！私は三井住友カードの佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。本人ではありませんが、サービス精神は本物です。\n\nおみくじ、キャッシュレス度診断、社長クイズ、ランチ選び、人生相談…なんでもどうぞ。ただし先に言っておきます。どんな話も、最後はだいたいキャッシュレスの話になります。");
 modeBadge.textContent = "待機中";
 </script>
 </body>

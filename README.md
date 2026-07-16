@@ -16,10 +16,16 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 
 | 機能 | 使い方 |
 |---|---|
+| 🔑 合言葉で入場 | QRでアクセス → 合言葉を入力しないとチャットできない（イベント参加者限定） |
+| 🌶️ 辛口モードトグル | スイッチひとつで「愛のあるダメ出しモード」に切替。口癖・口調が変わる |
 | 🎋 社長おみくじ | 「おみくじ」→ 運勢 + キャッシュレス格言 + ラッキー決済手段 |
 | 💳 キャッシュレス度診断 | 「診断して」→ キャッシュレス度○○% と称号を判定 |
 | 💡 社長クイズ | 「クイズ出して」→ 決済・会社にまつわる三択クイズ |
 | 🍜 なんでも相談 | ランチ選び・恋愛相談・やる気が出ない…なんでもOK。ただし最後はだいたいキャッシュレスの話になる |
+
+イベント運用（同時200名・1日限定）を想定し、1人あたり発話上限（既定30回）と毎分制限つき。
+
+**📗 イベントで公開する手順（Google Cloud初心者向け）→ [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md)**
 
 ## クイックスタート（完全ローカル動作）
 
@@ -34,26 +40,31 @@ npm start        # または node server.js
 → http://localhost:3000 を開く。この時点では**デモモード**（APIキー不要・
 定型応答・ネット接続不要）で動く。
 
-### AI応答モードにする（Claude APIを繋ぐ）
+### AI応答モードにする（Gemini APIを繋ぐ）
 
 ```bash
 cp .env.example .env
-# .env を開いて ANTHROPIC_API_KEY=sk-ant-... を設定
+# .env を開いて GEMINI_API_KEY=... を設定
 npm start
 ```
 
-または環境変数で直接 `ANTHROPIC_API_KEY=sk-ant-... npm start`。
-起動時のコンソールに現在のモード（デモ / Claude API）が表示される。
+または環境変数で直接 `GEMINI_API_KEY=... npm start`。
+APIキーは [Google AI Studio](https://aistudio.google.com/apikey) で取得できる。
+起動時のコンソールに現在のモード（デモ / Gemini API）が表示される。
 データ・設定・UIはすべてローカル完結で、外部に接続するのはAI応答モード時の
-Claude API（`api.anthropic.com`）のみ。
+Gemini API（`generativelanguage.googleapis.com`）のみ。
 
 ### .env の設定項目
 
 | 変数 | 内容 | 既定値 |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | Claude APIキー。未設定ならデモモード | （なし） |
-| `MODEL` | 使用モデル | `claude-sonnet-5` |
+| `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
+| `MODEL` | 使用モデル | `gemini-2.5-flash` |
 | `PORT` | 待ち受けポート | `3000` |
+| `PASSPHRASE` | 入場用の合言葉 | `きがきくね` |
+| `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
+| `MAX_TURNS` | 1人あたり発話上限 | `30` |
+| `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |
 
 ## 口癖のパラメーター設定（data/config.json）
 
@@ -92,11 +103,17 @@ Claude API（`api.anthropic.com`）のみ。
 
 | ファイル | 内容 |
 |---|---|
-| `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でClaude API or デモ応答 |
+| `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
+| `data/modes/normal.json` `spicy.json` | **通常/辛口モードの口調定義**（トグルで差し替わる部分） |
+| `data/content/*.json` | **おみくじ・クイズ・診断・挨拶・定型応答**（配列追記で増やせる） |
 | `data/persona.md` | ペルソナ定義（口調・価値観・ガードレール）＝システムプロンプト |
 | `data/knowledge.md` | 公開情報ナレッジベース（出典付き） |
+| `Dockerfile` | Cloud Runデプロイ用（依存ゼロのまま） |
+| `scripts/loadtest.js` | 200人同時の負荷テストスクリプト |
+| `docs/DEPLOY_GUIDE.md` | **Google Cloud初心者向けデプロイ手順書** |
+| `docs/APP_DESIGN.md` | **イベント版 要件定義・設計書**（QR入場・合言葉・辛口モード・無料枠構成） |
 | `docs/PLAN.md` | 構築計画書（事例リサーチ・アーキテクチャ・ロードマップ） |
 | `docs/PERSONA_RESEARCH.md` | 佐々木氏の公開情報リサーチまとめと法的留意点 |
 
@@ -105,7 +122,7 @@ Claude API（`api.anthropic.com`）のみ。
 ```
 ユーザー質問
   → server.js /api/chat
-  → システムプロンプト（persona.md + knowledge.md）+ 会話履歴 を Claude API へ
+  → システムプロンプト（persona.md + knowledge.md）+ 会話履歴 を Gemini API へ
   → 「公開発言に基づく社長らしい回答」を生成（未公開情報はガードレールで回答拒否）
   → フロントでアバターが口パク + 任意で汎用TTS読み上げ
 ```
