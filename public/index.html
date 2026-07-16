@@ -343,7 +343,10 @@
   <!-- 合言葉入場ゲート -->
   <div class="gate" id="gate">
     <div class="gate-card">
-      <svg viewBox="0 0 200 230" aria-hidden="true">
+      <!-- 本人許諾済みの写真（public/avatar.png + config.json の consentConfirmed:true）があれば表示 -->
+      <img id="gateAvatarPhoto" alt="AI社長のアバター写真" style="display:none; width:104px; height:120px; object-fit:cover; border-radius:12px; margin:0 auto;">
+      <!-- 汎用イラストアバター（許諾前のデフォルト。実在人物の肖像は再現しない） -->
+      <svg id="gateAvatarSvg" viewBox="0 0 200 230" aria-hidden="true">
         <ellipse cx="100" cy="95" rx="46" ry="50" fill="#f0c49a"/>
         <path d="M54 88 Q52 40 100 38 Q148 40 146 88 Q140 60 100 56 Q60 60 54 88 Z" fill="#5a5f66"/>
         <rect x="68" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
@@ -425,6 +428,12 @@ fetch("/api/config").then(r => r.json()).then(cfg => {
     avatarSvg.style.display = "none";
     photoMode = true;
     if (note) note.textContent = "※本人許諾済みの写真を表示しています";
+
+    const gatePhoto = document.getElementById("gateAvatarPhoto");
+    const gateSvg = document.getElementById("gateAvatarSvg");
+    gatePhoto.src = cfg.avatarUrl;
+    gatePhoto.style.display = "";
+    gateSvg.style.display = "none";
   } else if (note) {
     note.textContent = "※イラストは実在の容姿を再現していません";
   }
