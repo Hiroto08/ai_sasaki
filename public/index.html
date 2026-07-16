@@ -511,7 +511,8 @@ if (token) openChat();
 // --- モードトグル（通常⇔辛口） ---
 const modeSwitch = document.getElementById("modeSwitch");
 const avatarFrame = document.querySelector(".avatar-frame");
-let modeSeq = 0; // 辛口切替の非同期演出の競合を防ぐためのシーケンス番号
+// 辛口に切り替えた後、最初のユーザー発話への返答で「森っちなんでいるの？」を出すためのフラグ
+let spicyPunchPending = false;
 function renderMode() {
   modeSwitch.classList.toggle("on", chatMode === "spicy");
   modeSwitch.setAttribute("aria-checked", chatMode === "spicy" ? "true" : "false");
@@ -523,27 +524,17 @@ function postAssistant(text) {
   addMsg("assistant", text);
   startSpeaking(text);
 }
-async function toggleMode() {
+function toggleMode() {
   chatMode = chatMode === "spicy" ? "normal" : "spicy";
   sessionStorage.setItem("chatMode", chatMode);
   renderMode();
-  const seq = ++modeSeq;
-  const msgs = chatMode === "spicy" ? greetings.modeToSpicy : greetings.modeToNormal;
-  const greeting = (msgs && msgs.length) ? rand(msgs) : "";
   if (chatMode === "spicy") {
-    // 2秒考えてから、まず決め台詞「森っちなんでいるの？」→ その後に生成した入場コメントを返す
-    const thinking = showThinking();
-    await new Promise((r) => setTimeout(r, 2000));
-    thinking.remove();
-    if (seq !== modeSeq) return; // 演出中に再度トグルされたら中断
-    postAssistant("森っちなんでいるの？");
-    if (greeting) {
-      await new Promise((r) => setTimeout(r, 700));
-      if (seq !== modeSeq) return;
-      postAssistant(greeting);
-    }
-  } else if (greeting) {
-    postAssistant(greeting);
+    // 切替直後は一言も出さず、次のユーザー発話への返答で決め台詞を出すよう予約する
+    spicyPunchPending = true;
+  } else {
+    spicyPunchPending = false;
+    const msgs = greetings.modeToNormal;
+    if (msgs && msgs.length) postAssistant(rand(msgs));
   }
 }
 modeSwitch.addEventListener("click", toggleMode);
@@ -595,6 +586,9 @@ async function send(text) {
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
   const typing = showThinking();
+  // 辛口切替後の最初の発話なら、2秒考えてから決め台詞→生成回答、の演出を行う
+  const doPunch = spicyPunchPending && chatMode === "spicy";
+  const startT = Date.now();
   try {
     const res = await fetch("/api/chat", {
       method: "POST",
@@ -602,14 +596,26 @@ async function send(text) {
       body: JSON.stringify({ messages: history, mode: chatMode }),
     });
     const data = await res.json();
-    typing.remove();
     if (res.status === 401) {
+      typing.remove();
       // トークン失効（サーバー再起動等）→ ゲートに戻す
       token = ""; sessionStorage.removeItem("token");
       history.pop();
       gate.style.display = "";
       gateError.textContent = "セッションが切れました。もう一度合言葉を入力してください。";
       return;
+    }
+    if (doPunch) {
+      // 最低2秒は「考えています」を見せる → 決め台詞を先に出す
+      const wait = 2000 - (Date.now() - startT);
+      if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+      typing.remove();
+      spicyPunchPending = false;
+      addMsg("assistant", "森っちなんでいるの？"); // 決め台詞は履歴に残さない演出
+      startSpeaking("森っちなんでいるの？");
+      await new Promise((r) => setTimeout(r, 700));
+    } else {
+      typing.remove();
     }
     if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
     history.push({ role: "assistant", content: data.reply });
