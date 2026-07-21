@@ -232,7 +232,7 @@ const server = http.createServer(async (req, res) => {
         { id: "normal", label: normal.label || "通常モード", emoji: normal.emoji || "😊" },
         { id: "spicy", label: spicy.label || "辛口モード", emoji: spicy.emoji || "🌶️" },
       ],
-      greetings: { modeToSpicy: g.modeToSpicy || [], modeToNormal: g.modeToNormal || [] },
+      greetings: { modeToSpicy: g.modeToSpicy || [], modeToNormal: g.modeToNormal || [], spicyPunch: g.spicyPunch || "" },
     });
   }
 

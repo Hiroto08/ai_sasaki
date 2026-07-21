@@ -400,7 +400,7 @@ const history = [];
 let token = sessionStorage.getItem("token") || "";
 // 応答モード（normal / spicy）
 let chatMode = sessionStorage.getItem("chatMode") || "normal";
-let greetings = { modeToSpicy: [], modeToNormal: [] };
+let greetings = { modeToSpicy: [], modeToNormal: [], spicyPunch: "" };
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // --- アバターアニメーション ---
@@ -586,8 +586,10 @@ async function send(text) {
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
   const typing = showThinking();
-  // 辛口切替後の最初の発話なら、2秒考えてから決め台詞→生成回答、の演出を行う
-  const doPunch = spicyPunchPending && chatMode === "spicy";
+  // 辛口切替後の最初の発話 かつ 決め台詞(spicyPunch)が設定されている場合のみ、
+  // 2秒考えてから決め台詞→生成回答、の演出を行う（spicyPunchが空なら演出なし＝非表示）
+  const punchText = (greetings.spicyPunch || "").trim();
+  const doPunch = spicyPunchPending && chatMode === "spicy" && punchText !== "";
   const startT = Date.now();
   try {
     const res = await fetch("/api/chat", {
@@ -611,8 +613,8 @@ async function send(text) {
       if (wait > 0) await new Promise((r) => setTimeout(r, wait));
       typing.remove();
       spicyPunchPending = false;
-      addMsg("assistant", "森っちなんでいるの？"); // 決め台詞は履歴に残さない演出
-      startSpeaking("森っちなんでいるの？");
+      addMsg("assistant", punchText); // 決め台詞は履歴に残さない演出（data/content/greetings.json の spicyPunch）
+      startSpeaking(punchText);
       await new Promise((r) => setTimeout(r, 700));
     } else {
       typing.remove();
