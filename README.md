@@ -26,6 +26,10 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 イベント運用（同時200名・1日限定）を想定し、1人あたり発話上限（既定30回）と毎分制限つき。
 
 **📗 イベントで公開する手順（Google Cloud初心者向け）→ [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md)**
+**🎤 お祝い会・余興の15分進行台本 → [docs/EVENT_RUNDOWN.md](docs/EVENT_RUNDOWN.md)**
+
+会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
+大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。
 
 ## クイックスタート（完全ローカル動作）
 
@@ -105,6 +109,8 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 |---|---|
 | `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
+| `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
+| `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
 | `data/modes/normal.json` `spicy.json` | **通常/辛口モードの口調定義**（トグルで差し替わる部分） |
 | `data/content/*.json` | **おみくじ・クイズ・診断・挨拶・定型応答**（配列追記で増やせる） |

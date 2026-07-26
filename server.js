@@ -236,6 +236,12 @@ const server = http.createServer(async (req, res) => {
     });
   }
 
+  // ステージ画面（大画面用）の進行プリセット
+  if (req.method === "GET" && req.url === "/api/stage-presets") {
+    const p = loadJSON("data/content/stage_presets.json", { presets: [] });
+    return json(res, 200, { presets: p.presets || [] });
+  }
+
   // 合言葉の検証 → トークン発行
   if (req.method === "POST" && req.url === "/api/verify") {
     const ip = clientIp(req);

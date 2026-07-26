@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI社長 ステージモード（大画面投影用）</title>
+<style>
+  :root {
+    --deep: #00432e; --deep-2: #005a3d; --deep-3: #0a6b4a;
+    --lime: #b8d935; --spicy: #d1391f;
+    --font: "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", "Meiryo", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font); height: 100dvh; overflow: hidden; color: #fff;
+    background:
+      radial-gradient(90% 60% at 85% -10%, rgba(184,217,53,.18) 0%, transparent 60%),
+      radial-gradient(70% 50% at 5% 110%, rgba(10,107,74,.55) 0%, transparent 60%),
+      linear-gradient(150deg, #002317 0%, var(--deep) 55%, var(--deep-2) 100%);
+    display: flex; flex-direction: column;
+    font-feature-settings: "palt"; -webkit-font-smoothing: antialiased;
+  }
+  /* 免責（常時表示・投影されるので小さめ） */
+  .note {
+    flex-shrink: 0; text-align: center; font-size: 13px; padding: 6px;
+    color: rgba(255,255,255,.55); background: rgba(0,0,0,.2); letter-spacing: .04em;
+  }
+  main { flex: 1; display: flex; align-items: center; gap: 48px; padding: 24px 56px; min-height: 0; }
+
+  /* アバター */
+  .avatar-col { flex-shrink: 0; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .avatar-frame {
+    background: #fff; border-radius: 50% 50% 28px 28px; padding: 16px 16px 0;
+    border: 2px solid rgba(255,255,255,.3); overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  }
+  .avatar-frame img, .avatar-frame svg { width: 240px; height: 276px; display: block; object-fit: cover; border-radius: 14px; }
+  .avatar-name { font-size: 22px; font-weight: 700; letter-spacing: .06em; }
+  .avatar-sub { font-size: 13px; color: rgba(255,255,255,.6); }
+  @keyframes spicyAura {
+    0%,100% { box-shadow: 0 0 16px 5px rgba(209,57,31,.6), 0 0 44px 16px rgba(209,57,31,.4), 0 0 80px 30px rgba(209,57,31,.18); border-color: rgba(209,57,31,.6); }
+    50%     { box-shadow: 0 0 30px 12px rgba(224,60,33,.95), 0 0 80px 30px rgba(209,57,31,.6), 0 0 140px 55px rgba(209,57,31,.32); border-color: rgba(224,60,33,.95); }
+  }
+  .avatar-frame.aura { animation: spicyAura 1s ease-in-out infinite; }
+
+  /* 回答表示（大画面の主役） */
+  .answer-col { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; height: 100%; }
+  .q-label { font-size: 20px; color: var(--lime); font-weight: 700; letter-spacing: .08em; margin-bottom: 12px; }
+  .q-label.spicy { color: #ff8a70; }
+  #answer {
+    font-size: 40px; line-height: 1.75; font-weight: 600; white-space: pre-wrap;
+    overflow-y: auto; max-height: 100%; padding-right: 12px;
+    text-shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+  #answer::-webkit-scrollbar { width: 10px; }
+  #answer::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 8px; }
+  .placeholder { color: rgba(255,255,255,.45); font-size: 30px; font-weight: 400; }
+  @keyframes dots { 0%,60%,100% { opacity: .3; transform: none; } 30% { opacity: 1; transform: translateY(-8px); } }
+  .thinking { display: flex; align-items: center; gap: 14px; font-size: 32px; color: rgba(255,255,255,.7); }
+  .thinking i { width: 14px; height: 14px; border-radius: 50%; background: var(--lime); display: inline-block; animation: dots 1.2s infinite; }
+  .thinking i:nth-child(3) { animation-delay: .15s; }
+  .thinking i:nth-child(4) { animation-delay: .3s; }
+
+  /* 操作パネル（司会用・投影時は h キーで隠せる） */
+  .panel {
+    flex-shrink: 0; background: rgba(0,0,0,.42); border-top: 1px solid rgba(255,255,255,.12);
+    padding: 12px 20px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .panel.hidden { display: none; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; }
+  .presets button {
+    font-family: inherit; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; cursor: pointer;
+  }
+  .presets button:hover { background: rgba(184,217,53,.28); border-color: var(--lime); }
+  .presets button:disabled { opacity: .4; cursor: default; }
+  .row { display: flex; gap: 10px; align-items: center; }
+  .row input[type=text] {
+    flex: 1; font-family: inherit; font-size: 16px; padding: 11px 16px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.12); color: #fff; outline: none;
+  }
+  .row input::placeholder { color: rgba(255,255,255,.45); }
+  .row button {
+    font-family: inherit; font-size: 15px; font-weight: 700; padding: 11px 24px; border-radius: 10px;
+    border: none; background: var(--lime); color: #123; cursor: pointer;
+  }
+  .mode-btn {
+    font-family: inherit; font-size: 14px; font-weight: 700; padding: 11px 18px; border-radius: 10px;
+    border: 1px solid rgba(255,255,255,.3); background: rgba(255,255,255,.1); color: #fff; cursor: pointer;
+  }
+  .mode-btn.on { background: var(--spicy); border-color: var(--spicy); }
+  .hint { font-size: 12px; color: rgba(255,255,255,.45); }
+
+  /* 合言葉ゲート（運営が最初に一度だけ入力） */
+  .gate { position: fixed; inset: 0; background: rgba(0,20,12,.96); display: flex; align-items: center; justify-content: center; z-index: 50; }
+  .gate form { background: #fff; color: #1a2420; border-radius: 18px; padding: 30px; width: 360px; text-align: center; }
+  .gate h2 { font-size: 17px; margin-bottom: 6px; }
+  .gate p { font-size: 12px; color: #667; margin-bottom: 16px; }
+  .gate input { width: 100%; padding: 13px; font-size: 16px; text-align: center; border: 1.5px solid #ccd; border-radius: 10px; margin-bottom: 10px; }
+  .gate button { width: 100%; padding: 13px; font-family: inherit; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; background: var(--deep); color: #fff; cursor: pointer; }
+  .gate .err { color: var(--spicy); font-size: 12px; min-height: 16px; margin-top: 8px; }
+
+  @media (max-width: 1100px) {
+    main { gap: 28px; padding: 16px 24px; }
+    .avatar-frame img, .avatar-frame svg { width: 150px; height: 172px; }
+    #answer { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+  <div class="note">🎭 本コンテンツは公開情報のみから構築した<strong>非公式のAIパロディ</strong>です。回答はAIによる創作であり、ご本人の発言ではありません。</div>
+
+  <main>
+    <div class="avatar-col">
+      <div class="avatar-frame" id="avatarFrame">
+        <img id="avatarPhoto" alt="AI社長" style="display:none">
+        <svg id="avatarSvg" viewBox="0 0 200 230" aria-hidden="true">
+          <path d="M40 230 Q40 160 100 158 Q160 160 160 230 Z" fill="#2b3a4a"/>
+          <path d="M88 160 L100 178 L112 160 L112 230 L88 230 Z" fill="#fff"/>
+          <path d="M96 178 L104 178 L106 210 L100 222 L94 210 Z" fill="#8a1f2d"/>
+          <rect x="88" y="132" width="24" height="30" rx="10" fill="#e8b98f"/>
+          <ellipse cx="100" cy="95" rx="46" ry="50" fill="#f0c49a"/>
+          <path d="M54 88 Q52 40 100 38 Q148 40 146 88 Q140 60 100 56 Q60 60 54 88 Z" fill="#5a5f66"/>
+          <ellipse cx="54" cy="98" rx="7" ry="11" fill="#e8b98f"/>
+          <ellipse cx="146" cy="98" rx="7" ry="11" fill="#e8b98f"/>
+          <rect x="68" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+          <rect x="110" y="80" width="22" height="4" rx="2" fill="#4a4f55"/>
+          <ellipse cx="79" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+          <ellipse cx="121" cy="94" rx="5.5" ry="6" fill="#2c2c2c"/>
+          <g stroke="#3a3f45" stroke-width="2.5" fill="none">
+            <rect x="66" y="84" width="26" height="20" rx="8"/>
+            <rect x="108" y="84" width="26" height="20" rx="8"/>
+            <line x1="92" y1="92" x2="108" y2="92"/>
+          </g>
+          <path d="M100 100 Q104 110 99 114" stroke="#d9a577" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <path d="M86 124 Q100 132 114 124" stroke="#b06a4a" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="avatar-name" id="avatarName">AI社長</div>
+      <div class="avatar-sub" id="modeLabel">😊 通常モード</div>
+    </div>
+
+    <div class="answer-col">
+      <div class="q-label" id="qLabel"></div>
+      <div id="answer"><span class="placeholder">下のボタンを押すと、AI社長がここで話します。</span></div>
+    </div>
+  </main>
+
+  <div class="panel" id="panel">
+    <div class="presets" id="presets"></div>
+    <div class="row">
+      <input id="input" type="text" placeholder="会場からの質問をここに入力して Enter">
+      <button id="sendBtn" type="button">送信</button>
+      <button class="mode-btn" id="modeBtn" type="button">🌶️ 辛口モードON</button>
+    </div>
+    <div class="hint">操作パネルは <strong>H</strong> キーで表示/非表示・<strong>F11</strong> で全画面。文字サイズは <strong>+ / -</strong> キー。</div>
+  </div>
+
+  <div class="gate" id="gate">
+    <form id="gateForm">
+      <h2>ステージモード</h2>
+      <p>開始前に合言葉を入力してください（1回だけ）</p>
+      <input id="gateInput" type="text" placeholder="合言葉" autocomplete="off">
+      <button type="submit">開始する</button>
+      <div class="err" id="gateErr"></div>
+    </form>
+  </div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const answerEl = $("answer"), qLabel = $("qLabel"), panel = $("panel");
+const avatarFrame = $("avatarFrame"), modeBtn = $("modeBtn"), modeLabel = $("modeLabel");
+let token = sessionStorage.getItem("stageToken") || "";
+let chatMode = "normal";
+let busy = false;
+// ステージは1問1答の見せ方（前の話題を引きずらない）。履歴は送らない。
+
+// --- 設定取得 ---
+fetch("/api/config").then(r => r.json()).then(cfg => {
+  $("avatarName").textContent = cfg.displayName || "AI社長";
+  if (cfg.avatarUrl) {
+    $("avatarPhoto").src = cfg.avatarUrl;
+    $("avatarPhoto").style.display = "";
+    $("avatarSvg").style.display = "none";
+  }
+}).catch(() => {});
+
+fetch("/api/stage-presets").then(r => r.json()).then(d => {
+  const box = $("presets");
+  for (const p of (d.presets || [])) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = p.label;
+    b.addEventListener("click", () => ask(p.prompt, p.label));
+    box.appendChild(b);
+  }
+}).catch(() => {});
+
+// --- 合言葉ゲート（運営用・1回だけ） ---
+if (token) $("gate").style.display = "none";
+$("gateForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  try {
+    const res = await fetch("/api/verify", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ passphrase: $("gateInput").value.trim() }),
+    });
+    const d = await res.json();
+    if (res.ok && d.token) {
+      token = d.token;
+      sessionStorage.setItem("stageToken", token);
+      $("gate").style.display = "none";
+    } else {
+      $("gateErr").textContent = "合言葉が違います。";
+    }
+  } catch { $("gateErr").textContent = "通信エラーです。"; }
+});
+
+// --- 質問を投げる ---
+async function ask(prompt, label) {
+  if (busy || !prompt.trim()) return;
+  busy = true;
+  qLabel.textContent = label || prompt;
+  qLabel.classList.toggle("spicy", chatMode === "spicy");
+  answerEl.innerHTML = '<span class="thinking">考えています <i></i><i></i><i></i></span>';
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      // ステージは毎回単発の質問として送る（会場の流れに引きずられないようにするため）
+      body: JSON.stringify({ messages: [{ role: "user", content: prompt }], mode: chatMode }),
+    });
+    const d = await res.json();
+    if (res.status === 401) {
+      token = ""; sessionStorage.removeItem("stageToken");
+      $("gate").style.display = ""; $("gateErr").textContent = "セッションが切れました。再入力してください。";
+      answerEl.textContent = "";
+      return;
+    }
+    answerEl.textContent = (d.reply || d.error || "…").replace(/※.*$/s, "").trim();
+  } catch {
+    answerEl.textContent = "通信エラーが発生しました。もう一度お試しください。";
+  } finally {
+    busy = false;
+  }
+}
+
+$("sendBtn").addEventListener("click", () => { const v = $("input").value.trim(); if (v) { ask(v, v); $("input").value = ""; } });
+$("input").addEventListener("keydown", (e) => { if (e.key === "Enter") $("sendBtn").click(); });
+
+// --- 辛口モード切替（赤い覇気） ---
+modeBtn.addEventListener("click", () => {
+  chatMode = chatMode === "spicy" ? "normal" : "spicy";
+  const spicy = chatMode === "spicy";
+  avatarFrame.classList.toggle("aura", spicy);
+  modeBtn.classList.toggle("on", spicy);
+  modeBtn.textContent = spicy ? "😊 通常モードに戻す" : "🌶️ 辛口モードON";
+  modeLabel.textContent = spicy ? "🌶️ 辛口モード" : "😊 通常モード";
+  qLabel.classList.toggle("spicy", spicy);
+});
+
+// --- 投影用ショートカット ---
+let fontSize = 40;
+document.addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.key === "h" || e.key === "H") panel.classList.toggle("hidden");
+  if (e.key === "+" || e.key === "=") { fontSize = Math.min(fontSize + 4, 80); answerEl.style.fontSize = fontSize + "px"; }
+  if (e.key === "-") { fontSize = Math.max(fontSize - 4, 20); answerEl.style.fontSize = fontSize + "px"; }
+});
+</script>
+</body>
+</html>
