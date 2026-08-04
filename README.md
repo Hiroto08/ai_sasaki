@@ -26,7 +26,8 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 イベント運用（同時200名・1日限定）を想定し、1人あたり発話上限（既定30回）と毎分制限つき。
 
 **📗 イベントで公開する手順（Google Cloud初心者向け）→ [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md)**
-**🎤 お祝い会・余興の15分進行台本 → [docs/EVENT_RUNDOWN.md](docs/EVENT_RUNDOWN.md)**
+**🎤 お祝い会・余興の15分進行台本 → [docs/EVENT_RUNDOWN.md](docs/EVENT_RUNDOWN.md)**（戦略・事前準備・キューシート）
+**🎙 司会用の完全台詞版 → [docs/MC_SCRIPT.md](docs/MC_SCRIPT.md)**（当日そのまま読める版）
 
 会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
 大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。
