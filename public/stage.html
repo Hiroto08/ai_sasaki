@@ -103,6 +103,10 @@
   }
   .mode-btn.on { background: var(--spicy); border-color: var(--spicy); }
   .hint { font-size: 12px; color: rgba(255,255,255,.45); }
+  .status { font-size: 13px; color: rgba(255,255,255,.6); }
+  .timer { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; margin-left: auto; letter-spacing: .04em; }
+  .timer.over { color: #ff8a70; }
+  .mode-btn.script-on { background: #2d6cdf; border-color: #2d6cdf; }
 
   /* 合言葉ゲート（運営が最初に一度だけ入力） */
   .gate { position: fixed; inset: 0; background: rgba(0,20,12,.96); display: flex; align-items: center; justify-content: center; z-index: 50; }
@@ -174,6 +178,13 @@
       <button class="mode-btn" id="tickerBtn" type="button">📮 声を表示</button>
       <button class="mode-btn" id="finaleBtn" type="button" style="background:rgba(184,217,53,.28);border-color:var(--lime)">🎉 フィナーレ</button>
     </div>
+    <div class="row">
+      <button class="mode-btn" id="scriptBtn" type="button">📝 台本モード</button>
+      <button class="mode-btn" id="saveBtn" type="button">💾 いまの回答を台本に保存</button>
+      <span class="status" id="scriptStatus">台本: 0件</span>
+      <span class="timer" id="timer">00:00</span>
+      <button class="mode-btn" id="timerBtn" type="button">▶ 開始</button>
+    </div>
     <div class="hint">操作パネルは <strong>H</strong> キーで表示/非表示・<strong>F11</strong> で全画面。文字サイズは <strong>+ / -</strong> キー。</div>
   </div>
 
@@ -239,12 +250,50 @@ $("gateForm").addEventListener("submit", async (e) => {
   } catch { $("gateErr").textContent = "通信エラーです。"; }
 });
 
+// --- 台本（事前に生成・確認済みの回答） ---
+let script = { enabled: false, answers: {} };
+let lastKey = "", lastAnswer = "";
+function refreshScriptUI() {
+  const n = Object.keys(script.answers || {}).length;
+  $("scriptStatus").textContent = `台本: ${n}件`;
+  $("scriptBtn").classList.toggle("script-on", !!script.enabled);
+  $("scriptBtn").textContent = script.enabled ? "📝 台本モード ON" : "📝 台本モード";
+}
+fetch("/api/stage-script").then(r => r.json()).then(d => {
+  script = { enabled: !!d.enabled, answers: d.answers || {} };
+  refreshScriptUI();
+}).catch(() => {});
+
+// 文字を少しずつ出す（台本再生でも"いま話している"感を出すため）
+let typeTimer = null;
+function typeOut(text) {
+  clearInterval(typeTimer);
+  answerEl.textContent = "";
+  let i = 0;
+  typeTimer = setInterval(() => {
+    i += 2;
+    answerEl.textContent = text.slice(0, i);
+    if (i >= text.length) { clearInterval(typeTimer); answerEl.textContent = text; }
+  }, 28);
+}
+
 // --- 質問を投げる ---
 async function ask(prompt, label) {
   if (busy || !prompt.trim()) return;
   busy = true;
-  qLabel.textContent = label || prompt;
+  const key = label || prompt;
+  lastKey = key;
+  qLabel.textContent = key;
   qLabel.classList.toggle("spicy", chatMode === "spicy");
+
+  // 台本モード：AIを呼ばず、確認済みの回答を再生する（＝本番で失敗しない）
+  if (script.enabled && script.answers[key]) {
+    lastAnswer = script.answers[key];
+    answerEl.innerHTML = '<span class="thinking">考えています <i></i><i></i><i></i></span>';
+    setTimeout(() => { typeOut(lastAnswer); busy = false; }, 900);
+    return;
+  }
+
   answerEl.innerHTML = '<span class="thinking">考えています <i></i><i></i><i></i></span>';
   try {
     const res = await fetch("/api/chat", {
@@ -260,13 +309,50 @@ async function ask(prompt, label) {
       answerEl.textContent = "";
       return;
     }
-    answerEl.textContent = (d.reply || d.error || "…").replace(/※.*$/s, "").trim();
+    lastAnswer = (d.reply || d.error || "…").replace(/※.*$/s, "").trim();
+    typeOut(lastAnswer);
   } catch {
-    answerEl.textContent = "通信エラーが発生しました。もう一度お試しください。";
+    // 通信が落ちても台本があれば再生する（本番の保険）
+    if (script.answers[key]) { lastAnswer = script.answers[key]; typeOut(lastAnswer); }
+    else answerEl.textContent = "通信エラーが発生しました。もう一度お試しください。";
   } finally {
     busy = false;
   }
 }
+
+// 台本モードの切替と保存
+$("scriptBtn").addEventListener("click", async () => {
+  script.enabled = !script.enabled;
+  refreshScriptUI();
+  await fetch("/api/stage-script", {
+    method: "PUT", headers: { "content-type": "application/json", authorization: "Bearer " + token },
+    body: JSON.stringify({ enabled: script.enabled }),
+  }).catch(() => {});
+});
+$("saveBtn").addEventListener("click", async () => {
+  if (!lastKey || !lastAnswer) return;
+  script.answers[lastKey] = lastAnswer;
+  refreshScriptUI();
+  const res = await fetch("/api/stage-script", {
+    method: "PUT", headers: { "content-type": "application/json", authorization: "Bearer " + token },
+    body: JSON.stringify({ answers: { [lastKey]: lastAnswer } }),
+  }).catch(() => null);
+  $("scriptStatus").textContent = res && res.ok
+    ? `✓ 「${lastKey}」を台本に保存（計${Object.keys(script.answers).length}件）`
+    : "保存に失敗しました";
+});
+
+// --- 進行タイマー（15分枠の管理用） ---
+let t0 = null, timerId = null;
+$("timerBtn").addEventListener("click", () => {
+  if (timerId) { clearInterval(timerId); timerId = null; t0 = null; $("timer").textContent = "00:00"; $("timer").classList.remove("over"); $("timerBtn").textContent = "▶ 開始"; return; }
+  t0 = Date.now(); $("timerBtn").textContent = "■ リセット";
+  timerId = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    $("timer").textContent = String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+    $("timer").classList.toggle("over", s > 15 * 60);
+  }, 500);
+});
 
 $("sendBtn").addEventListener("click", () => { const v = $("input").value.trim(); if (v) { ask(v, v); $("input").value = ""; } });
 $("input").addEventListener("keydown", (e) => { if (e.key === "Enter") $("sendBtn").click(); });
@@ -311,8 +397,17 @@ $("finaleBtn").addEventListener("click", async () => {
   busy = true;
   // 通常モードに戻して空気を切り替える
   if (chatMode === "spicy") $("modeBtn").click();
+  lastKey = "_finale";
   qLabel.textContent = "🎉 本物の佐々木社長へ";
   answerEl.innerHTML = '<span class="thinking">皆さまの声を読んでいます <i></i><i></i><i></i></span>';
+
+  // 台本モード：確認済みのフィナーレ原稿を再生する（一番失敗できない場面なので推奨）
+  if (script.enabled && script.answers["_finale"]) {
+    lastAnswer = script.answers["_finale"];
+    setTimeout(() => { typeOut(lastAnswer); busy = false; }, 2200); // 少し長めに"読んでいる"間を取る
+    return;
+  }
+
   try {
     const preset = (window.__presets || []).find((p) => p.finale) || {};
     const res = await fetch("/api/finale", {
@@ -321,9 +416,11 @@ $("finaleBtn").addEventListener("click", async () => {
       body: JSON.stringify({ prompt: preset.prompt || "本物のご本人へ、就任のお祝いメッセージを述べてください。" }),
     });
     const d = await res.json();
-    answerEl.textContent = (d.reply || d.error || "…").replace(/※.*$/s, "").trim();
+    lastAnswer = (d.reply || d.error || "…").replace(/※.*$/s, "").trim();
+    typeOut(lastAnswer);
   } catch {
-    answerEl.textContent = "通信エラーが発生しました。";
+    if (script.answers["_finale"]) { lastAnswer = script.answers["_finale"]; typeOut(lastAnswer); }
+    else answerEl.textContent = "通信エラーが発生しました。";
   } finally { busy = false; }
 });
 

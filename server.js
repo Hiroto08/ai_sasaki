@@ -278,6 +278,31 @@ const server = http.createServer(async (req, res) => {
     return json(res, 200, { presets: p.presets || [] });
   }
 
+  // 台本（事前に生成・確認した回答）の取得
+  if (req.method === "GET" && req.url === "/api/stage-script") {
+    return json(res, 200, loadJSON("data/content/stage_script.json", { enabled: false, answers: {} }));
+  }
+
+  // 台本の保存（リハーサルで生成した回答を確定させる。運営のみ）
+  if (req.method === "PUT" && req.url === "/api/stage-script") {
+    const auth = req.headers["authorization"] || "";
+    if (!verifyToken(auth.startsWith("Bearer ") ? auth.slice(7) : "")) return json(res, 401, { error: "unauthorized" });
+    const body = await readBody(req);
+    try {
+      const incoming = JSON.parse(body || "{}");
+      const cur = loadJSON("data/content/stage_script.json", { enabled: false, answers: {} });
+      const next = {
+        _説明: cur._説明 || "リハーサルで生成・確認した回答の台本。enabled:true で本番はこの内容を再生し、AIを呼ばずに済む（＝失敗しない）。",
+        enabled: typeof incoming.enabled === "boolean" ? incoming.enabled : cur.enabled,
+        answers: { ...(cur.answers || {}), ...(incoming.answers || {}) },
+      };
+      fs.writeFileSync(path.join(__dirname, "data/content/stage_script.json"), JSON.stringify(next, null, 2) + "\n");
+      return json(res, 200, { ok: true, count: Object.keys(next.answers).length });
+    } catch (e) {
+      return json(res, 400, { error: String(e.message || e) });
+    }
+  }
+
   // 会場からの「思い出」投稿（参加者用）
   if (req.method === "POST" && req.url === "/api/memories") {
     const auth = req.headers["authorization"] || "";

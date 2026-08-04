@@ -111,6 +111,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
 | `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |
+| `data/content/stage_script.json` | **事前確認済みの回答（台本モード）**。本番はAIを呼ばずこれを再生＝失敗しない |
 | （API）`/api/memories` `/api/finale` | **会場からの「思い出」投稿と、それを織り込んだフィナーレ生成** |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
 | `data/modes/normal.json` `spicy.json` | **通常/辛口モードの口調定義**（トグルで差し替わる部分） |
