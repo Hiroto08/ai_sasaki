@@ -215,6 +215,41 @@ const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css
 const json = (res, code, obj) => { res.writeHead(code, { "content-type": "application/json" }); res.end(JSON.stringify(obj)); };
 const readBody = (req) => new Promise((resolve) => { let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => resolve(b)); });
 
+// ---- 会場からの「思い出」投稿（フィナーレのお祝いメッセージの素材になる） ----
+// イベント中だけ使うインメモリ保管。再起動で消える（記録を残したい場合は運営が控える）。
+const memories = [];
+const MEMORY_MAX = 1000;      // 保管上限
+const MEMORY_TEXT_MAX = 120;  // 1件あたりの文字数上限（大画面で読める長さ）
+// 大画面に出すため、明らかに不適切な投稿は弾く。会場に合わせて追記可。
+const MEMORY_NG = ["死ね", "殺す", "バカ", "アホ", "クズ", "ブス", "うざい", "きもい"];
+
+function addMemory(text) {
+  const t = String(text || "").replace(/\s+/g, " ").trim().slice(0, MEMORY_TEXT_MAX);
+  if (!t) return { ok: false, reason: "empty" };
+  if (MEMORY_NG.some((w) => t.includes(w))) return { ok: false, reason: "ng" };
+  if (memories.some((m) => m.text === t)) return { ok: true, count: memories.length }; // 重複は黙って無視
+  if (memories.length >= MEMORY_MAX) memories.shift();
+  memories.push({ text: t, at: Date.now() });
+  return { ok: true, count: memories.length };
+}
+
+// 集まった思い出からフィナーレ用のプロンプトを組み立てる
+function finalePrompt(basePrompt, sampleSize = 40) {
+  if (memories.length === 0) return basePrompt;
+  const shuffled = memories.map((m) => m.text).sort(() => Math.random() - 0.5).slice(0, sampleSize);
+  return [
+    basePrompt,
+    "",
+    `【会場の${memories.length}名から届いた「ご本人の人柄・思い出」】`,
+    ...shuffled.map((t) => "・" + t),
+    "",
+    "上記は本日の会場にいる方々が寄せてくれた、あなたのモデルとなった方についての生の声です。",
+    "この声に何度も触れて心を動かされた、という体で、具体的に何が書かれていたかに触れながら話してください。",
+    "公開情報だけでは決して知り得なかった一面を知れたことへの感謝を述べ、",
+    "最後は「ここから先の物語は本物のあなたにしか書けない」という趣旨で締めくくってください。",
+  ].join("\n");
+}
+
 const server = http.createServer(async (req, res) => {
   // フロント表示用の設定（表示名・写真アバター・モード一覧など）
   if (req.method === "GET" && req.url === "/api/config") {
@@ -233,6 +268,7 @@ const server = http.createServer(async (req, res) => {
         { id: "spicy", label: spicy.label || "辛口モード", emoji: spicy.emoji || "🌶️" },
       ],
       greetings: { modeToSpicy: g.modeToSpicy || [], modeToNormal: g.modeToNormal || [], spicyPunch: g.spicyPunch || "" },
+      eventMode: config.eventMode || { memoryEnabled: false },
     });
   }
 
@@ -240,6 +276,65 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/api/stage-presets") {
     const p = loadJSON("data/content/stage_presets.json", { presets: [] });
     return json(res, 200, { presets: p.presets || [] });
+  }
+
+  // 会場からの「思い出」投稿（参加者用）
+  if (req.method === "POST" && req.url === "/api/memories") {
+    const auth = req.headers["authorization"] || "";
+    if (!verifyToken(auth.startsWith("Bearer ") ? auth.slice(7) : "")) return json(res, 401, { error: "unauthorized" });
+    const body = await readBody(req);
+    let text = "";
+    try { text = JSON.parse(body || "{}").text || ""; } catch {}
+    const r = addMemory(text);
+    if (!r.ok) return json(res, 400, { error: r.reason });
+    return json(res, 200, { ok: true, count: r.count });
+  }
+
+  // 集まった思い出の取得（ステージ画面のティッカー表示用）
+  if (req.method === "GET" && req.url.startsWith("/api/memories")) {
+    return json(res, 200, {
+      count: memories.length,
+      items: memories.slice(-80).map((m) => m.text),
+    });
+  }
+
+  // 思い出の全消去（リハーサル後に運営が実行）
+  if (req.method === "DELETE" && req.url === "/api/memories") {
+    const auth = req.headers["authorization"] || "";
+    if (!verifyToken(auth.startsWith("Bearer ") ? auth.slice(7) : "")) return json(res, 401, { error: "unauthorized" });
+    memories.length = 0;
+    return json(res, 200, { ok: true, count: 0 });
+  }
+
+  // フィナーレ：会場の思い出を織り込んだお祝いメッセージを生成
+  if (req.method === "POST" && req.url === "/api/finale") {
+    const auth = req.headers["authorization"] || "";
+    const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+    if (!verifyToken(token)) return json(res, 401, { error: "unauthorized" });
+    const body = await readBody(req);
+    let basePrompt = "";
+    try { basePrompt = JSON.parse(body || "{}").prompt || ""; } catch {}
+    if (!basePrompt) return json(res, 400, { error: "prompt required" });
+    const prompt = finalePrompt(basePrompt);
+    try {
+      if (!API_KEY) throw new Error("APIキー未設定");
+      // フィナーレは長めに話してよいので、通常の行数制限を外した専用プロンプトを使う
+      const sys = buildSystemPrompt(loadConfig(), "normal")
+        .replace(/回答は日本語で、端的に2〜3行程度に収めてください。[^\n]*/,
+          "回答は日本語で、5〜8文程度の心のこもったスピーチにしてください。");
+      const reply = await geminiReply([{ role: "user", content: prompt }], sys);
+      return json(res, 200, { reply, mode: "ai", memoryCount: memories.length });
+    } catch (e) {
+      console.error("フィナーレ生成エラー:", e.message);
+      // 生成に失敗しても会が止まらないよう、集まった思い出をそのまま読み上げる形で返す
+      const sample = memories.map((m) => m.text).sort(() => Math.random() - 0.5).slice(0, 8);
+      const fallback = memories.length
+        ? `本日、会場の皆さまから${memories.length}件のお声が届きました。少しだけ、ご紹介させてください。\n\n`
+          + sample.map((t) => "「" + t + "」").join("\n")
+          + "\n\n…私は公開情報しか知りませんでした。皆さまのお声で、はじめて本当のあなたを知った気がします。\nここから先の物語は、本物のあなたにしか書けません。ご就任、誠におめでとうございます。"
+        : "ご就任、誠におめでとうございます。私は公開情報だけでつくられた分身にすぎません。ここから先の物語は、本物のあなたにしか書けません。";
+      return json(res, 200, { reply: fallback, mode: "fallback", memoryCount: memories.length });
+    }
   }
 
   // 合言葉の検証 → トークン発行
