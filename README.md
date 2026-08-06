@@ -31,6 +31,7 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | # | ドキュメント | 何が書いてあるか |
 |---|---|---|
 | 0 | [**docs/SCHEDULE.md**](docs/SCHEDULE.md) | **9/1本番の逆算スケジュール**。いつ何をやるか（日付入り） |
+| 0.5 | [**docs/SURVEY.md**](docs/SURVEY.md) | **周辺アンケート設計**。AIの解像度を上げる最重要工程（今日から着手可） |
 | 1 | [**docs/EVENT_RUNDOWN.md**](docs/EVENT_RUNDOWN.md) | 15分の構成・費用・全体像 |
 | 2 | [**docs/BUILD_GUIDE.md**](docs/BUILD_GUIDE.md) | **構築手順書**。各作業を1手ずつ |
 | 3 | [**docs/SERVICE_SETUP.md**](docs/SERVICE_SETUP.md) | HeyGen／ElevenLabs／deevid.ai の画面操作 |
