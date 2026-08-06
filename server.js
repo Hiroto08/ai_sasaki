@@ -35,6 +35,11 @@ const SECRET = process.env.SECRET || crypto.randomBytes(32).toString("hex");
 // 1人あたりの上限（コスト保護）
 const MAX_TURNS = parseInt(process.env.MAX_TURNS || "30", 10); // 1人あたり合計発話数
 const MAX_PER_MIN = parseInt(process.env.MAX_PER_MIN || "6", 10); // 1人あたり毎分発話数
+// ElevenLabs（フリー質問での音声読み上げ用）。未設定なら音声機能は無効になる。
+const XI_KEY = process.env.ELEVENLABS_API_KEY || "";
+const XI_VOICE = process.env.ELEVENLABS_VOICE_ID || "";
+const XI_MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
+const TTS_CACHE_DIR = path.join(__dirname, "data", "cache", "tts");
 
 const persona = fs.readFileSync(path.join(__dirname, "data", "persona.md"), "utf8");
 const knowledge = fs.readFileSync(path.join(__dirname, "data", "knowledge.md"), "utf8");
@@ -176,6 +181,34 @@ async function geminiReply(messages, systemPrompt) {
   return text;
 }
 
+// ---- ElevenLabs 音声合成（フリー質問用） ----
+// 同じ文はディスクにキャッシュする。リハーサルで一度生成しておけば本番は即再生になる。
+function ttsCachePath(text) {
+  const key = crypto.createHash("sha1").update(XI_VOICE + "|" + XI_MODEL + "|" + text).digest("hex");
+  return path.join(TTS_CACHE_DIR, key + ".mp3");
+}
+async function synthesize(text) {
+  const cached = ttsCachePath(text);
+  if (fs.existsSync(cached)) return { buf: fs.readFileSync(cached), cache: true };
+  if (!XI_KEY || !XI_VOICE) throw new Error("ELEVENLABS_API_KEY / ELEVENLABS_VOICE_ID が未設定です");
+  const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(XI_VOICE)}`, {
+    method: "POST",
+    headers: { "xi-api-key": XI_KEY, "content-type": "application/json", accept: "audio/mpeg" },
+    body: JSON.stringify({
+      text,
+      model_id: XI_MODEL,
+      voice_settings: { stability: 0.5, similarity_boost: 0.8 },
+    }),
+  });
+  if (!res.ok) throw new Error(`ElevenLabs ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const buf = Buffer.from(await res.arrayBuffer());
+  try {
+    fs.mkdirSync(TTS_CACHE_DIR, { recursive: true });
+    fs.writeFileSync(cached, buf);
+  } catch (e) { console.error("TTSキャッシュ保存失敗:", e.message); }
+  return { buf, cache: false };
+}
+
 // ---- 認証（合言葉 → HMAC署名トークン。DB不要） ----
 function issueToken() {
   const nonce = crypto.randomBytes(12).toString("hex");
@@ -276,6 +309,30 @@ const server = http.createServer(async (req, res) => {
   if (req.method === "GET" && req.url === "/api/stage-presets") {
     const p = loadJSON("data/content/stage_presets.json", { presets: [] });
     return json(res, 200, { presets: p.presets || [] });
+  }
+
+  // フリー質問用：想定質問と確認済み回答のプリセット
+  if (req.method === "GET" && req.url === "/api/qa-presets") {
+    const p = loadJSON("data/content/qa_presets.json", { presets: [] });
+    return json(res, 200, { presets: p.presets || [], voiceReady: !!(XI_KEY && XI_VOICE) });
+  }
+
+  // フリー質問用：音声合成（キャッシュ優先）
+  if (req.method === "POST" && req.url === "/api/speak") {
+    const auth = req.headers["authorization"] || "";
+    if (!verifyToken(auth.startsWith("Bearer ") ? auth.slice(7) : "")) return json(res, 401, { error: "unauthorized" });
+    const body = await readBody(req);
+    let text = "";
+    try { text = String(JSON.parse(body || "{}").text || "").trim(); } catch {}
+    if (!text) return json(res, 400, { error: "text required" });
+    try {
+      const { buf, cache } = await synthesize(text);
+      res.writeHead(200, { "content-type": "audio/mpeg", "content-length": buf.length, "x-tts-cache": cache ? "hit" : "miss" });
+      return res.end(buf);
+    } catch (e) {
+      console.error("音声合成エラー:", e.message);
+      return json(res, 502, { error: String(e.message || e) });
+    }
   }
 
   // 台本（事前に生成・確認した回答）の取得

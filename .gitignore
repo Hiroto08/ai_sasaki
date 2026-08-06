@@ -4,3 +4,6 @@ public/*.png
 
 node_modules/
 .env
+
+# 音声合成のキャッシュ（本人の声のため共有しない）
+data/cache/

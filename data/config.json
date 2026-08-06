@@ -22,9 +22,9 @@
     "ngWords": [],
     "notes": "課題→反省→改善→目指す姿の順で構造的に話す。生活者目線の具体例に落とす。"
   },
-  "_eventMode説明": "お祝い会など会場イベント用の機能。memoryEnabled を true にすると、参加者の画面に「思い出を送る」ボタンが出て、集まった声がフィナーレのお祝いメッセージの素材になる。",
+  "_eventMode説明": "会場イベント用の機能。memoryEnabled を true にすると参加者の画面に「思い出を送る」ボタンが出る。今回の構成（#5でQR配布して自由に遊んでもらう）では使わないため false。事前アンケートをアプリで集めたい場合だけ true にする。",
   "eventMode": {
-    "memoryEnabled": true,
+    "memoryEnabled": false,
     "memoryQuestion": "あなたが知っている佐々木さんを、ひとこと教えてください。"
   },
   "avatar": {

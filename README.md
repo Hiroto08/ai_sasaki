@@ -112,6 +112,8 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
+| `public/qa.html` | **フリー質問オペレーター卓**。回答生成→音声再生をワンクリック（#4用） |
+| `data/content/qa_presets.json` | **想定質問と確認済み回答**（answerを埋めると本番は即再生） |
 | `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |
 | `data/content/stage_script.json` | **事前確認済みの回答（台本モード）**。本番はAIを呼ばずこれを再生＝失敗しない |
 | （API）`/api/memories` `/api/finale` | **会場からの「思い出」投稿と、それを織り込んだフィナーレ生成** |
