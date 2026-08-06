@@ -87,12 +87,20 @@ gcloud run deploy ai-shacho \
   --allow-unauthenticated \
   --max-instances 1 \
   --memory 512Mi \
-  --set-env-vars "GEMINI_API_KEY=ここにSTEP1のAPIキー,PASSPHRASE=ここに合言葉,MODEL=gemini-2.5-flash,MAX_TURNS=30"
+  --set-env-vars "^@^GEMINI_API_KEY=ここにSTEP1のAPIキー@PASSPHRASE=ここに合言葉@MODEL=gemini-2.5-flash@MAX_TURNS=30@MAX_PER_MIN=10"
 ```
 
 > 💡 `PASSPHRASE=` の後がイベントの**合言葉**になります（例：`PASSPHRASE=きがきくね`）。
 > 💡 `--max-instances 1` は「サーバーを1台までしか増やさない」設定です。
 >    1人あたりの発話制限を正しく効かせ、コストの上限を固定するために**必ず付けてください**。
+> 💡 先頭の `^@^` は「区切り文字を @ にする」という指定です。合言葉に読点や記号が入っても
+>    壊れないようにするためのもので、**そのまま貼り付けてください**。
+
+**フリー質問（#4）で音声を使う場合**は、上のコマンドの環境変数に次を追加します。
+
+```
+@ELEVENLABS_API_KEY=ここにAPIキー@ELEVENLABS_VOICE_ID=ここにVoice ID
+```
 
 4. 完了すると最後に **Service URL: `https://ai-shacho-xxxxx.asia-northeast1.run.app`** と表示される。
    これが**アプリのURL**。メモ帳に控える
