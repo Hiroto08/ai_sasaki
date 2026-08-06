@@ -30,8 +30,9 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 
 | # | ドキュメント | 何が書いてあるか |
 |---|---|---|
-| 1 | [**docs/EVENT_RUNDOWN.md**](docs/EVENT_RUNDOWN.md) | 15分の構成・費用・全体像（まずここ） |
-| 2 | [**docs/BUILD_GUIDE.md**](docs/BUILD_GUIDE.md) | **構築手順書**。21日前から当日までを1手ずつ |
+| 0 | [**docs/SCHEDULE.md**](docs/SCHEDULE.md) | **9/1本番の逆算スケジュール**。いつ何をやるか（日付入り） |
+| 1 | [**docs/EVENT_RUNDOWN.md**](docs/EVENT_RUNDOWN.md) | 15分の構成・費用・全体像 |
+| 2 | [**docs/BUILD_GUIDE.md**](docs/BUILD_GUIDE.md) | **構築手順書**。各作業を1手ずつ |
 | 3 | [**docs/SERVICE_SETUP.md**](docs/SERVICE_SETUP.md) | HeyGen／ElevenLabs／deevid.ai の画面操作 |
 | 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
 | 5 | [**docs/MC_SCRIPT.md**](docs/MC_SCRIPT.md) | **当日の実行台本**。開演60分前〜撤収まで |
