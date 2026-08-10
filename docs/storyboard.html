@@ -598,13 +598,13 @@
         <p class="subtitle">佐々木社長 ご就任お祝い会　余興 #1「AI佐々木社長 登場」</p>
       </div>
       <div class="runtime">
-        <b>T+11.0</b>
+        <b>39.66</b>
         <span>sec — silent</span>
       </div>
     </div>
     <dl class="meta">
-      <div><dt>通し時刻</dt><dd>1:00 – 1:33（T＝22.0の場合）</dd></div>
-      <div><dt>楽曲</dt><dd>湘南乃風「バブル」<br>（会場PAから別再生）</dd></div>
+      <div><dt>通し時刻</dt><dd>1:00 – 1:39.7</dd></div>
+      <div><dt>楽曲</dt><dd>提供音源（会場PAから別再生）<br>イントロ0–29.2秒を使用</dd></div>
       <div><dt>音声</dt><dd>動画は完全無音で書き出し</dd></div>
       <div><dt>制作</dt><dd>seedance ＋ 編集ソフト<br>（CapCut / Clipchamp）</dd></div>
       <div><dt>納品</dt><dd>01_opening.mp4<br>ローカル保存・ネット非依存</dd></div>
@@ -615,56 +615,51 @@
   <button class="printbtn" onclick="window.print()">この絵コンテを印刷</button>
 
   <section class="unverified">
-    <h2>⚠ この絵コンテの秒数は、まだ音源で検証されていません</h2>
-    <p>ここに書かれた 03 / 13 / <b>22</b> という数字は、すべて<b>トラックの先頭からの経過秒数</b>です。つまり全体が、<b>「キメの瞬間が曲頭からちょうど 22.0 秒の位置にある」</b>という1点の上に乗っています。ここがズレると、黒み3秒のバッファでは吸収できず、<b>爆発が音とずれます</b>。</p>
-    <p><b>制作を始める前に、Audacity（無料）で実測してください。所要15分です。</b></p>
-    <ol>
-      <li>当日流す音源ファイルをそのまま Audacity で開く</li>
-      <li>キメの瞬間を波形で探す ── <b>ドラムが加速して一瞬止まり、その直後に波形が最大に跳ね上がる点</b></li>
-      <li>拡大して立ち上がりにカーソルを合わせ、「選択範囲の開始」を<b>小数第1位まで</b>読む → これを <b>T</b> とする</li>
-      <li>2回測って同じ値になることを確認する</li>
-    </ol>
+    <h2>✔ 秒数は音源で実測済みです（2026/8/10）</h2>
+    <p>提供された音源ファイルを解析し、<b>すべての秒数を実測値で確定しました</b>。以下は推定ではなく計測値です。</p>
     <div class="tablewrap">
       <table class="measure">
-        <tr><th>実測日</th><td>　</td><th>測定者</th><td>　</td></tr>
-        <tr><th>T（キメの秒数）</th><td>　　　．　 秒</td><th>音源</th><td>　</td></tr>
+        <tr><th>冒頭のデジタル無音</th><td>0.000 – 1.570 s</td><th>テンポ</th><td>137.81 BPM</td></tr>
+        <tr><th>イントロ（歌なし）</th><td>1.570 – 29.211 s</td><th>1小節</th><td>1.7415 s</td></tr>
+        <tr><th>キメ＝ボーカルイン</th><td>29.211 s</td><th>全尺</th><td>39.660 s</td></tr>
       </table>
     </div>
-    <p><b>T が 22.0 ± 0.2 秒なら、この絵コンテのまま制作して構いません。</b>そうでなかった場合は <b>CUT 02（シルエット）の長さだけ</b>を <b>T − 12.0 秒</b> に直します（現在は 10.0 秒）。黒み3秒と歩き9秒は<b>長さ自体に意味がある</b>ので変えません。全尺は <b>T ＋ 11.0 秒</b> になります。</p>
-    <p style="color:var(--ink-2)">※ <b>「動画の再生を遅らせて合わせる」方式は採らないでください。</b>PC担当が音楽スタートから数秒待って再生する運用は本番で必ず事故ります。音楽と動画は同時スタートのまま、動画側の尺で合わせます。</p>
+    <p><b>ボーカルの入りを実測で確認しました。</b>センター定位の声帯域エネルギーが29秒手前まで約2dBで一定、<b>29.2秒で5〜8dBに跳ね上がります</b>。ここで初めて声が入り、同時に曲の最初の1分で最大の一撃が来ます。直前でブレイクして音が引く構造なので、<b>キメとしてこれ以上の場所はありません。</b></p>
+    <p style="color:var(--accent)"><b>旧版の「22秒」は誤りでした。</b>実測すると22秒地点では何も起きておらず、小節線ですらありません。あのまま制作していれば、爆発が約7秒早く鳴っていました。</p>
+    <p style="color:var(--ink-2)">検出した主要オンセット（15.296 / 18.776 / 25.731 / 29.211 / 32.688 / 36.168 / 39.645 s）が<b>すべて 1.7415 秒の小節グリッドに一致</b>。グリッドは信頼して構いません。</p>
   </section>
 
   <section class="timeline">
-    <p class="section-label">Timing — 33秒の割り付け（T＝22.0秒を前提とした暫定値）</p>
+    <p class="section-label">Timing — 39.66秒の割り付け（実測確定）</p>
     <div class="ruler">
-      <div class="seg" style="flex: 3"><b>黒み</b><span>3s 固定</span></div>
-      <div class="seg" style="flex: 10"><b>シルエット・煽り</b><span>T−12s ←調整</span></div>
-      <div class="seg" style="flex: 5"><b>歩き（遠）</b><span>5s 固定</span></div>
-      <div class="seg" style="flex: 4"><b>歩き（寄り）</b><span>4s 固定</span></div>
-      <div class="seg hit" title="22秒 ワッショイ＝爆発"></div>
-      <div class="seg" style="flex: 7"><b>踊り</b><span>7s</span></div>
-      <div class="seg" style="flex: 4"><b>着地・会釈</b><span>4s</span></div>
+      <div class="seg" style="flex: 3.09"><b>黒み</b><span>3.09s</span></div>
+      <div class="seg" style="flex: 12.19"><b>シルエット・煽り</b><span>12.19s</span></div>
+      <div class="seg" style="flex: 5.0"><b>歩き（遠）</b><span>5.00s</span></div>
+      <div class="seg" style="flex: 8.93"><b>歩き（寄り）＋カウントダウン</b><span>8.93s</span></div>
+      <div class="seg hit" title="29.211秒 ボーカルイン＝爆発"></div>
+      <div class="seg" style="flex: 6.97"><b>踊り</b><span>6.97s ＝4小節</span></div>
+      <div class="seg" style="flex: 3.48"><b>着地・会釈</b><span>3.48s ＝2小節</span></div>
     </div>
     <div class="ruler-foot">
       <span>00:00</span>
-      <span>T ＝ 楽曲のキメ ＝ 爆発</span>
-      <span>00:33</span>
+      <span>29.211 ＝ ボーカルイン ＝ 爆発</span>
+      <span>39.66</span>
     </div>
   </section>
 
   <section class="rules">
     <div class="rule-card">
-      <p class="tc">Cue order</p>
-      <h3>音楽が先、動画が後</h3>
-      <p>演者の合図 → 音響が楽曲スタート → 0.5〜1秒以内にPCが動画スタート。冒頭3秒の黒みがこのズレを吸収します。逆順は厳禁。</p>
+      <p class="tc">Cue — same instant</p>
+      <h3>音楽と動画は「同時」に出す</h3>
+      <p>音源の冒頭1.57秒は完全な無音なので、先に音を出しても何も聞こえません。<b>黒みはズレを吸収しません</b> ── 動画が0.5秒遅れれば爆発も0.5秒遅れます。可能なら1人が両方を出してください。</p>
     </div>
     <div class="rule-card">
-      <p class="tc">T sec — 実測して固定</p>
-      <h3>爆発はキメの瞬間に置く</h3>
-      <p>楽曲の最大の一撃と、映像の最大の一撃「爆発」を同じ瞬間に重ねます。ここがズレると全部が半減します。<b>位置は上の実測値 T で決めてください。</b></p>
+      <p class="tc">29.211 sec — 実測確定</p>
+      <h3>爆発はボーカルインに当てる</h3>
+      <p>曲の最初の1分で最大の一撃と、映像の最大の一撃「爆発」を同じ瞬間に重ねます。<b>白は一瞬で出さず4〜6フレームかけて駆け上がらせる</b>と、多少のズレが演出に見えます。</p>
     </div>
     <div class="rule-card">
-      <p class="tc">22.0 → 33.0 sec</p>
+      <p class="tc">29.2 → 39.7 sec</p>
       <h3>お札は通しで降らせる</h3>
       <p>爆発から最後の会釈まで、お札を途切れさせません。カットごとに置かず、繋いだ上のレイヤーに1本で乗せます。</p>
     </div>
@@ -676,7 +671,7 @@
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>01</div>
-        <div class="tcbox"><b>00.0 – 03.0</b>3.0 sec</div>
+        <div class="tcbox"><b>0.000 – 3.088</b>3.09 sec</div>
         <span class="tag pre">合意前に制作可</span>
       </div>
       <div class="pic">
@@ -698,7 +693,7 @@
           <li>画は一切入れない。ロゴもテロップも出さない</li>
           <li>会場が静まり、「何か始まる」と身構える3秒</li>
           <li><b>この3秒があるおかげで、音楽と動画の再生ズレが目立ちません。</b>削らないでください</li>
-          <li><b>長さは固定。</b>T がズレても、ここは3.0秒のまま変えません</li>
+          <li>音源の冒頭 1.570 秒は<b>ファイル自体が無音</b>。ここは何もしなくても黒み＋無音になります</li>
         </ul>
         <dl class="field">
           <dt>SOUND</dt><dd>イントロ</dd>
@@ -711,7 +706,7 @@
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>02</div>
-        <div class="tcbox"><b>03.0 – 13.0</b>T − 12.0 sec</div>
+        <div class="tcbox"><b>3.088 – 15.279</b>12.19 sec</div>
         <span class="tag pre">合意前に制作可</span>
       </div>
       <div class="pic">
@@ -751,12 +746,11 @@
           <li>スーツ姿の人物が、強い逆光の中に<b>動かずに立っている</b></li>
           <li>顔は完全に潰す。誰なのかを<b>まだ明かさない</b>のがこのカットの仕事</li>
           <li>テロップはサイバー風フォント。グリッチ／スキャンラインを薄く重ねる</li>
-          <li>🚨 <b>尺の調整はこのカットで行う。</b>長さは <b>T − 12.0 秒</b>（Tが22.0なら10.0秒）。
-            何も起きないカットなので、伸縮しても誰も気づきません</li>
+          <li>長さは <b>12.19秒（7小節）</b>。15.279秒で曲の構成が変わるので、そこで次のカットへ切り替えます</li>
         </ul>
         <dl class="field">
           <dt>テロップ</dt><dd><em>「我が社に、AI化された最強のボスが降臨する…」</em></dd>
-          <dt>SOUND</dt><dd>じわじわ盛り上がる区間</dd>
+          <dt>SOUND</dt><dd>イントロ。じわじわ盛り上がる区間（ボーカルなし）</dd>
           <dt>制作</dt><dd>seedance で生成、テロップは編集ソフトで後乗せ</dd>
         </dl>
         <pre>backlit silhouette of a businessman in a suit standing
@@ -769,7 +763,7 @@ cinematic, 10 seconds</pre>
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>03</div>
-        <div class="tcbox"><b>13.0 – 18.0</b>5.0 sec</div>
+        <div class="tcbox"><b>15.279 – 23.986</b>8.71 sec</div>
         <span class="tag pre">合意前に制作可</span>
       </div>
       <div class="pic">
@@ -803,17 +797,17 @@ cinematic, 10 seconds</pre>
         <p class="cap">WS ／ 寄りながら ／ 逆光の歩き</p>
       </div>
       <div class="notes">
-        <h3>歩き出す ── 遠景から、こちらへ</h3>
+        <h3>歩き出す ── 15.279秒、曲の構成が変わる</h3>
         <ul>
           <li><b>逆光・煙・光の筋</b>の中を、ゆっくりこちらへ歩いてくる</li>
           <li>顔はまだ飛ばしたまま。<b>逆光にしておくので本人素材が要りません</b></li>
           <li><b>ローアングル（あおり）</b>で撮ると威圧感が出て、格段にカッコよくなります</li>
-          <li>CUT 03 と 04 は<b>切らずに1カット</b>。カメラが寄っていくだけです</li>
-          <li><b>03＋04で9.0秒は固定。</b>キメへの助走なので、Tがズレても長さを変えません</li>
+          <li>CUT 03 と 04 は<b>切らずに1カット</b>。カメラが寄っていくだけで、04でカウントダウンが乗ります</li>
+          <li><b>15.279秒は実測で強いオンセット</b>が出た地点。ここで歩き出すと音と完全に合います</li>
         </ul>
         <dl class="field">
-          <dt>テロップ</dt><dd>カウントダウン「3」を歩きの上に重ねる（別カットにしない）</dd>
-          <dt>SOUND</dt><dd>ドラムが加速する区間。数字はドラムの刻みに合わせる</dd>
+          <dt>テロップ</dt><dd>このカットにはまだ入れない（カウントダウンは 23.986秒＝CUT 04 から）</dd>
+          <dt>SOUND</dt><dd>15.279秒で新しい要素が入る区間（実測でオンセット検出）</dd>
         </dl>
         <pre>a businessman in a suit walking slowly toward the camera
 in silhouette, strong backlight, smoke and light beams,
@@ -825,7 +819,7 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>04</div>
-        <div class="tcbox"><b>18.0 – T</b>4.0 sec</div>
+        <div class="tcbox"><b>23.986 – 29.211</b>5.23 sec</div>
         <span class="tag pre">合意前に制作可</span>
       </div>
       <div class="pic">
@@ -854,15 +848,16 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
         <p class="cap">BS ／ ローアングル ／ カメラ目前まで</p>
       </div>
       <div class="notes">
-        <h3>寄り切る ── 22秒で目の前に到達</h3>
+        <h3>カウントダウン ── 29.2秒で目の前に到達</h3>
         <ul>
-          <li>CUT 03 の続き。<b>22.0秒の時点で胸から上まで寄っている</b>構図にする</li>
-          <li>ここで<b>近づいてくる緊張が最大</b>になる。次の一撃のための溜め</li>
-          <li>歩きが遅すぎると間延びします。リハで<b>「キメの瞬間に到達しているか」</b>を必ず見る</li>
+          <li>CUT 03 の続き。<b>29.211秒の時点で胸から上まで寄っている</b>構図にする</li>
+          <li>カウントダウンが<b>1小節ごとに1数字</b>で刻まれ、近づいてくる緊張が最大になる</li>
+          <li><b>27.470秒（「1」）で曲がブレイクして音が引きます。</b>画も一度静めて、白く飽和させ始める</li>
+          <li>歩きが遅すぎると間延びします。<b>29.211秒で到達しているか</b>を必ず見る</li>
         </ul>
         <dl class="field">
-          <dt>テロップ</dt><dd>カウントダウン「2」「1」（1つ約2.3秒）</dd>
-          <dt>SOUND</dt><dd>ドラム最高潮。次の小節頭がキメ</dd>
+          <dt>テロップ</dt><dd>「3」<b>23.986</b> ／「2」<b>25.728</b> ／「1」<b>27.470</b> 秒。<b>1数字＝1小節＝1.7415秒</b>。小節頭に置くだけで音に合います</dd>
+          <dt>SOUND</dt><dd>ドラムが最高潮 → <b>27.47秒でブレイク</b> → 次の小節頭（29.211）がキメ</dd>
         </dl>
       </div>
     </article>
@@ -871,7 +866,7 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
     <article class="sheet keyframe">
       <div class="spine">
         <div class="cutno"><small>CUT</small>05</div>
-        <div class="tcbox"><b>T</b>キメ / 一瞬</div>
+        <div class="tcbox"><b>29.211</b>キメ / 一瞬</div>
         <span class="tag post">要・本人素材</span>
       </div>
       <div class="keyblock">
@@ -910,7 +905,7 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
           <h3>立ち止まる、背後が爆発する、お札が舞う</h3>
           <ul>
             <li><b>歩きの終点 ＝ 爆発 ＝ 楽曲のキメ</b>を、同じ1フレームに揃える</li>
-            <li>ここで<b>初めて顔がはっきり見える</b>。前振りのすべてがこの瞬間のため</li>
+            <li>ここで<b>初めて顔がはっきり見える</b>。前振り29秒はすべてこの瞬間のため</li>
             <li>順序は <b>白フラッシュ（2〜3コマ）→ 爆発 → お札が舞い始める</b></li>
             <li>爆発を背にカメラ目前で立ち止まる ── ヒーローものの王道の構図</li>
           </ul>
@@ -926,7 +921,7 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>06</div>
-        <div class="tcbox"><b>T – T+7.0</b>7.0 sec</div>
+        <div class="tcbox"><b>29.211 – 36.177</b>6.97 sec</div>
         <span class="tag post">要・本人素材</span>
       </div>
       <div class="pic">
@@ -972,7 +967,7 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
           <li>お札はCUT 05から<b>途切れさせない</b>。カットの継ぎ目で消さないこと</li>
         </ul>
         <dl class="field">
-          <dt>SOUND</dt><dd>サビ・超アゲアゲ地帯</dd>
+          <dt>SOUND</dt><dd>ボーカルが入り、曲がサビへ突入する区間</dd>
           <dt>制作</dt><dd>seedance で生成（引き直し前提）。お札は上のレイヤーで通しで乗せる</dd>
         </dl>
         <pre>a confident businessman in a shiny gold suit dancing
@@ -986,7 +981,7 @@ cinematic, 7 seconds</pre>
     <article class="sheet">
       <div class="spine">
         <div class="cutno"><small>CUT</small>07</div>
-        <div class="tcbox"><b>T+7.0 – T+11.0</b>4.0 sec</div>
+        <div class="tcbox"><b>36.177 – 39.660</b>3.48 sec</div>
         <span class="tag post">要・本人素材</span>
       </div>
       <div class="pic">
@@ -1042,8 +1037,8 @@ stage lights dim, 4 seconds</pre>
   </section>
 
   <section class="bridge">
-    <h2>33.0秒 → #2 AI挨拶へ</h2>
-    <p>暗転したら、演者が短く受けます ──「……<b>登場！</b>」（2〜3秒）。映像がすでに着地しているので、煽らずに即つなぎます。音響はこの間に楽曲をフェードアウト。<b>1:36 から #2 の挨拶（24秒）</b>、<b>#3 クイズの開始は 2:00 のまま</b>です。</p>
+    <h2>39.66秒 → #2 AI挨拶へ</h2>
+    <p>暗転したら、演者が短く受けます ──「……<b>登場！</b>」（2〜3秒）。映像がすでに着地しているので、煽らずに即つなぎます。音響はこの間に楽曲をフェードアウト。<b>1:43 から #2 の挨拶（24秒）</b>、<b>#3 クイズの開始は 2:07</b> になります（実測で動画が6.7秒伸びたぶん、全体が後ろへ。15分枠のバッファで吸収します）。</p>
     <blockquote>「……ただいまの映像、現金が大量に舞っておりましたが。<br>　私、キャッシュレス推進派でございます。」</blockquote>
     <p>#2 の<b>1文目はこれで固定</b>します。決済会社の社長が現金を降らせているという、この映像でいちばん大きな違和感を、AI本人に拾わせて笑いに変換する仕掛けです。<b>お札の演出を採用するなら、この書き出しは必ずセットで使ってください。</b></p>
   </section>
