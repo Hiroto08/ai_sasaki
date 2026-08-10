@@ -35,6 +35,7 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | 1 | [**docs/EVENT_RUNDOWN.md**](docs/EVENT_RUNDOWN.md) | 15分の構成・費用・全体像 |
 | 2 | [**docs/BUILD_GUIDE.md**](docs/BUILD_GUIDE.md) | **構築手順書**。各作業を1手ずつ |
 | 3 | [**docs/SERVICE_SETUP.md**](docs/SERVICE_SETUP.md) | HeyGen／ElevenLabs／seedance の画面操作 |
+| 3.4 | [**docs/AVATAR_LOOK.md**](docs/AVATAR_LOOK.md) | **アバターのルック設計と背景生成プロンプト**（#2挨拶・#3クイズ・#4ループ） |
 | 3.5 | [**docs/OPENING_VIDEO.md**](docs/OPENING_VIDEO.md) | **オープニング動画のシンクロシート**（36.18秒・**音源を解析して秒数確定済み**） |
 | 3.6 | [**docs/storyboard.html**](docs/storyboard.html) | **絵コンテ**（7カットの画・秒数・演出メモ）。ブラウザで開く／印刷可。**8/20に本人へ見せる用** |
 | 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
