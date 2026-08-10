@@ -107,7 +107,7 @@ AIが大真面目な顔で就任会見のように喋る──**そのギャッ�
 
 ## 3. 背景の生成プロンプト
 
-画像生成AI（Midjourney / DALL·E / Ideogram など）または seedance で作ります。
+画像生成AI（Midjourney / DALL·E / Ideogram など）または HeyGen の AI Video Generator で作ります。
 **16:9・無人・無文字**が共通の条件です。
 
 ### 3-A　本命：企業スタジオ（★これを推奨）

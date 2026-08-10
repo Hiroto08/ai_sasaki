@@ -79,7 +79,7 @@
 
 > 💡 **「踊り」を捨てたことで得たもの**
 > 1. **いちばん作りにくい素材が消えた。**「金のスーツでキレッキレに踊る」は
->    seedanceで最も引き直しが多く、8/20の撮影素材への依存も最大でした。
+>    生成で最も引き直しが多く、8/20の撮影素材への依存も最大でした。
 >    正体を明かして決めるだけなら、**ほぼ静止の画**で成立します
 > 2. **#2への繋ぎ問題が設計から消えた。** 踊り狂ったまま終わらないので、
 >    「爆アゲ→淡々とした挨拶で冷える」という温度差そのものが発生しません
@@ -137,7 +137,139 @@
 
 ## 3. 制作手順
 
-使用ツール：**seedance**（AI動画生成）＋ 無料の編集ソフト（CapCut / Clipchamp など）
+使用ツール：**HeyGen の AI Video Generator（Seedance 2）** ＋ 無料の編集ソフト（CapCut / Clipchamp など）
+
+> 💡 HeyGenには2つの別機能があります。混同しないでください。
+> - **Avatar（Video Avatar）** … #2・#3・#4 用。本人の同意動画が必要（[`AVATAR_LOOK.md`](AVATAR_LOOK.md)）
+> - **AI Video Generator（Seedance 2）** … ★**このオープニング用。同意なしで今すぐ使える**
+
+---
+
+### 3-0　ツールの制約と、その回し方 ★先に読む
+
+#### 制約①　1回の生成が10秒
+
+全尺36.18秒なので、**分割生成して編集で繋ぎます。**
+幸い、**現在の構成は全カットが10秒以内に設計済み**です。
+
+| カット | 必要尺 | 生成のしかた |
+|---|---|---|
+| シルエット（3.09–15.28） | 12.19秒 | 10秒生成 → 編集で**82%スロー**（ほぼ静止なので気づかれない） |
+| 歩き（15.28–29.21） | 13.93秒 | 10秒生成 → **72%スロー**。★**むしろカッコよくなる** |
+| 正体判明（29.21–32.69） | 3.48秒 | 10秒生成 → 使う部分だけ切り出す |
+| キメ（32.69–36.18） | 3.48秒 | 同上 |
+
+> 💡 **歩きをスローにするのはヒーロー登場の定番**です。
+> 10秒しか作れない制約は、この構成では**むしろ好都合**です。
+
+#### 制約②　カット間の一貫性 ── 先に「参照画像」を2枚作る
+
+**これをやらないと、カットごとに人物も舞台も別物になります。**
+
+| 参照 | 中身 | 用途 |
+|---|---|---|
+| **image1** | 逆光のスーツ姿シルエット（顔は飛んでいる） | **人物の基準** |
+| **image2** | 暗いステージ・無人・光の筋と煙 | **場所の基準** |
+
+この2枚を**全カットで参照**すれば、同じ人物が同じ場所にい続けます。
+2枚は画像生成AIで作るか、Seedanceで1枚生成して静止画として書き出せば十分です。
+
+**参照画像の生成プロンプト**
+
+```
+image1:
+backlit silhouette of a businessman in a suit standing confidently,
+face completely in shadow, dark stage, haze, blue and gold rim light,
+cinematic, 16:9
+
+image2:
+an empty dark concert stage, no people, haze and smoke, strong
+backlight beams from behind, low angle, cinematic, moody, 16:9
+```
+
+#### 共通設定
+
+- **10s ／ 1080p ／ 16:9**
+- 🚨 **Music はオフ。** 動画は無音で書き出す必要があります（§4）
+  → 生成物に音が付いた場合は、編集ソフトで音声トラックを削除
+- **生成しないもの**：黒み（黒コマ）／カウントダウン（テロップ）／爆発・お札（オーバーレイ素材）
+
+#### 試作は「歩き」1本から
+
+黒みや爆発は生成不要です。**いちばん失敗しやすく、いちばん効くのは歩き**なので、
+クレジットを使うならまずここに使ってください。
+
+**✅ 参照画像2枚ができ、歩きの試作が1本出た**
+
+---
+
+### 3-0-2　カット別 生成プロンプト（HeyGen / Seedance 2）
+
+**すべて「参照から動画へ」モード。10s / 1080p / 16:9。**
+
+#### GEN-1　シルエット（本編 3.09–15.28秒 に使う）
+
+```
+Reference the location of image2. image1 stands completely still in
+silhouette at the center of the frame, strong backlight from behind,
+haze and light beams. The camera pushes in very slowly.
+One continuous shot, no cuts. Dark, cinematic, no text, no logos.
+```
+
+`▸ 編集で82%スローにして12.19秒に伸ばす。ほぼ静止なので違和感は出ない。`
+`▸ 煽りテロップは編集ソフトで後乗せ（生成に文字を入れさせない）。`
+
+#### GEN-2　歩き ★最重要・ここから試作する（本編 15.28–29.21秒）
+
+```
+Reference the location of image2. image1 walks slowly toward the
+camera in silhouette, strong backlight from behind, haze and light
+beams, low angle. One continuous shot, camera slowly pushes in.
+The shot ends with him standing still close to the camera,
+chest-up framing. Dark, cinematic, no text, no logos.
+```
+
+`▸ 編集で72%スローにして13.93秒に伸ばす。スローのほうが格好よくなる。`
+`▸ ★到達点で「胸から上」まで寄っているか。ここだけは何度でも引き直す。`
+`▸ カウントダウン 3・2・1 はこの上にテロップで重ねる（生成しない）。`
+
+#### GEN-3　正体判明（本編 29.21–32.69秒）★8/20以降
+
+**本人の正面写真を image3 として追加してから生成します。**
+
+```
+image3 stands still facing the camera in a shiny gold suit, bright
+front spotlight revealing his face clearly, banknotes falling all
+around him, slight confident expression, minimal movement.
+One continuous shot, no text, no logos.
+```
+
+`▸ ほとんど動かなくてよい。顔が見えることがこのカットの仕事。`
+`▸ お札は生成に任せず、編集でオーバーレイを重ねたほうが揃う（3-A-5）。`
+
+#### GEN-4　キメ（本編 32.69–36.18秒）★8/20以降
+
+```
+image3 in a gold suit straightens his tie with one hand, looks
+straight at the camera and bows slightly, banknotes still falling
+around him, stage lights dim at the end.
+One continuous shot, no text, no logos.
+```
+
+`▸ 「ネクタイを直す → 会釈」の順序が出るまで引き直す。ここが締めのカット。`
+
+#### 8/20前に試作するとき（本人の顔なし）
+
+**顔を使わなければ、同意前でも生成できます。**（同意が要るのはアバター作成であって、
+シルエット生成ではありません）
+
+- GEN-1 / GEN-2 は**そのまま試作できます**
+- GEN-3 / GEN-4 は image3 を**自分の顔**か**逆光のシルエットのまま**にして、
+  **構図とタイミングだけ**確認しておく
+
+**✅ 試作で確認するのは「顔」ではなく、構図・動き・光・テンポです**
+
+---
 
 ### 3-A　先行して作れる部分（〜8/19）★本人素材不要
 
@@ -185,11 +317,11 @@
 **29.211–36.177秒**（正体判明＋キメ）は、本人の顔を使うなら合意後です。**2カット、いずれも動きは最小限。**
 
 > ✅ **踊らせないので、生成の難易度が一気に下がりました。**
-> 「金のスーツでキレッキレに踊る」は seedance で最も引き直しが多いカットでしたが、
+> 「金のスーツでキレッキレに踊る」は生成で最も引き直しが多いカットでしたが、
 > **立って決めるだけ**なら、ほぼ静止の画で成立します。
 
 1. 8/20に撮影した**正面の映像・静止画**を素材にする
-2. seedance で生成（**カット①：29.211–32.694秒／正体判明／3.48秒＝2小節**）
+2. 生成（**カット①：29.211–32.694秒／正体判明／3.48秒＝2小節**・GEN-3）
    - プロンプト例：
      ```
      a confident businessman in a shiny gold suit standing still and facing
@@ -197,7 +329,7 @@
      him, slight smile, subtle motion, cinematic, 4 seconds
      ```
    - **ほとんど動かなくてよい。**光が当たって顔が見えることがこのカットの仕事
-3. seedance で生成（**カット②：32.694–36.177秒／キメ／3.48秒＝2小節**）
+3. 生成（**カット②：32.694–36.177秒／キメ／3.48秒＝2小節**・GEN-4）
    - プロンプト例：
      ```
      a businessman in a gold suit straightens his tie, looks at the camera

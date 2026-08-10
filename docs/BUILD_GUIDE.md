@@ -33,7 +33,7 @@
 
 ```
 ┌─ 動画 7本 ────────────────────────┐
-│ 01_opening.mp4       #1 オープニング │ ← seedance（P3）
+│ 01_opening.mp4       #1 オープニング │ ← Seedance 2（P3）
 │ 02_greeting.mp4      #2 AI挨拶      │ ← HeyGen（P3）
 │ 03〜07_qN_reveal.mp4 #3 正解発表 5本 │ ← HeyGen（P3）
 │ 08_loop.mp4          #4 ループ用     │ ← HeyGen（P3）
@@ -108,7 +108,7 @@
 
 - [ ] HeyGen　Creator $49/月　**必ず Monthly**
 - [ ] ElevenLabs　Creator $11/月　**必ず Monthly**
-- [ ] seedance（オープニング動画用。料金プランを確認し、**サブスクなら必ず Monthly**）
+- [ ] （オープニング動画は **HeyGenのAI Video Generator（Seedance 2）** を使うため、追加契約は不要）
 
 > ⚠️ 年額を選ぶと途中解約できません。3つとも**月額**であることを申込画面で確認。
 
@@ -562,7 +562,7 @@ gcloud run deploy ai-shacho \
 ### 8-1　解約する 【担当：＿＿＿】20分
 - [ ] HeyGen を解約
 - [ ] ElevenLabs を解約
-- [ ] seedance を解約（サブスクの場合）
+- [ ] （オープニング用の追加契約はなし。HeyGenの解約で完了）
 - [ ] 解約完了メールを保存
 
 ### 8-2　削除する 【担当：＿＿＿】20分
