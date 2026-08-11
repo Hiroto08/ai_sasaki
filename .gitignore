@@ -7,3 +7,8 @@ node_modules/
 
 # 音声合成のキャッシュ（本人の声のため共有しない）
 data/cache/
+
+# 制作素材（本人の顔・声を含む／大きなバイナリ）
+# assets/README.md だけは共有し、中身はコミットしない
+assets/*
+!assets/README.md

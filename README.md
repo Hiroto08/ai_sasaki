@@ -135,6 +135,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `data/knowledge.md` | 公開情報ナレッジベース（出典付き） |
 | `Dockerfile` | Cloud Runデプロイ用（依存ゼロのまま） |
 | `scripts/loadtest.js` | 200人同時の負荷テストスクリプト |
+| `assets/README.md` | **制作素材の置き場所**（参照画像・生成動画・本人素材・完成品）。中身はコミットしない |
 | `docs/DEPLOY_GUIDE.md` | **Google Cloud初心者向けデプロイ手順書** |
 | `docs/APP_DESIGN.md` | **イベント版 要件定義・設計書**（QR入場・合言葉・辛口モード・無料枠構成） |
 | `docs/PLAN.md` | 構築計画書（事例リサーチ・アーキテクチャ・ロードマップ） |
