@@ -427,40 +427,118 @@ Dark, cinematic, no text, no logos.
 `▸ スローは生成側（slow motion）で出す。編集で引き伸ばさない。`
 `▸ カウントダウン 3・2・1 はこの上にテロップで重ねる（生成しない）。`
 
-#### GEN-3　正体判明＋キメ（本編 29.21–36.18秒）／**生成 10秒**★8/20以降
+#### GEN-3　正体判明＋キメ（本編 29.21–36.18秒）／**生成 10秒**★本人合意後
 
-**本人の正面写真を image3 として追加してから生成します。**
 **2つの動作を1本の連続ショットで撮り、カットの繋ぎ目をなくします。**
 
+##### 参照画像は2枚。順番が重要です
+
+| アップロード順 | 中身 | 役割 | 保存先 |
+|---|---|---|---|
+| **1枚目 → image1** | **歩きの最終フレーム**（到達して止まった瞬間） | **構図・位置・カメラ角度の基準** | `assets/opening/ref/walk_frameLast.png` |
+| **2枚目 → image2** | **本人の正面写真** | **顔の基準** | `assets/opening/ref/person_front.png` |
+
+> 🚨 **歩きの最終フレームを必ず参照してください。**
+> これがないと、29.211秒の切り替わりで**人物の位置と大きさが飛びます**。
+> せっかく歩いてきたのに、**別の場所に立っている人**が現れることになります。
+>
+> 💡 GEN-1 で「歩きの1フレーム目」を使ったのと同じ理屈です。
+> **前のカットの端のフレームを参照する**のが、この構成の一貫した作り方です。
+
+##### 本命プロンプト
+
 ```
-image3 in a shiny gold suit stands still facing the camera under a
-bright front spotlight, banknotes falling all around him. He then
-straightens his tie with one hand, looks straight at the camera and
-bows slightly. Stage lights dim at the end.
-One continuous shot, no text, no logos.
+Reference the framing, camera angle and lighting of image1 (the final
+frame of the previous shot). The man standing there is image2.
+Same position, same chest-up framing, same low camera angle.
+A bright front spotlight now lights his face clearly. He wears a
+shiny gold suit. Banknotes fall all around him.
+He stands still with a slight confident expression, then straightens
+his tie with one hand, looks straight into the camera and bows
+slightly. The stage lights dim at the end.
+One continuous shot, no cuts, no text, no logos.
 ```
 
+**ネガティブプロンプト**
+
+```
+text, letters, watermark, logo, brand, crowd, second person,
+dancing, exaggerated movement, cartoon, distorted face,
+deformed hands, extra fingers, extra limbs
+```
+
+> 🚨 **`dancing` と `second person` は必ず入れてください。**
+> 参照が2枚あると**人物が2人になる**ことがあります。
+> また「登場シーン」の学習データに引きずられて**勝手に踊り出す**ことがあります。
+
+##### ★このカットで最も失敗するのは「手」です
+
+**ネクタイを直す動作は、手が顔の近くに来ます。** ここがAI生成の鬼門で、
+指が増えたり崩れたりします。**顔と手が同時に映るこのカットは、
+全生成の中で最も引き直しが多くなります。**
+
+**数回引いてダメなら、手を使わない版に切り替えてください。品質は落ちません。**
+
+```
+Reference the framing, camera angle and lighting of image1 (the final
+frame of the previous shot). The man standing there is image2.
+Same position, same chest-up framing, same low camera angle.
+A bright front spotlight now lights his face clearly. He wears a
+shiny gold suit. Banknotes fall all around him.
+He stands still with a slight confident expression, then slowly
+lowers his chin and bows toward the camera. His hands stay relaxed
+at his sides and stay out of frame. The stage lights dim at the end.
+One continuous shot, no cuts, no text, no logos.
+```
+
+`▸ hands stay out of frame で手を画面外に追い出す。`
+`▸ 会釈だけでもキメは十分成立します。無理にネクタイを入れない。`
+
+##### 金のスーツを使わない場合
+
+金のスーツが会社の空気に合わないと判断した場合は、
+プロンプトの `He wears a shiny gold suit.` を次に差し替えます。
+
+```
+He wears the same dark suit as in the previous shot.
+```
+
+`▸ シルエットは黒なので、どちらでも前のカットとの矛盾は生じません。`
+`▸ ただし金のスーツのほうが「祭り」として効きます。合意が取れているなら金を推奨。`
+
+##### 採否の判定
+
+- [ ] **顔がはっきり見え、本人と分かる** ← このカットの本題
+- [ ] **歩きの最終フレームと、位置・大きさ・カメラ角度が一致している**
+- [ ] **顔が崩れていない**（★最頻出の失敗）
+- [ ] **手が崩れていない**（指の本数・形。手を使う版の場合）
+- [ ] **踊っていない**
+- [ ] お札が降っている（または後から重ねられる余地がある）
+- [ ] 人物が1人だけ
+
 `▸ 10秒生成から、必要な6.97秒を切り出す。`
-`▸ 前半（静止）と後半（ネクタイ→会釈）の配分は編集で決める。`
-`▸ お札は生成に任せず、編集でオーバーレイを重ねたほうが揃う（3-A-5）。`
+`▸ 前半（静止）と後半（会釈）の配分は編集で決める。`
+`▸ お札は生成に任せず、編集でオーバーレイを重ねたほうが全カットで揃う（3-A-5）。`
 
 **一連でうまく出ない場合は2本に分ける**
 
 ```
 GEN-3a（10秒／正体判明）:
-image3 stands still facing the camera in a shiny gold suit, bright
-front spotlight revealing his face clearly, banknotes falling all
-around him, slight confident expression, minimal movement.
-One continuous shot, no text, no logos.
+Reference the framing and lighting of image1. The man standing there
+is image2. Same position, same chest-up framing. A bright front
+spotlight lights his face clearly. He wears a shiny gold suit.
+Banknotes fall around him. He stands still with a slight confident
+expression, minimal movement. One continuous shot, no text, no logos.
 
 GEN-3b（10秒／キメ）:
-image3 in a gold suit straightens his tie with one hand, looks
-straight at the camera and bows slightly, banknotes still falling
-around him, stage lights dim at the end.
+image2 in a gold suit, chest-up framing, low camera angle, bright
+front spotlight. He looks straight into the camera and bows slightly.
+Banknotes still falling around him. Stage lights dim at the end.
 One continuous shot, no text, no logos.
 ```
 
 `▸ 2本に分けると、片方だけ引き直せる利点があります。`
+`▸ 分けた場合は、32.694秒の継ぎ目を0.2秒のカット割りで繋ぐ（フェードしない）。`
 
 #### 8/20前に試作するとき（本人の顔なし）
 
