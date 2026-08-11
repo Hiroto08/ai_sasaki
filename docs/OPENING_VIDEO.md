@@ -198,18 +198,105 @@
 この2枚を**全カットで参照**すれば、同じ人物が同じ場所にい続けます。
 2枚は画像生成AIで作るか、Seedanceで1枚生成して静止画として書き出せば十分です。
 
-**参照画像の生成プロンプト**
+> 🚨 **作る順番は image2 →  image1 です。**
+> 先に場所を決め、**その場所に人を立たせて image1 を作る**。
+> 逆順だと、人物と背景の光の向きが噛み合わなくなります。
+
+---
+
+##### ■ image2（場所の基準）── 先にこれを作る
+
+**この1枚で GEN-1 と GEN-2 の質がほぼ決まります。** 4点を満たすことが条件です。
+
+| 条件 | なぜ必要か |
+|---|---|
+| **奥行きがある** | 人物が「歩いてくる」ので、**来る場所**が要る。平らな舞台だと歩きが成立しない |
+| **光源が奥・背後にある** | 逆光シルエットの構成。光が手前や横にあると全部崩れる |
+| **中央が空いている** | そこに人物が立つ |
+| **まだ暗い** | 29.211秒で爆発が起きる。**明るさの余地**を残す。最初から白く飛んでいると爆発が効かない |
+
+**本命プロンプト**
 
 ```
-image1:
-backlit silhouette of a businessman in a suit standing confidently,
-face completely in shadow, dark stage, haze, blue and gold rim light,
-cinematic, 16:9
-
-image2:
-an empty dark concert stage, no people, haze and smoke, strong
-backlight beams from behind, low angle, cinematic, moody, 16:9
+An empty dark concert stage seen from a low camera angle, deep
+perspective receding into the background, no people, no text,
+no logos. A single powerful light source far behind at the center,
+throwing long visible beams forward through thick haze. Dark blue
+and cool grey tones with a faint gold rim on the edges. Glossy dark
+floor with soft reflections of the beams. The center of the frame is
+completely empty. Overall very dark and underexposed, cinematic,
+anamorphic, shallow depth of field, 16:9
 ```
+
+**ネガティブプロンプト**（対応するツールでは必ず入れる）
+
+```
+people, person, silhouette of a person, crowd, audience, text,
+letters, watermark, logo, brand, cluttered stage equipment,
+musical instruments, bright overall exposure, daylight
+```
+
+> 🚨 **`people` を必ず外してください。**
+> image2 に人が写っていると、**生成時に人物が2人になります**（image1 と重複）。
+
+**代替案A：回廊・トンネル（奥行きが最も強く出る）**
+
+```
+A long dark industrial corridor receding into the distance, seen from
+a low camera angle, no people, no text, no logos. Strong backlight at
+the far end silhouetting the corridor, thick haze, visible light
+beams, wet reflective concrete floor, cool blue tones with faint warm
+edges. The center is completely empty. Very dark, moody, cinematic,
+shallow depth of field, 16:9
+```
+
+`▸ ステージより「登場感」が強く出ます。会場の雰囲気に合わせて選んでください。`
+
+**代替案B：抽象・光だけ（★最も失敗しない）**
+
+```
+An abstract dark void with a single bright light source far in the
+background at center, thick atmospheric haze, long soft light beams
+radiating forward, no floor detail, no people, no text, no logos,
+deep blue-black tones, very dark and minimal, cinematic, 16:9
+```
+
+`▸ 舞台の形が無いので破綻しようがありません。A案・本命が決まらないときはこれ。`
+
+**採否の判定（これで見てください）**
+
+- [ ] **中央が空いている**（人物が立てる）
+- [ ] **光源が奥・背後**にある（手前・横はNG）
+- [ ] **奥行きがある**（歩いてくる余地がある）
+- [ ] **全体が暗い**（爆発で白く飛ばす余地がある）
+- [ ] **人物が写り込んでいない**
+- [ ] **文字・ロゴ・透かしがない**
+- [ ] **ローアングル**（見上げる角度）になっている
+
+**✅ 7つ全部に○が付くまで引き直す。ここは妥協しない**
+
+---
+
+##### ■ image1（人物の基準）── image2 ができてから作る
+
+**image2 を参照に指定して生成**すると、光の向きと空気感が揃います。
+
+```
+Reference the location of image2. A businessman in a dark suit stands
+still at the center in full silhouette, face completely in shadow,
+strong backlight from behind, haze and light beams, low camera angle.
+No text, no logos. Cinematic, 16:9
+```
+
+**採否の判定**
+
+- [ ] **顔が完全に潰れている**（誰か分からない＝本人素材が要らない）
+- [ ] **輪郭がスーツ姿と分かる**（肩・襟のラインが出ている）
+- [ ] **背景が image2 と同じ空気**に見える
+- [ ] 立ち位置が中央
+
+> 💡 顔が少しでも見えていたら**引き直してください。**
+> このカットの価値は「**誰か分からないこと**」にあります。
 
 #### 共通設定
 
