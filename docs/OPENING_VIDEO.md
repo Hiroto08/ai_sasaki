@@ -618,17 +618,129 @@ One continuous shot, no text, no logos.
    - 歩きのカットに**オーバーレイ**する（別カットにしない）
    - **1数字＝1小節＝1.7415秒**。置く位置は **23.986 / 25.728 / 27.470 秒**
    - 数字の切り替わりを小節頭に置くだけで音に合います（刻みを数える必要なし）
-5. ★**29.211秒：爆発と光の粒子**（編集ソフトで合成するのが確実）
-   - AI生成で「爆発を背に立つ」を一発で出すのは難しいので、**素材を重ねる**
-     - 爆発：フリーの **explosion overlay**（黒背景の爆発素材）を「スクリーン」合成
-     - 粒子：フリーの **digital particles / cyber energy burst** 素材を重ねる
-   - 🚨 **爆発・粒子とも「青系」を選ぶ。**オレンジ系の炎だと世界観がずれます
-   - 順序：**白の立ち上がり（4〜6フレーム）→ 青い爆発 → 粒子が飛散し始める**
-   - ⚠️ **白フラッシュは一瞬で出さず、4〜6フレームかけて駆け上がらせてください。**
-     一瞬で白にすると、目に刺さって痛い画になります
-   - 粒子は**ここから36.18秒まで舞い続けさせる**（途中で止めない）
+5. ★**29.211秒：爆発 → 真っ白**（CUT05）── **生成で作る**（下記 3-A-5）
+6. **光の粒子のオーバーレイ**を 29.211秒から36.18秒まで通しで重ねる（途中で止めない）
 
 **✅ 29.211秒までが完成した（歩き・爆発・光の粒子が入っている）**
+
+---
+
+#### 3-A-5　★CUT05（29.211秒／爆発 → 真っ白）を生成する
+
+> ✅ **このカットは生成に向いています。**
+> 旧版では「爆発を背に立つ人物の一発生成は成功率が低いので、
+> オーバーレイ素材を合成するのが確実」と書いていましたが、
+> **終着点を「真っ白」に決め打つなら話が変わります。**
+>
+> | | 理由 |
+> |---|---|
+> | ★**顔のドリフトが無関係** | 人物は逆光のシルエットのまま。顔が出ないので §3-B の問題が起きません |
+> | ★**終着点が「全画面の白」** | 生成モデルが**最も破綻しにくい**終わり方です。細部を作る必要がない |
+> | ★**繋ぎが白に隠れる** | 次のカットが実写でも静止画でも生成でも、**継ぎ目が白の中で見えません** |
+>
+> 3番目が特に重要です。**CUT06 を実写や静止画で作っても（§3-B-1／3-B-3）、
+> この白のおかげで違和感なく繋がります。**
+
+##### ■ 設計：10秒生成し、「爆発を頭に寄せて、残りは白のまま」
+
+生成尺は10秒ですが、**使うのは白のピーク前後の1秒足らず**です。
+そこで、**プロンプトで構造そのものを指定します。**
+
+```
+生成尺 10秒  ├──┼───┼──────────────────────┤
+             │静止│爆発 │      白いまま         │
+             │   │    │                      │
+             └──┴───┴──────────────────────┘
+                  ★使うのはここ    ← 余りは捨ててよい
+```
+
+**「爆発は最初の数秒で起き、残りは真っ白なフレーム」と明示的に書く**のがコツです。
+書かないと、モデルは10秒かけてゆっくり明るくしてしまい、**爆発に見えません。**
+
+##### ■ GEN-5（本命）
+
+**参照画像は1枚：CUT04の最終フレーム＝歩きの最後のフレーム**（`walk_frameLast.png`）
+
+```
+Reference the attached image exactly: the same location, the same
+camera angle, the same framing, and the same man standing in the
+same position in silhouette.
+
+He stands completely still and does not move. He does not walk, does
+not step forward, does not turn around and does not look back.
+
+Behind him, a sudden and very fast burst of blue-white energy erupts
+and expands outward. The light floods forward toward the camera and
+grows brighter and brighter, until the entire frame is completely
+saturated and turns pure white.
+
+He remains a dark silhouette rimmed by the light as it grows.
+
+The explosion happens in the first few seconds. The rest of the shot
+is a completely white frame.
+
+Locked camera, one continuous shot, no cuts. Cool blue tones,
+cinematic, no text, no logos.
+```
+
+##### ■ ネガティブプロンプト
+
+```
+orange fire, flames, fireball, warm orange glow, burning, smoke plume,
+falling debris, rubble, destruction, text, letters, watermark, logo,
+brand, second person, crowd, walking, stepping forward, turning
+around, detailed face, close-up, cartoon
+```
+
+> 🚨 **`orange fire` 系を必ず外してください。**
+> 「explosion」とだけ書くと、モデルはほぼ確実に**オレンジの火球**を出します。
+> それだと 3.28–15.28秒 のサイバー風テロップと世界観がぶつかります。
+
+##### ■ 「explosion」で通らない／火球になる場合の言い換え
+
+```
+a massive shockwave of blue digital energy
+a detonation of blue-white light
+a burst of cyber energy
+an expanding wall of blue light
+```
+
+**`explosion` という単語を使わないほうが、狙った画に近づくことがあります。**
+
+##### ■ 編集での置き方（★ここが本番）
+
+1. 生成物を再生し、**白がピークに達する瞬間**を探す
+2. ★**その瞬間が 29.211秒 に来るようにクリップを置く**
+   - 白ピークを基準に前後へ伸ばします。**頭の「静止している部分」は
+     歩きの最後と重なりますが、同ポジ・同構図なので継ぎ目は見えません**
+3. **白の立ち上がりが 4〜6フレーム**になっているか確認する
+   - **速すぎる**（1〜2フレームで白）→ 直前のフレームを数コマ静止させて足す
+   - **遅すぎる**（10フレーム以上かかる）→ ★**爆発部分だけ2倍速にする**
+4. ★**完全な白になっていない場合**（白っぽいが飽和していない）
+   → **白のソリッドクリップを上に重ね、不透明度を 0% → 100% にする**
+   → **これで必ず完全な白になります。**生成に完璧を求めなくてよい
+5. **CUT06 はこの白から始める。**白が引いて顔が現れる
+
+> 🚨 **速度変更の例外です。**
+> このドキュメントでは「速度変更は使わない」としていますが、それは**スロー**の話です。
+> **早回し（2倍速）はコマを間引くだけなので劣化しません。**爆発では使って構いません。
+
+> 💡 **判定は1点だけ。**
+> 「**29.211秒で、音のドロップと画面の白が同時に来るか**」。
+> それさえ合っていれば、爆発の形は多少どうであれ会場には刺さります。
+
+##### ■ 生成がうまくいかない場合（従来どおりの方法）
+
+**オーバーレイ素材の合成に戻ります。これは必ず成功します。**
+
+- 爆発：フリーの **explosion overlay**（黒背景）を「スクリーン」合成
+- 粒子：フリーの **digital particles / cyber energy burst** 素材を重ねる
+- 🚨 **どちらも「青系」を選ぶ。**オレンジ系の炎だと世界観がずれます
+- 順序：**白の立ち上がり（4〜6フレーム）→ 青い爆発 → 粒子が飛散し始める**
+
+> 💡 **どちらの方法でも、粒子は編集のオーバーレイで足してください。**
+> 生成側では薄くてよく、濃さは編集で決めます。
+> **29.211秒から36.18秒まで通しで乗せる**と、全カットで量と速度が揃います。
 
 ### 3-B　本人素材が要る部分（8/20以降）★顔が変わる問題への対策込み
 

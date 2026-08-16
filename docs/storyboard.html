@@ -906,14 +906,37 @@ dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
           <h3>立ち止まる、背後が青く爆発する、光の粒子が飛び散る</h3>
           <ul>
             <li><b>歩きの終点 ＝ 爆発 ＝ 楽曲のドロップ</b>を、同じ1フレームに揃える</li>
-            <li>ここで<b>初めて顔がはっきり見える</b>。前振り29秒はすべてこの瞬間のため</li>
+            <li><b>ここではまだ顔を見せません。</b>人物は爆発を背にしたシルエットのまま。顔が出るのは次のCUT06です</li>
+            <li>だから<b>このカットは生成に向いています</b> ── 顔が映らない＝<b>途中で別人になる問題が起きません</b></li>
             <li>順序は <b>白の立ち上がり（4〜6コマ）→ 青い爆発 → 光の粒子が飛散し始める</b></li>
             <li>爆発を背にカメラ目前で立ち止まる ── ヒーローものの王道の構図</li>
+            <li>★<b>終わりは全画面が真っ白。</b>ここが次のカットとの継ぎ目になります</li>
+            <li>★<b>この白が、CUT06の素材が実写でも静止画でも生成でも継ぎ目を隠します</b></li>
           </ul>
           <dl class="field">
-            <dt>制作</dt><dd>爆発と粒子は<em>AI生成に頼らず、フリーのオーバーレイ素材を合成</em>するのが確実。「爆発を背に立つ人物」の一発生成は成功率が低く、素材合成なら粒の量と速度も全カットで揃います。<b>★素材は青系（digital particles / cyber energy）を選ぶ</b></dd>
+            <dt>制作</dt><dd>★<b>このカットは生成で作ります</b>（GEN-5）。<b>参照はCUT04の最終フレーム</b>、終着点を<b>「全画面が真っ白」</b>に決め打つのがコツ。顔が出ないのでドリフトが無関係、白の終わりはモデルが最も破綻しにくい。うまくいかなければ従来どおり<em>青系のオーバーレイ素材を合成</em>（<code>OPENING_VIDEO.md §3-A-5</code>）</dd>
+            <dt>置き方</dt><dd><b>白がピークに達する瞬間を 29.211秒 に置く</b>。白が飽和しきっていなければ、<em>白のソリッドを重ねて不透明度を0→100%</em>にすれば確実に真っ白になります</dd>
             <dt>注意</dt><dd>音は動画に焼き込むので、<b>合わせるのは書き出し前の1回だけ</b>。本番でズレることはありません</dd>
           </dl>
+        <pre>Reference the attached image exactly: the same location, the same
+camera angle, the same framing, and the same man standing in the
+same position in silhouette.
+
+He stands completely still and does not move. He does not walk, does
+not step forward, does not turn around and does not look back.
+
+Behind him, a sudden and very fast burst of blue-white energy erupts
+and expands outward. The light floods forward toward the camera and
+grows brighter and brighter, until the entire frame is completely
+saturated and turns pure white.
+
+He remains a dark silhouette rimmed by the light as it grows.
+
+The explosion happens in the first few seconds. The rest of the shot
+is a completely white frame.
+
+Locked camera, one continuous shot, no cuts. Cool blue tones,
+cinematic, no text, no logos.</pre>
         </div>
       </div>
     </article>
