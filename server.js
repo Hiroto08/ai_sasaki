@@ -28,7 +28,7 @@ const PORT = process.env.PORT || 3000;
 const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || "";
 const MODEL = process.env.MODEL || "gemini-2.5-flash";
 // 合言葉（入場に必須）。イベントごとに環境変数で変更する。
-const PASSPHRASE = process.env.PASSPHRASE || "きがきくね";
+const PASSPHRASE = process.env.PASSPHRASE || "おめでとう";
 // トークン署名用シークレット。未設定なら起動ごとにランダム生成
 // （再起動でトークンが無効になるが、合言葉を再入力すればよいだけなので運用上は問題ない）。
 const SECRET = process.env.SECRET || crypto.randomBytes(32).toString("hex");

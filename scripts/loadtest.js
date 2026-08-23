@@ -1,12 +1,12 @@
 // 簡易負荷テスト（依存ゼロ）。デモモードのサーバーに対して実行すればAPI費用はかからない。
 // 使い方: node scripts/loadtest.js [URL] [同時接続数] [1人あたり発話数]
 //   例: node scripts/loadtest.js http://localhost:3000 200 3
-// 環境変数 PASSPHRASE で合言葉を指定（省略時 "きがきくね"）
+// 環境変数 PASSPHRASE で合言葉を指定（省略時 "おめでとう"）
 
 const BASE = process.argv[2] || "http://localhost:3000";
 const CONCURRENCY = parseInt(process.argv[3] || "200", 10);
 const TURNS = parseInt(process.argv[4] || "3", 10);
-const PASSPHRASE = process.env.PASSPHRASE || "きがきくね";
+const PASSPHRASE = process.env.PASSPHRASE || "おめでとう";
 
 const QUESTIONS = ["おみくじ", "クイズ出して", "診断して", "やる気が出ません", "キャッシュレスの未来は？"];
 const results = { ok: 0, ng: 0, latencies: [] };

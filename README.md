@@ -80,7 +80,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
 | `MODEL` | 使用モデル | `gemini-2.5-flash` |
 | `PORT` | 待ち受けポート | `3000` |
-| `PASSPHRASE` | 入場用の合言葉 | `きがきくね` |
+| `PASSPHRASE` | 入場用の合言葉 | `おめでとう` |
 | `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
 | `MAX_TURNS` | 1人あたり発話上限 | `30` |
 | `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |

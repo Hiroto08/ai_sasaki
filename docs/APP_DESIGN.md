@@ -137,7 +137,7 @@ URLはデフォルトの `https://xxxx.run.app` を使用（独自ドメイン�
 
 ### 認証設計（ステートレス・DB不要）
 
-- 合言葉：環境変数 `PASSPHRASE` で設定（例：`PASSPHRASE=きがきくね`）
+- 合言葉：環境変数 `PASSPHRASE` で設定（例：`PASSPHRASE=おめでとう`）
 - トークン：`HMAC-SHA256(SECRET, 日付)` で生成する署名付きトークン。サーバーはDBなしで検証可能
 - `/api/chat` はトークン必須。トークンなし・不正は401
 - ブルートフォース対策：verify失敗はIPごとに指数バックオフ
