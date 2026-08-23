@@ -41,6 +41,7 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | 3.6 | [**docs/storyboard.html**](docs/storyboard.html) | **絵コンテ**（7カットの画・秒数・演出メモ）。ブラウザで開く／印刷可。**8/20に本人へ見せる用** |
 | 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
 | 5 | [**docs/MC_SCRIPT.md**](docs/MC_SCRIPT.md) | **当日の実行台本**。開演60分前〜撤収まで |
+| 6 | [**docs/qr_sheet.html**](docs/qr_sheet.html) | ★**入場QR**。#5の投影スライドと、A4に4枚並ぶ卓上カード（ブラウザで開いて印刷） |
 
 会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
 大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。

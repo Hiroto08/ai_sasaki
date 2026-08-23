@@ -12,3 +12,5 @@ data/cache/
 # assets/README.md だけは共有し、中身はコミットしない
 assets/*
 !assets/README.md
+# QRは本人の情報を含まず、再生成の手間を省きたいので共有する
+!assets/qr/
