@@ -77,6 +77,29 @@ git clone https://github.com/Hiroto08/ai_sasaki.git
 cd ai_sasaki
 ```
 
+> 🚨 **★最重要：ブランチを確認してください。**
+> `git clone` は既定ブランチ（`main`）を取ってきます。
+> **開発中の内容が `main` にマージされていない場合、古いアプリがデプロイされます。**
+>
+> ```bash
+> # いま何が入っているか確認する
+> git log --oneline -1
+> ```
+>
+> **マージがまだなら、開発ブランチを直接取ってください。**
+>
+> ```bash
+> git checkout claude/ai-ceo-avatar-app-wr3hem
+> git log --oneline -1   # 最新のコミットが出ればOK
+> ```
+>
+> ⚠️ **`data/persona.md` にアンケート反映後の「人物像」節があるか**を必ず見てください。
+> 無ければ古い版です。**口調がまったく別人になります。**
+>
+> ```bash
+> grep -c "人物像" data/persona.md   # 1 以上なら新しい版
+> ```
+
 ```bash
 # ③ デプロイ（Cloud Runへ公開）。5分ほどかかる。
 #    途中で「Enable required APIs? (y/N)」と聞かれたら y を入力。
@@ -87,8 +110,32 @@ gcloud run deploy ai-shacho \
   --allow-unauthenticated \
   --max-instances 1 \
   --memory 512Mi \
-  --set-env-vars "^@^GEMINI_API_KEY=ここにSTEP1のAPIキー@PASSPHRASE=ここに合言葉@MODEL=gemini-2.5-flash@MAX_TURNS=30@MAX_PER_MIN=10"
+  --set-env-vars "^@^GEMINI_API_KEY=ここにSTEP1のAPIキー@PASSPHRASE=ここに合言葉@SECRET=ここに下の固定値@MODEL=gemini-2.5-flash@MAX_TURNS=30@MAX_PER_MIN=10"
 ```
+
+> 🚨 **★`SECRET` は必ず設定してください。**（2026/8/23 追記・実測で確認済み）
+>
+> `SECRET` はログイン用トークンの署名鍵です。**未設定だと、サーバー起動のたびに
+> ランダムな値が作られます。** すると：
+>
+> - Cloud Run がコンテナを入れ替えた瞬間（**再デプロイ・自動再起動のどちらでも起きます**）
+> - **入場済みの全員のトークンが無効になり、200人が一斉に合言葉画面へ戻されます**
+>
+> **実際に確認しました：**
+>
+> | 条件 | 再起動後に会話を続けられるか |
+> |---|---|
+> | `SECRET` を固定 | ✅ **通った（会話が継続できる）** |
+> | `SECRET` 未設定 | ❌ **`unauthorized`（全員が合言葉画面に戻される）** |
+>
+> **下の値をそのままコピーして使ってください**（このイベント用に生成した32バイトの乱数です）。
+>
+> ```
+> SECRET=534eaf7b08b74b9b9a107c3c7ce526d627000abd28b68fd3cf92bbf8d9f2e83c
+> ```
+>
+> 💡 一度決めたら**イベントが終わるまで変えないでください。**
+> 変えると、その瞬間に全員がログアウトします。
 
 > 💡 `PASSPHRASE=` の後がイベントの**合言葉**になります（例：`PASSPHRASE=きがきくね`）。
 > 💡 `--max-instances 1` は「サーバーを1台までしか増やさない」設定です。
@@ -195,7 +242,7 @@ gcloud run services update ai-shacho \
 | ② | デプロイで `Billing account not found` | STEP 2-2の課金有効化が未完了。「お支払い」でプロジェクトに請求先をリンク |
 | ③ | 回答が途中から返らなくなった | Geminiのレート制限の可能性。コンソールの「Cloud Run → ログ」で `Gemini API 429` を確認。無料枠キーなら課金プロジェクトのキーに差し替え（STEP 2-3） |
 | ④ | 最初のアクセスだけ遅い | コールドスタート。当日朝の `--min-instances 1`（STEP 7）で解消 |
-| ⑤ | 「セッションが切れました」が頻発 | 再デプロイでトークンが無効化されたため。稼働中の再デプロイは極力避けるか、`SECRET` 環境変数に固定値を設定しておく |
+| ⑤ | 「セッションが切れました」が頻発 | ★**`SECRET` が未設定です**（STEP 3 参照）。設定し直して再デプロイしてください。設定済みなら、稼働中の再デプロイは避ける |
 | ⑥ | 合言葉が合っているのに入れない | 全角/半角・大文字小文字は自動吸収されるが、余分なスペースに注意。`--update-env-vars` で設定値を確認・再設定 |
 
 ## 当日運用チェックリスト
