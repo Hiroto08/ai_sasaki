@@ -1,0 +1,351 @@
+<title>本物 vs AI クイズ</title>
+<style>
+  :root {
+    --stage:   #070B12;
+    --panel:   #121B27;
+    --panel-2: #18232F;
+    --rule:    #2A3948;
+    --ink:     #EAF1FA;
+    --ink-2:   #93A8BF;
+    --ink-3:   #64798F;
+    --accent:  #4A9BFF;
+    --accent-d:#1F6FEB;
+    --ok:      #46C08A;
+
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif CJK JP", "Noto Serif JP", serif;
+    --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Noto Sans CJK JP", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
+    --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { height: 100%; }
+  body {
+    background: var(--stage);
+    color: var(--ink);
+    font-family: var(--gothic);
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 舞台 ---------- */
+  .stage {
+    position: fixed; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 5vh 6vw;
+  }
+  .glow { position: fixed; border-radius: 50%; filter: blur(130px); pointer-events: none; }
+  .g1 { width: 55vw; height: 55vw; left: -16vw; top: -20vw; background: rgba(31,111,235,.22); }
+  .g2 { width: 45vw; height: 45vw; right: -12vw; bottom: -18vw; background: rgba(74,155,255,.13); }
+
+  /* ---------- 見出し ---------- */
+  .topbar {
+    display: flex; align-items: baseline; gap: 2vw;
+    font-family: var(--mono); font-size: 1.6vh; letter-spacing: .24em;
+    color: var(--accent); text-transform: uppercase; flex: none;
+  }
+  .topbar .qno { color: var(--ink); font-size: 2.2vh; letter-spacing: .1em; font-family: var(--gothic); font-weight: 700; }
+  .topbar .step { color: var(--ink-3); margin-left: auto; letter-spacing: .18em; }
+
+  .body { flex: 1; display: flex; flex-direction: column; justify-content: center; min-height: 0; }
+
+  /* ---------- 出題 ---------- */
+  .kicker { font-family: var(--mono); font-size: 1.9vh; letter-spacing: .3em; color: var(--accent); margin-bottom: 2.4vh; }
+  .question {
+    font-family: var(--mincho); font-weight: 600;
+    font-size: 7.4vh; line-height: 1.42; letter-spacing: .02em;
+    text-wrap: balance; max-width: 22em;
+  }
+  .qtail { margin-top: 3.4vh; font-size: 2.6vh; color: var(--ink-2); letter-spacing: .06em; }
+
+  /* ---------- A / B ---------- */
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; align-items: stretch; }
+  .choice {
+    background: var(--panel); border: 1px solid var(--rule);
+    padding: 4vh 3vw; display: flex; flex-direction: column; gap: 2.6vh;
+    min-height: 46vh;
+  }
+  .choice .tag {
+    font-family: var(--mono); font-size: 6vh; font-weight: 700; line-height: 1;
+    color: var(--accent); letter-spacing: .04em;
+  }
+  .choice .text {
+    font-size: 4.1vh; line-height: 1.62; font-weight: 700; letter-spacing: .02em;
+    flex: 1; display: flex; align-items: center;
+  }
+  .prompt { text-align: center; margin-top: 3.2vh; font-size: 2.8vh; color: var(--ink-2); letter-spacing: .08em; }
+
+  /* ---------- 動画キュー ---------- */
+  .cue { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4vh; text-align: center; }
+  .cue .mark { font-size: 13vh; line-height: 1; color: var(--accent); }
+  .cue .what { font-family: var(--mincho); font-size: 6vh; font-weight: 600; }
+  .cue .file {
+    font-family: var(--mono); font-size: 3vh; color: var(--ink);
+    background: var(--panel); border: 1px solid var(--accent-d); padding: 1.6vh 3vw; letter-spacing: .06em;
+  }
+  .cue .how { font-size: 2.4vh; color: var(--ink-2); line-height: 1.9; }
+
+  /* ---------- 正解 ---------- */
+  .reveal { display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; align-items: stretch; }
+  .reveal .choice { position: relative; }
+  .reveal .choice.real { border-color: var(--ok); background: var(--panel-2); }
+  .reveal .choice.real .tag { color: var(--ok); }
+  .reveal .choice.ai { opacity: .42; }
+  .badge {
+    position: absolute; top: -1.6vh; left: 3vw;
+    font-size: 2vh; font-weight: 700; letter-spacing: .14em;
+    padding: .8vh 1.6vw; background: var(--ok); color: #06210f;
+  }
+  .badge.ai { background: var(--rule); color: var(--ink-2); }
+  .verdict { text-align: center; margin-top: 3.4vh; font-family: var(--mincho); font-size: 4.4vh; font-weight: 600; }
+  .verdict b { color: var(--ok); }
+
+  /* ---------- 進行ヒント（Hで隠せる） ---------- */
+  .hint {
+    position: fixed; left: 0; right: 0; bottom: 0;
+    background: rgba(7,11,18,.94); border-top: 1px solid var(--rule);
+    padding: 1.4vh 3vw; display: flex; align-items: center; gap: 2vw;
+    font-size: 1.9vh; color: var(--ink-2);
+  }
+  .hint b { color: var(--ink); }
+  .hint .keys { margin-left: auto; font-family: var(--mono); font-size: 1.6vh; color: var(--ink-3); letter-spacing: .06em; white-space: nowrap; }
+  body.nohint .hint { display: none; }
+
+  /* ---------- 点検モード ---------- */
+  .check { position: fixed; inset: 0; background: #0B1119; overflow-y: auto; padding: 40px 5vw 80px; display: none; }
+  body.checking .check { display: block; }
+  body.checking .stage, body.checking .hint, body.checking .glow { display: none; }
+  .check h2 { font-family: var(--mincho); font-size: 30px; margin-bottom: 8px; }
+  .check .lede { color: var(--ink-2); font-size: 15px; margin-bottom: 28px; line-height: 1.8; max-width: 70ch; }
+  .check table { border-collapse: collapse; width: 100%; font-size: 14px; margin-bottom: 30px; }
+  .check th, .check td { border: 1px solid var(--rule); padding: 9px 12px; text-align: left; vertical-align: top; }
+  .check th { background: var(--panel); font-weight: 700; white-space: nowrap; }
+  .check td { color: var(--ink-2); }
+  .check .num { font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .warn { color: #FFB454; font-weight: 700; }
+  .good { color: var(--ok); font-weight: 700; }
+  .check .tablewrap { overflow-x: auto; }
+  .check code { font-family: var(--mono); background: var(--panel); padding: 2px 6px; border: 1px solid var(--rule); }
+  .check ul { padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; color: var(--ink-2); font-size: 14px; margin-bottom: 26px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="glow g1"></div><div class="glow g2"></div>
+
+<div class="stage">
+  <div class="topbar">
+    <span class="qno" id="qno">第1問</span>
+    <span id="phase">出題</span>
+    <span class="step" id="step">1 / 20</span>
+  </div>
+  <div class="body" id="body"></div>
+</div>
+
+<div class="hint">
+  <span id="hintText"></span>
+  <span class="keys">→ 次　← 戻る　F 全画面　C 点検　H ヒント非表示</span>
+</div>
+
+<div class="check" id="check"></div>
+
+<script>
+/* ============================================================
+   ここだけ書き換えれば、そのまま本番で使えます。
+
+   q       … 設問（「こんな時どうする？」）
+   a / b   … A と B の回答文
+   aiSide  … AI の回答がどちらか（"A" または "B"）
+             ※正解＝本物は、その反対側になります
+   video   … 正解発表で再生する動画のファイル名
+
+   ⚠️ いま入っているのは「例題」です。
+      本物の回答は、ご本人から回収したものに差し替えてください。
+      差し替えたら C キーで点検モードを開き、警告が出ていないか確認してください。
+   ============================================================ */
+const QUIZ = [
+  {
+    q: "東京ドームで野球を観た帰り。\n席を立つとき、どうしますか？",
+    a: "周りに落ちてるゴミも拾って、まとめて捨てて帰るよ。",
+    b: "余韻に浸りたいから、席で少し待ってから出るかな。",
+    aiSide: "B",
+    video: "03_q1_reveal.mp4"
+  },
+  {
+    q: "自販機で、前の人がお釣りを取り忘れました。\nもう、だいぶ向こうまで歩いて行っています。",
+    a: "取り出し口に戻して、そのままにしておくかな。",
+    b: "走って追いかけて、渡してくるよ。それくらいするでしょ。",
+    aiSide: "A",
+    video: "04_q2_reveal.mp4"
+  },
+  {
+    q: "大事な会食と、部の宴会。\n同じ日にダブルブッキングしてしまいました。",
+    a: "両方行く。顔だけでも出さないと気が済まないんだよ。",
+    b: "先に約束したほうへ行く。あとで必ず埋め合わせるよ。",
+    aiSide: "B",
+    video: "05_q3_reveal.mp4"
+  },
+  {
+    q: "若い頃、野球選手だったとします。\nドラフトで阪神タイガースに指名されました。",
+    a: "一晩考える。……いや、やっぱり行くしかないよなあ。",
+    b: "行くよ。指名してくれた球団が、一番いい球団でしょ。",
+    aiSide: "A",
+    video: "06_q4_reveal.mp4"
+  },
+  {
+    q: "部下が、仕事で大きな失敗をしました。\n報告を受けて、最初に何をしますか？",
+    a: "わかったって言う。で、次どうするかだけ聞くかな。",
+    b: "まず影響を聞く。そのあと一緒に飲みに行くよ。",
+    aiSide: "B",
+    video: "07_q5_reveal.mp4"
+  }
+];
+
+/* ============================================================
+   ここから下は、内容を差し替えるだけなら触らなくて構いません。
+   ============================================================ */
+
+const PHASES = [
+  { key: "q",      label: "出題",     hint: (n,d) => `設問を読み上げてください。<b>言い換えないこと</b>（正解が漏れます）。読み終えたら → で選択肢へ。` },
+  { key: "ab",     label: "選択肢",   hint: (n,d) => `<b>AとBを、同じトーン・同じ速度で読む。</b>読んだら投票（拍手）を取り、→ で動画へ。` },
+  { key: "video",  label: "動画",     hint: (n,d) => `<b>${d.video}</b> を再生してください。再生し終えたら、このスライドに戻って → 。` },
+  { key: "answer", label: "正解",     hint: (n,d) => `正解が出ています。<b>ご本人にマイクを向けて一言</b>もらってください。→ で次の問題へ。` },
+];
+
+const slides = [];
+QUIZ.forEach((d, i) => PHASES.forEach(p => slides.push({ ...p, data: d, qIndex: i })));
+
+let cur = 0;
+const bodyEl  = document.getElementById("body");
+const qnoEl   = document.getElementById("qno");
+const phaseEl = document.getElementById("phase");
+const stepEl  = document.getElementById("step");
+const hintEl  = document.getElementById("hintText");
+
+const esc = (s) => s.replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+const nl2br = (s) => esc(s).replace(/\n/g, "<br>");
+
+function choiceCard(tag, text, cls, badge) {
+  return `<div class="choice ${cls || ""}">
+    ${badge ? `<span class="badge ${badge.cls}">${badge.text}</span>` : ""}
+    <span class="tag">${tag}</span>
+    <span class="text">${nl2br(text)}</span>
+  </div>`;
+}
+
+function render() {
+  const s = slides[cur];
+  const d = s.data;
+  qnoEl.textContent  = `第${s.qIndex + 1}問`;
+  phaseEl.textContent = s.label;
+  stepEl.textContent = `${cur + 1} / ${slides.length}`;
+  hintEl.innerHTML   = s.hint(s.qIndex + 1, d);
+
+  if (s.key === "q") {
+    bodyEl.innerHTML = `
+      <div class="kicker">Question ${s.qIndex + 1}</div>
+      <div class="question">${nl2br(d.q)}</div>
+      <div class="qtail">── こんな時、社長ならどうする？</div>`;
+  } else if (s.key === "ab") {
+    bodyEl.innerHTML = `
+      <div class="choices">
+        ${choiceCard("A", d.a)}
+        ${choiceCard("B", d.b)}
+      </div>
+      <div class="prompt">どちらが<b>本物</b>でしょうか。Aだと思う方、拍手！　……Bだと思う方、拍手！</div>`;
+  } else if (s.key === "video") {
+    bodyEl.innerHTML = `
+      <div class="cue">
+        <div class="mark">▶</div>
+        <div class="what">正解発表</div>
+        <div class="file">${esc(d.video)}</div>
+        <div class="how">動画に切り替えて再生してください。<br>再生が終わったら、このスライドに戻って → を押します。</div>
+      </div>`;
+  } else {
+    const realSide = d.aiSide === "A" ? "B" : "A";
+    bodyEl.innerHTML = `
+      <div class="reveal">
+        ${choiceCard("A", d.a, realSide === "A" ? "real" : "ai",
+          realSide === "A" ? { text: "本物", cls: "" } : { text: "AI", cls: "ai" })}
+        ${choiceCard("B", d.b, realSide === "B" ? "real" : "ai",
+          realSide === "B" ? { text: "本物", cls: "" } : { text: "AI", cls: "ai" })}
+      </div>
+      <div class="verdict">正解は <b>${realSide}</b>。こちらが本物の佐々木社長です。</div>`;
+  }
+}
+
+function go(n) {
+  cur = Math.max(0, Math.min(slides.length - 1, n));
+  render();
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") { e.preventDefault(); go(cur + 1); }
+  else if (e.key === "ArrowLeft" || e.key === "PageUp") { e.preventDefault(); go(cur - 1); }
+  else if (e.key === "f" || e.key === "F") {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen?.();
+  }
+  else if (e.key === "h" || e.key === "H") document.body.classList.toggle("nohint");
+  else if (e.key === "c" || e.key === "C") { document.body.classList.toggle("checking"); renderCheck(); }
+  else if (e.key === "Home") go(0);
+});
+// クリック／タップでも進める（マウス操作したい人向け）
+document.querySelector(".stage").addEventListener("click", () => go(cur + 1));
+
+/* ---------- 点検モード：答えが漏れる条件を機械的に潰す ---------- */
+function renderCheck() {
+  if (!document.body.classList.contains("checking")) return;
+  const len = (s) => s.replace(/\s/g, "").length;
+  const lines = (s) => s.split("\n").length;
+
+  let rows = "", sides = [];
+  QUIZ.forEach((d, i) => {
+    const la = len(d.a), lb = len(d.b);
+    const diff = Math.abs(la - lb) / Math.max(la, lb);
+    const lenNG = diff > 0.20;
+    const lineNG = lines(d.a) !== lines(d.b);
+    const realSide = d.aiSide === "A" ? "B" : "A";
+    sides.push(d.aiSide);
+    rows += `<tr>
+      <td class="num">第${i + 1}問</td>
+      <td class="num">${la} / ${lb} <span class="${lenNG ? "warn" : "good"}">${lenNG ? `差${Math.round(diff * 100)}% 要調整` : "OK"}</span></td>
+      <td class="num">${lines(d.a)} / ${lines(d.b)} <span class="${lineNG ? "warn" : "good"}">${lineNG ? "行数が違う" : "OK"}</span></td>
+      <td class="num">AI=${d.aiSide}　本物=${realSide}</td>
+      <td class="num">${esc(d.video)}</td>
+    </tr>`;
+  });
+
+  let sideNG = "";
+  for (let i = 1; i < sides.length; i++) {
+    if (sides[i] === sides[i - 1]) { sideNG = `第${i}問と第${i + 1}問で、AIが同じ側（${sides[i]}）に連続しています`; break; }
+  }
+  const allSame = sides.every(s => s === sides[0]);
+
+  document.getElementById("check").innerHTML = `
+    <h2>点検モード</h2>
+    <p class="lede">答えが漏れる条件を機械的に確認します。<b>本番前に必ず一度開いてください。</b>
+    設問を差し替えたら、警告がすべて消えるまで文言を調整します（<code>AVATAR_LOOK.md §8</code>）。</p>
+    <div class="tablewrap">
+      <table>
+        <tr><th>問</th><th>文字数 A / B</th><th>行数 A / B</th><th>割り当て</th><th>動画</th></tr>
+        ${rows}
+      </table>
+    </div>
+    <h2 style="font-size:20px">A/Bの偏り</h2>
+    <p class="lede">配置：<b>${sides.join(" / ")}</b><br>
+    ${allSame ? '<span class="warn">★AIが全問同じ側です。3問目には全員が気づきます。必ずばらしてください。</span>'
+      : sideNG ? `<span class="warn">${sideNG}。可能なら入れ替えてください</span>`
+      : '<span class="good">OK：連続していません</span>'}</p>
+    <h2 style="font-size:20px">目視で確認すること（機械では判定できません）</h2>
+    <ul>
+      <li><b>文体が揃っているか。</b>片方だけ丁寧語、片方だけ体言止めになっていないか</li>
+      <li><b>読点の打ち方の癖が揃っているか。</b>音読して、違和感のある方を直す（内容は変えない）</li>
+      <li>★<b>正解発表動画の中身が、上の割り当てと一致しているか。</b>ここがズレると本番で事故ります</li>
+      <li><b>後方席から読めるか。</b>実際に会場の後ろまで歩いて確認する</li>
+    </ul>
+    <p class="lede">C キーで元に戻ります。</p>`;
+}
+
+render();
+</script>
