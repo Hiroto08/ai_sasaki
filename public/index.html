@@ -41,9 +41,22 @@
 
   /* ---- 免責バナー ---- */
   .disclaimer {
-    background: #fbf6e3; color: #6b5a1e; font-size: 11px; padding: 7px 16px;
-    text-align: center; line-height: 1.6; border-bottom: 1px solid #eee3bb;
+    background: #fbf6e3; color: #6b5a1e; font-size: 11px;
+    border-bottom: 1px solid #eee3bb;
   }
+  .disclaimer summary {
+    padding: 6px 16px; text-align: center; cursor: pointer; list-style: none;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    line-height: 1.5;
+  }
+  .disclaimer summary::-webkit-details-marker { display: none; }
+  .disclaimer summary:focus-visible { outline: 2px solid var(--lime); outline-offset: -2px; }
+  .disclaimer .more {
+    font-size: 10px; border: 1px solid #d9cb95; border-radius: 999px;
+    padding: 1px 8px; flex-shrink: 0; white-space: nowrap;
+  }
+  .disclaimer[open] .more { background: #f0e6c4; }
+  .disclaimer p { margin: 0; padding: 0 16px 8px; line-height: 1.65; text-align: left; max-width: 62ch; margin-inline: auto; }
   .disclaimer strong { color: #57470f; }
 
   /* ---- ヘッダー ---- */
@@ -139,6 +152,7 @@
 
   /* ---- 提案チップ ---- */
   .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 22px 10px; }
+  .suggest button { flex-shrink: 0; }
   .suggest button {
     font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
     border: 1px solid var(--line); background: var(--card); color: var(--deep-2);
@@ -156,7 +170,8 @@
   }
   .input-bar input {
     flex: 1; padding: 13px 18px; border: 1.5px solid var(--line); border-radius: 999px;
-    font-size: 14px; outline: none; background: var(--bg); transition: border-color .15s, box-shadow .15s, background .15s;
+    font-size: 16px; /* ★16px未満だとiOSがフォーカス時にページを勝手に拡大する */
+    outline: none; background: var(--bg); transition: border-color .15s, box-shadow .15s, background .15s;
   }
   .input-bar input:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
   .input-bar button {
@@ -201,7 +216,7 @@
   .memory-card p { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; margin-bottom: 14px; }
   .memory-card textarea {
     width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
-    font-family: inherit; font-size: 15px; line-height: 1.7; outline: none; background: var(--bg); resize: vertical;
+    font-family: inherit; font-size: 16px; /* ★iOSの自動ズーム対策 */ line-height: 1.7; outline: none; background: var(--bg); resize: vertical;
   }
   .memory-card textarea:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
   .memory-count { text-align: right; font-size: 11px; color: var(--ink-3); margin-top: 4px; }
@@ -277,7 +292,12 @@
     .mode-toggle span { white-space: nowrap; }
     .messages { padding: 16px 14px 8px; }
     .msg { max-width: 88%; font-size: 13.5px; }
-    .suggest { padding: 4px 14px 8px; }
+    .suggest {
+      flex-wrap: nowrap; overflow-x: auto; padding: 4px 14px 8px;
+      scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    }
+    .suggest::-webkit-scrollbar { display: none; }
+    .disclaimer summary { padding: 5px 12px; gap: 6px; }
     header .sub { display: none; }
     .disclaimer { font-size: 10px; }
   }
@@ -285,13 +305,65 @@
     .msg, .gate-card { animation: none; }
     * { transition: none !important; }
   }
+
+  /* ================= スマホ向けの補正 ================= */
+
+  /* 横向きにしたときにiOSが文字を勝手に太らせるのを防ぐ */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* タップ時の灰色のちらつきを消す（代わりに:activeで明確に反応させる） */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* ボタンの文字が長押しで選択されてしまうのを防ぐ */
+  button, .switch, .disclaimer summary { -webkit-user-select: none; user-select: none; }
+
+  /* チャットを端まで送ったときに、ページ全体が引っぱられるのを止める */
+  .messages { overscroll-behavior: contain; }
+
+  /* ホバーできない端末では、ホバー演出を無効にする
+     （タッチだと :hover が押した後も残り、ボタンが浮いたままになる） */
+  @media (hover: none) {
+    .suggest button:hover,
+    .input-bar button:hover,
+    .memory-bar button:hover { transform: none; }
+    .suggest button:hover { background: var(--card); border-color: var(--line); }
+    .input-bar button:hover { background: var(--deep); }
+  }
+
+  /* 押した瞬間の手応えをはっきりさせる */
+  .suggest button:active { background: var(--lime-tint); border-color: var(--lime); }
+  .input-bar button:active { filter: brightness(.92); }
+
+  @media (max-width: 700px) {
+    /* タップ目標を確保する（小さすぎると、横スクロール中に押し損なう） */
+    .suggest button { min-height: 40px; font-size: 13px; padding: 9px 16px; }
+    .input-bar button { min-height: 46px; }
+    .input-bar input { min-height: 46px; }
+
+    /* アバターの帯を薄くして、会話の面積を稼ぐ */
+    .avatar-pane { padding: 6px 12px; gap: 8px; }
+    .avatar-pane svg, #avatarPhoto { width: 40px !important; height: 46px !important; }
+
+    /* 画面いっぱいに使う */
+    .messages { padding: 14px 12px 6px; }
+    .msg { max-width: 92%; }
+    .input-bar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+    .input-bar button { padding: 13px 20px; }
+
+    /* 横向きのとき、アバター帯は畳んで会話を優先する */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .avatar-pane, .disclaimer { display: none; }
+      .suggest { padding: 3px 12px 5px; }
+    }
+  }
 </style>
 </head>
 <body>
-  <div class="disclaimer">
-    🎭 本アプリは<strong>エンタメ・パロディ用途の非公式ファンコンテンツ</strong>です。公開情報のみから構築したAIによる創作であり、
-    回答は佐々木丈也氏本人の発言・見解ではなく、本人・三井住友カード株式会社の監修や承認を受けたものではありません。
-  </div>
+  <details class="disclaimer">
+    <summary>🎭 <strong>エンタメ用のAIパロディ</strong>です。本人の発言ではありません<span class="more">詳しく</span></summary>
+    <p>公開情報のみから構築したAIによる創作です。回答は佐々木丈也氏本人の発言・見解ではなく、
+    本人および三井住友カード株式会社の監修や承認を受けたものではありません。</p>
+  </details>
   <header>
     <!-- ブランドマーク（オリジナルの抽象モチーフ。実在企業のロゴではない） -->
     <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
@@ -366,14 +438,10 @@
     <section class="chat-pane">
       <div class="messages" id="messages"></div>
       <div class="suggest" id="suggest">
-        <button>🎋 今日の社長おみくじ</button>
-        <button>⛳ ゴルフの調子はどうですか？</button>
-        <button>💡 社長クイズを出して</button>
-        <button>💳 キャッシュレス度を診断して</button>
-        <button>🍜 ランチ何にするか決めて</button>
-        <button>😮‍💨 やる気が出ません…</button>
-        <button>🏢 なぜこの会社に入ったの？</button>
-        <button>🌶️ 辛口で一言ください</button>
+        <button data-msg="おみくじを引いてください">🎋 おみくじ</button>
+        <button data-msg="ゴルフの調子はどうですか？">⛳ ゴルフの調子は</button>
+        <button data-msg="やる気が出ません">😮‍💨 やる気が出ない</button>
+        <button data-msg="辛口で一言ください" data-spicy="1">🌶️ 辛口で一言</button>
       </div>
       <!-- 会場イベント用：ご本人への思い出投稿（memoryEnabled が true のときだけ表示） -->
       <div class="memory-bar" id="memoryBar" style="display:none">
@@ -745,8 +813,22 @@ async function send(text) {
 }
 
 form.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+
+// スマホでキーボードが開くと表示領域が縮む。最新の発言が隠れないよう下端へ送る。
+input.addEventListener("focus", () => {
+  setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 300);
+});
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+}
 document.getElementById("suggest").addEventListener("click", (e) => {
-  if (e.target.tagName === "BUTTON") send(e.target.textContent);
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  // 「辛口で一言」は、押した時点で辛口モードに入る（そうしないと通常の返事が返る）
+  if (btn.dataset.spicy === "1" && chatMode !== "spicy") toggleMode();
+  send(btn.dataset.msg || btn.textContent);
 });
 
 modeBadge.textContent = "待機中";

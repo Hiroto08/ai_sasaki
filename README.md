@@ -41,6 +41,7 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | 3.6 | [**docs/storyboard.html**](docs/storyboard.html) | **絵コンテ**（7カットの画・秒数・演出メモ）。ブラウザで開く／印刷可。**8/20に本人へ見せる用** |
 | 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
 | 5 | [**docs/MC_SCRIPT.md**](docs/MC_SCRIPT.md) | **当日の実行台本**。開演60分前〜撤収まで |
+| 6 | [**docs/qr_sheet.html**](docs/qr_sheet.html) | ★**入場QR**。#5の投影スライドと、A4に4枚並ぶ卓上カード（ブラウザで開いて印刷） |
 
 会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
 大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。
@@ -79,7 +80,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
 | `MODEL` | 使用モデル | `gemini-2.5-flash` |
 | `PORT` | 待ち受けポート | `3000` |
-| `PASSPHRASE` | 入場用の合言葉 | `きがきくね` |
+| `PASSPHRASE` | 入場用の合言葉 | `おめでとう` |
 | `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
 | `MAX_TURNS` | 1人あたり発話上限 | `30` |
 | `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |
@@ -112,10 +113,16 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 本人の許諾が得られるまではイラストアバターで動作する。許諾取得後は：
 
 1. `public/avatar.png` に写真（PNG形式、推奨 縦長 200×230px 以上）を置く
-2. `data/config.json` の `avatar.consentConfirmed` を `true` にする
+2. `data/config.json` の `avatar.consentConfirmed` を `true` にする（**設定済み**）
 
 この2つが揃ったときだけ写真に切り替わる（どちらか欠けるとイラストのまま）。
 写真は `.gitignore` 済みでリポジトリにはコミットされない。発話時は写真が軽く動く。
+
+> 🚨 **Cloud Run にデプロイする場合の注意。**
+> `.gitignore` が `public/*.png` を除外しているため、**`.gcloudignore` が無いと
+> gcloud がそれを代用し、写真がアップロードから抜け落ちます**（エラーは出ません）。
+> リポジトリに `.gcloudignore` を用意済みです。手順は
+> [`docs/DEPLOY_GUIDE.md` STEP 4.5](docs/DEPLOY_GUIDE.md) を参照。
 
 ## 構成
 
