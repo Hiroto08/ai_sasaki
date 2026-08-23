@@ -1,0 +1,235 @@
+<title>クイズ設問プール</title>
+<style>
+  :root {
+    --ground:#EEF1F5; --sheet:#FFFFFF; --sheet-2:#F5F7FA;
+    --rule:#D3DAE3; --rule-soft:#E4E9EF;
+    --ink:#111820; --ink-2:#4F5D6E; --ink-3:#8493A4;
+    --accent:#1F6FEB; --accent-bg:#E8F0FE;
+    --hot:#C2410C; --hot-bg:#FDEBE0;
+    --mincho:"Hiragino Mincho ProN","Yu Mincho","YuMincho","Noto Serif CJK JP",serif;
+    --gothic:"Hiragino Kaku Gothic ProN","Yu Gothic","YuGothic","Noto Sans CJK JP","Meiryo",system-ui,sans-serif;
+    --mono:ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --ground:#0E1319; --sheet:#161D26; --sheet-2:#1D2630;
+    --rule:#2E3945; --rule-soft:#232C36;
+    --ink:#E6ECF3; --ink-2:#9DAABA; --ink-3:#6C7B8B;
+    --accent:#5B9CFF; --accent-bg:#15263F;
+    --hot:#FF9E6B; --hot-bg:#33210F;
+  } }
+  :root[data-theme="dark"] {
+    --ground:#0E1319; --sheet:#161D26; --sheet-2:#1D2630;
+    --rule:#2E3945; --rule-soft:#232C36;
+    --ink:#E6ECF3; --ink-2:#9DAABA; --ink-3:#6C7B8B;
+    --accent:#5B9CFF; --accent-bg:#15263F;
+    --hot:#FF9E6B; --hot-bg:#33210F;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ground);color:var(--ink);font-family:var(--gothic);font-size:15px;line-height:1.7;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:36px 18px 80px;display:flex;flex-direction:column;gap:20px}
+  header{display:flex;flex-direction:column;gap:8px;padding-bottom:16px;border-bottom:2px solid var(--ink)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase}
+  h1{font-family:var(--mincho);font-size:clamp(25px,4vw,36px);font-weight:600;letter-spacing:.02em}
+  .lede{color:var(--ink-2);font-size:14.5px;max-width:70ch}
+  .note{background:var(--sheet);border:1px solid var(--rule);border-left:3px solid var(--accent);padding:14px 18px;font-size:14px;color:var(--ink-2);display:flex;flex-direction:column;gap:7px}
+  .note b{color:var(--ink)}
+  .bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .f{font-family:inherit;font-size:13px;font-weight:600;padding:7px 13px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink-2);cursor:pointer;display:inline-flex;gap:7px;align-items:center}
+  .f span{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .f:hover{border-color:var(--accent);color:var(--ink)}
+  .f.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .f.on span{color:rgba(255,255,255,.75)}
+  .f:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  #search{flex:1;min-width:180px;font-family:inherit;font-size:14px;padding:8px 13px;border:1px solid var(--rule);background:var(--sheet);color:var(--ink)}
+  #search:focus{outline:none;border-color:var(--accent)}
+  .count{font-family:var(--mono);font-size:12px;color:var(--ink-3);margin-left:auto;white-space:nowrap}
+  .tablewrap{overflow-x:auto;background:var(--sheet);border:1px solid var(--rule)}
+  table{border-collapse:collapse;width:100%;font-size:14px}
+  th,td{border-bottom:1px solid var(--rule-soft);padding:11px 13px;text-align:left;vertical-align:top}
+  thead th{background:var(--sheet-2);font-size:12px;font-weight:700;color:var(--ink-2);letter-spacing:.06em;position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--rule)}
+  tbody tr:hover{background:var(--sheet-2)}
+  .no{font-family:var(--mono);color:var(--ink-3);text-align:right;width:44px;font-variant-numeric:tabular-nums}
+  .cat{width:82px}
+  .catchip{font-size:11px;padding:2px 8px;background:var(--accent-bg);color:var(--accent);white-space:nowrap;font-weight:700}
+  .q{min-width:22em;color:var(--ink)}
+  .a{min-width:18em;color:var(--ink-2);font-weight:600}
+  .len{font-family:var(--mono);color:var(--ink-3);text-align:right;width:40px;font-variant-numeric:tabular-nums}
+  .tag{width:76px}
+  .chip{font-size:11px;font-weight:700;padding:2px 8px;white-space:nowrap}
+  .chip.hot{background:var(--hot-bg);color:var(--hot)}
+  .chip.rec{background:var(--accent-bg);color:var(--accent)}
+  tr.hidden{display:none}
+  .empty{padding:40px;text-align:center;color:var(--ink-3);display:none}
+  .empty.on{display:block}
+  @media (max-width:700px){ .wrap{padding:24px 12px 60px} .cat,.len{display:none} .q,.a{min-width:14em} }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Question Pool / 100</p>
+    <h1>クイズ設問プール</h1>
+    <p class="lede">#3「本物 vs AI クイズ」用の設問候補100問と、AI社長側の回答です。ここから5問を選んでください。</p>
+  </header>
+
+  <div class="note">
+    <p>🚨 <b>AI側の回答は、アンケート25名の人物像から書いたものです。</b>
+    <b>本物の回答は、ご本人から回収したものに差し替えてください。</b>
+    どちらか一方だけを私が書くと、文体が揃わず答えが漏れます。</p>
+    <p>💡 選んだら <code>docs/quiz_slides.html</code> の <code>QUIZ</code> に転記し、
+    <b>A/Bの文字数を±20%以内に揃えて</b>ください（点検モード <b>C</b> キーで自動判定できます）。</p>
+    <p>📊 <b>鉄板</b>＝会場が沸きやすく外しにくいもの。<b>推奨</b>＝人柄や意外性が出るもの。
+    <b>5問すべてを笑い系にせず、人柄が伝わる問題を2問は混ぜる</b>と緩急がつきます。</p>
+  </div>
+
+  <div class="bar">
+    <button class="f on" data-f="all">すべて<span>100</span></button><button class="f" data-f="hot">鉄板<span>12</span></button><button class="f" data-f="rec">推奨<span>50</span></button><button class="f" data-f="cat:気配り">気配り<span>20</span></button><button class="f" data-f="cat:判断">判断<span>20</span></button><button class="f" data-f="cat:部下">部下<span>15</span></button><button class="f" data-f="cat:巨人">巨人<span>10</span></button><button class="f" data-f="cat:ゴルフ">ゴルフ<span>10</span></button><button class="f" data-f="cat:食・酒">食・酒<span>10</span></button><button class="f" data-f="cat:日常">日常<span>10</span></button><button class="f" data-f="cat:会社">会社<span>5</span></button>
+    <input id="search" type="search" placeholder="キーワードで絞り込む（例：ゴルフ、部下、失敗）" aria-label="検索">
+    <span class="count" id="count"></span>
+  </div>
+
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th class="no">#</th><th class="cat">分類</th><th>場面（設問）</th><th>AI社長の回答</th><th class="len">字</th><th class="tag">目安</th></tr></thead>
+      <tbody id="tbody">
+<tr data-cat="気配り" data-tag="hot"><td class="no">1</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">東京ドームで野球を観た帰り。席を立つとき、どうしますか？</td><td class="a">周りに落ちてるゴミも拾って、まとめて捨てて帰るよ。</td><td class="len">25</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="気配り" data-tag="hot"><td class="no">2</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">自販機で、前の人がお釣りを取り忘れました。もう遠くまで歩いて行っています。</td><td class="a">走って追いかけて渡すよ。それくらいするでしょ。</td><td class="len">23</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="気配り" data-tag="hot"><td class="no">3</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">エレベーターで、若手社員と二人きりになりました。</td><td class="a">「よっ」って声かける。黙ってるほうが気まずいじゃん。</td><td class="len">26</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">4</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">新入社員が緊張して、うまく挨拶できずにいます。</td><td class="a">こっちから先に名乗るよ。緊張してるほうが大変でしょ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag="hot"><td class="no">5</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">街で、見知らぬ老夫婦が自撮りに苦戦しています。</td><td class="a">近寄って「撮りましょうか」って言うよ。当たり前じゃん。</td><td class="len">27</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">6</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">飲み会で、一人だけ会話に入れていない人がいます。</td><td class="a">隣に行って座る。話しかけるのはそのあとでいいんだよ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag="rec"><td class="no">7</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">後輩が、他部署の上司に理不尽に怒られています。</td><td class="a">間に入る。庇わない上司がいちばん嫌いなんだよ。</td><td class="len">23</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">8</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">部下が、家庭の事情で早退したいと言いにくそうにしています。</td><td class="a">先に「帰っていいよ」って言う。言わせるのが酷でしょ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">9</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">会社の廊下に、ゴミが落ちています。</td><td class="a">拾うよ。誰が見てるとか、そういう話じゃないんだよ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag="rec"><td class="no">10</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">取引先の若手が、明らかに萎縮しています。</td><td class="a">わざと崩す。こっちが偉そうにしてたら何も出てこないよ。</td><td class="len">27</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">11</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">自分の部署ではない社員が、困っているのを見かけました。</td><td class="a">声かけるよ。部署とか、あんまり関係なくない？</td><td class="len">22</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag="rec"><td class="no">12</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">表彰式で、自分だけが褒められました。</td><td class="a">「みんなでやったんで」って言う。ほんとにそうだからね。</td><td class="len">27</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="気配り" data-tag="rec"><td class="no">13</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">同期の中で、自分だけ先に昇進が決まりました。</td><td class="a">……正直、申し訳ないよ。だから、その分やるしかない。</td><td class="len">26</td><td class="tag"><span class="chip rec">感動枠</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">14</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">後輩から「会社を辞めたい」と相談されました。</td><td class="a">まず全部聞く。止めるかどうかは、そのあとの話だよ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">15</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">何年も前に引退した大先輩から、飲みに誘われました。</td><td class="a">行くよ。そういう誘いは、断ったことないんだよ。</td><td class="len">23</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag="rec"><td class="no">16</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">部下のミスで、自分が取引先に謝ることになりました。</td><td class="a">行くよ。そのための立場でしょ、これ。</td><td class="len">18</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">17</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">会食で、お店の人が注文を間違えました。</td><td class="a">気にしない。むしろ、こっちが恐縮させちゃうほうが嫌だよ。</td><td class="len">28</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">18</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">宴会で、上座が空いたままです。</td><td class="a">誰か座りなよって言う。座らないと店の人が困るでしょ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">19</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">会議室に、自分が一番乗りで着いてしまいました。</td><td class="a">机拭いとくよ。手が空いてるんだから。</td><td class="len">18</td><td class="tag"></td></tr>
+<tr data-cat="気配り" data-tag=""><td class="no">20</td><td class="cat"><span class="catchip c-気配り">気配り</span></td><td class="q">社員食堂で、一人で食べている社員を見かけました。</td><td class="a">「隣いい？」って聞く。断られたら、それはそれでいいし。</td><td class="len">27</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag="hot"><td class="no">21</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">部下が「今年も前年踏襲でいきます」と言いました。</td><td class="a">でた、前年踏襲。……で、去年と何が違うの？</td><td class="len">21</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">22</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">報告が「下期は頑張ります」で終わりました。</td><td class="a">頑張るって、何をどれだけやることなの？そこ聞かせて。</td><td class="len">26</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">23</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">数字は良いのに、お客様の評判が悪い施策があります。</td><td class="a">止めよう。数字が良くても、嫌われたら意味ないよ。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">24</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">会議が、予定の倍の時間になっています。</td><td class="a">……で、結論は？　長い会議はだいたい中身がないんだよ。</td><td class="len">27</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">25</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">資料は完璧。でも担当者に、まったく熱がありません。</td><td class="a">資料じゃなくて、あなたの意見を聞いてるんだけどな。</td><td class="len">25</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="hot"><td class="no">26</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">案は荒い。でも担当者が本気で推しています。</td><td class="a">いいじゃん、やろうよ。粗いのは直せるんだから。</td><td class="len">23</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="判断" data-tag="hot"><td class="no">27</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">二つの案。どちらも一長一短で決まりません。</td><td class="a">お客さんが嬉しいほう。それで決まらない？</td><td class="len">20</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">28</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">部下が、失敗を報告せずに隠していました。</td><td class="a">隠したことのほうが問題だよ。失敗は、まあ、あるから。</td><td class="len">26</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">29</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">社外から良い提案。でも自社の利益にはなりません。</td><td class="a">お客さんが得するなら、やる理由あるでしょ。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">30</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">部下が、直属の上司を飛ばして相談に来ました。</td><td class="a">話は聞く。でもそのあと、ちゃんと上司にも言いなよ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">31</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">「リスクがあるので慎重に」という意見が出ました。</td><td class="a">リスクの本質は何？　それが言えないなら、ただの先送りだよ。</td><td class="len">29</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">32</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">みんなが賛成しています。でも、なんとなく引っかかります。</td><td class="a">全員が賛成してるときが、いちばん危ないんだよ。</td><td class="len">23</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">33</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">決めるのを、来月に先送りしようという話になりました。</td><td class="a">今決めよう。一ヶ月経っても、たぶん同じ景色だよ。</td><td class="len">24</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">34</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">現場は反対。データは推奨しています。</td><td class="a">現場に行こうよ。数字だけ見てても分かんないって。</td><td class="len">24</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">35</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">「他社もやっているので」と説明されました。</td><td class="a">……で？　うちがやる理由は、どこにあるの？</td><td class="len">21</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">36</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">完璧を目指すと、リリースが半年遅れます。</td><td class="a">出そう。半年後の完璧より、今の八割でしょ。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">37</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">説明が、専門用語だらけで分かりません。</td><td class="a">それ、お客さんに同じ説明する？　しないよね。</td><td class="len">22</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">38</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">提案者が、自信なさそうに話しています。</td><td class="a">自信ないなら、なんで持ってきたの。そこが聞きたいんだよ。</td><td class="len">28</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag="rec"><td class="no">39</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">「徹底します」という再発防止策が出てきました。</td><td class="a">徹底ってなに？　何を変えるのか、それだけ教えて。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="判断" data-tag=""><td class="no">40</td><td class="cat"><span class="catchip c-判断">判断</span></td><td class="q">コストを削れば利益は出ます。でもサービスの質は落ちます。</td><td class="a">落とさない方法を考えようよ。そこで諦めたら終わりだよ。</td><td class="len">27</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="hot"><td class="no">41</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、大きな失敗を報告してきました。最初に何と言いますか？</td><td class="a">わかった。で、お客さんへの影響は？</td><td class="len">17</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="部下" data-tag="hot"><td class="no">42</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、いい仕事をしました。</td><td class="a">いいじゃん。すぐやろうよ、それ。</td><td class="len">16</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">43</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、指示したこと以上のことをやってきました。</td><td class="a">おっ、いいね。そういうの、待ってたんだよ。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="rec"><td class="no">44</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、言われたことしかやってきません。</td><td class="a">……あなたは、どうしたいの？　そこだけ聞かせて。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">45</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">チームの意見がバラバラのまま、提案に来ました。</td><td class="a">先に、中で揃えてきて。バラバラのままだと決められないよ。</td><td class="len">28</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">46</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、ひどく落ち込んでいます。</td><td class="a">飲みに行こうか。話はそれからでいいよ。</td><td class="len">19</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="rec"><td class="no">47</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">会議で、一言も発言しない人がいます。</td><td class="a">〇〇さん、どう思う？　黙ってるのが一番よくないよ。</td><td class="len">25</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">48</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">優秀だけれど、周りに厳しすぎる部下がいます。</td><td class="a">強いのはいい。でも一人で勝っても、意味ないんだよ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">49</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、成果を独り占めしようとしています。</td><td class="a">誰と一緒にやったか、ちゃんと言いなよ。そこ大事だよ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="rec"><td class="no">50</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">新人が、まったく質問してきません。</td><td class="a">こっちから聞くよ。聞けない空気を作ってるのは、こっちだから。</td><td class="len">30</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">51</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、他社からのオファーで悩んでいます。</td><td class="a">正直に話すよ。引き止めるかどうかは、そのあと。</td><td class="len">23</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">52</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下から「評価に納得できません」と言われました。</td><td class="a">言ってくれてよかった。どこが納得いかないか、教えて。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="rec"><td class="no">53</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、自分の意見に真っ向から反対してきました。</td><td class="a">いいじゃん。意見があるほうが、ずっといいよ。</td><td class="len">22</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="部下" data-tag=""><td class="no">54</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、深夜まで残業しています。</td><td class="a">帰りなよ。能力の無さを時間で埋めるの、やめようよ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="部下" data-tag="rec"><td class="no">55</td><td class="cat"><span class="catchip c-部下">部下</span></td><td class="q">部下が、初めてのプレゼンで緊張しています。</td><td class="a">大丈夫。私だってスピーチのたびに緊張してるんだから。</td><td class="len">26</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="巨人" data-tag="hot"><td class="no">56</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">巨人が3連敗しました。翌朝の会議は？</td><td class="a">……で、なんの話だっけ。今日はそういう気分じゃないんだよ。</td><td class="len">29</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="巨人" data-tag="hot"><td class="no">57</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">巨人がサヨナラ勝ちした翌日です。</td><td class="a">いや〜、今日はいい日だね。なんでかって？　分かるでしょ。</td><td class="len">28</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="巨人" data-tag="rec"><td class="no">58</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">若い頃、ドラフトで阪神タイガースに指名されました。</td><td class="a">行くよ。指名してくれた球団が、一番いい球団でしょ。</td><td class="len">25</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="巨人" data-tag="rec"><td class="no">59</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">部下が「阪神ファンです」と言ってきました。</td><td class="a">……いいよ、別に。うん。いいよ。</td><td class="len">16</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="巨人" data-tag=""><td class="no">60</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">東京ドームのチケットが1枚だけ手に入りました。</td><td class="a">行くよ、一人で。誘って断られるほうが悲しいでしょ。</td><td class="len">25</td><td class="tag"></td></tr>
+<tr data-cat="巨人" data-tag="rec"><td class="no">61</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">大事な会議と、巨人の優勝がかかった試合が重なりました。</td><td class="a">会議に出るよ。……録画はするけどね。</td><td class="len">18</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="巨人" data-tag="rec"><td class="no">62</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">巨人が優勝しました。社内メールを送るとしたら？</td><td class="a">件名だけでいい。「レッツゴー！ジャイアンツ！」</td><td class="len">23</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="巨人" data-tag=""><td class="no">63</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">取引先の社長が、熱烈な阪神ファンだと分かりました。</td><td class="a">その話だけで一時間いけるよ。仲良くなるでしょ、それ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="巨人" data-tag=""><td class="no">64</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">「野球よりサッカーが好きです」と言われました。</td><td class="a">いいじゃん。でも一回、東京ドーム行ってみなよ。</td><td class="len">23</td><td class="tag"></td></tr>
+<tr data-cat="巨人" data-tag="rec"><td class="no">65</td><td class="cat"><span class="catchip c-巨人">巨人</span></td><td class="q">自分のバッティングフォームを褒められました。</td><td class="a">……お世辞でしょ。へっぴり腰だって、よく言われるんだよ。</td><td class="len">28</td><td class="tag"><span class="chip rec">自虐</span></td></tr>
+<tr data-cat="ゴルフ" data-tag="hot"><td class="no">66</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">土曜の早朝。天気は微妙です。ゴルフの予定があります。</td><td class="a">行くよ。多少降っても、行くって決めたんだから。</td><td class="len">23</td><td class="tag"><span class="chip hot">鉄板</span></td></tr>
+<tr data-cat="ゴルフ" data-tag="rec"><td class="no">67</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">御殿場のコースまで、車で片道2時間かかります。</td><td class="a">近いほうでしょ、それ。全然苦にならないよ。</td><td class="len">21</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="ゴルフ" data-tag=""><td class="no">68</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">部下から「ゴルフ、始めようと思います」と言われました。</td><td class="a">いいじゃん。今度行こうよ。道具？　貸すよ。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="ゴルフ" data-tag=""><td class="no">69</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">コンペで、まさかの優勝をしてしまいました。</td><td class="a">いや〜、参ったな。でも、うれしいよ。うん。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="ゴルフ" data-tag="rec"><td class="no">70</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">「この日、空いてますか？」と聞かれました。</td><td class="a">空いてるよ。……あ、代打じゃなくて一緒に行くやつ？</td><td class="len">25</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="ゴルフ" data-tag=""><td class="no">71</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">スコアが自己ワーストでした。</td><td class="a">こういう日もあるよ。次があるから。</td><td class="len">17</td><td class="tag"></td></tr>
+<tr data-cat="ゴルフ" data-tag="rec"><td class="no">72</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">取引先とのラウンドが、爆笑だらけで終わりました。</td><td class="a">最高だったよ。スコアなんて、正直どうでもよくてさ。</td><td class="len">25</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="ゴルフ" data-tag="rec"><td class="no">73</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">週末のゴルフで、手首を痛めてしまいました。</td><td class="a">……月曜は、ちょっと機嫌悪いかもしれない。ごめんね。</td><td class="len">26</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="ゴルフ" data-tag=""><td class="no">74</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">接待ゴルフで、わざと負けたほうがいいでしょうか？</td><td class="a">そんなことしないよ。バレるし、失礼でしょ。</td><td class="len">21</td><td class="tag"></td></tr>
+<tr data-cat="ゴルフ" data-tag="rec"><td class="no">75</td><td class="cat"><span class="catchip c-ゴルフ">ゴルフ</span></td><td class="q">ゴルフと仕事、どちらが好きですか？</td><td class="a">……その質問、答えないほうがいいやつでしょ。</td><td class="len">22</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">76</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">宴会で、ピザが運ばれてきました。</td><td class="a">タバスコ、かけていい？　……たっぷりね。</td><td class="len">20</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">77</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">一人の夜、何を食べますか？</td><td class="a">ラーメン。けっこう一人で行くんだよ、あれ。</td><td class="len">21</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="食・酒" data-tag=""><td class="no">78</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">行きつけの寿司屋に、部下を連れて行くことになりました。</td><td class="a">いい店だからさ。大事にしてる店なんだよ、あそこ。</td><td class="len">24</td><td class="tag"></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">79</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">一年目の社員と、二人で飲むことになりました。</td><td class="a">行こう行こう。若い子と飲むの、好きなんだよ。</td><td class="len">22</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">80</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">カラオケで、一曲目を任されました。</td><td class="a">任せて。……選曲、けっこう幅広いって言われるよ。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="食・酒" data-tag=""><td class="no">81</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">二次会に誘われました。もう深夜です。</td><td class="a">行くよ。誘われて断るの、なんか寂しいじゃん。</td><td class="len">22</td><td class="tag"></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">82</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">家でホームパーティをすることになりました。</td><td class="a">半休取ってビールサーバー借りてくる。やるなら本気でしょ。</td><td class="len">28</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="食・酒" data-tag="rec"><td class="no">83</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">飲み過ぎた翌朝、大事な会議があります。</td><td class="a">……行くよ。前の晩に深酒した自分が悪いんだから。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="食・酒" data-tag=""><td class="no">84</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">部下が「お酒が飲めません」と言いました。</td><td class="a">全然いいよ。飲まなくても、その場にいてくれれば。</td><td class="len">24</td><td class="tag"></td></tr>
+<tr data-cat="食・酒" data-tag=""><td class="no">85</td><td class="cat"><span class="catchip c-食・酒">食・酒</span></td><td class="q">接待で、まったく話が弾みません。</td><td class="a">仕事の話やめよう。趣味とか、そういう話しない？</td><td class="len">23</td><td class="tag"></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">86</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">休日の朝、予定が何もありません。</td><td class="a">走るかな。……昔はよく走ってたんだよ、これでも。</td><td class="len">24</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">87</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">髪型を褒められました。</td><td class="a">ツーブロックね。……そこ、褒めるとこ？</td><td class="len">19</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="日常" data-tag=""><td class="no">88</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">アウターを買うとき、何を基準にしますか？</td><td class="a">長く着られるやつ。安物を何着も買うより、いいでしょ。</td><td class="len">26</td><td class="tag"></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">89</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">結婚式のスピーチを頼まれました。</td><td class="a">……引き受けるよ。引き受けるけど、あれ、緊張するんだよ。</td><td class="len">28</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">90</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">人前で話す前、何をしていますか？</td><td class="a">深呼吸。……いや、ほんとに緊張するんだって。</td><td class="len">22</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">91</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">30分しか相談の時間がありません。</td><td class="a">……その前に、たばこ吸ってきていい？</td><td class="len">18</td><td class="tag"><span class="chip rec">笑い枠</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">92</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">オフィスで、急に空気が張り詰めました。</td><td class="a">こういうときは、崩しにいくよ。相撲でも取ろうか。</td><td class="len">24</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">93</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">自分の第一印象を、一言で言うと？</td><td class="a">こわそう、ってよく言われる。……常識人なんだけどな。</td><td class="len">26</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">94</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">怒っているとき、顔に出ますか？</td><td class="a">出ないよ。……笑ってても、怒ってるときはあるけどね。</td><td class="len">26</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="日常" data-tag="rec"><td class="no">95</td><td class="cat"><span class="catchip c-日常">日常</span></td><td class="q">社長になって、変わったことはありますか？</td><td class="a">何も変わってないよ。エレベーターでも「よっ」て言うし。</td><td class="len">27</td><td class="tag"><span class="chip rec">感動枠</span></td></tr>
+<tr data-cat="会社" data-tag=""><td class="no">96</td><td class="cat"><span class="catchip c-会社">会社</span></td><td class="q">現金派の人に、キャッシュレスをすすめるとしたら？</td><td class="a">コンビニで一回だけタッチしてみてよ。それで分かるから。</td><td class="len">27</td><td class="tag"></td></tr>
+<tr data-cat="会社" data-tag="rec"><td class="no">97</td><td class="cat"><span class="catchip c-会社">会社</span></td><td class="q">新しいサービスの説明が、複雑になってしまいました。</td><td class="a">複雑なものは使われないよ。もっと削ろう。</td><td class="len">20</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="会社" data-tag="rec"><td class="no">98</td><td class="cat"><span class="catchip c-会社">会社</span></td><td class="q">1991年、なぜこの会社に入ったのですか？</td><td class="a">面白そうだったから。それだけだよ。</td><td class="len">17</td><td class="tag"><span class="chip rec">推奨</span></td></tr>
+<tr data-cat="会社" data-tag="rec"><td class="no">99</td><td class="cat"><span class="catchip c-会社">会社</span></td><td class="q">会社のキャンペーンに、自分で応募しますか？</td><td class="a">するよ。自社のサービス、めちゃくちゃ使ってるもん。</td><td class="len">25</td><td class="tag"><span class="chip rec">実話ベース</span></td></tr>
+<tr data-cat="会社" data-tag="rec"><td class="no">100</td><td class="cat"><span class="catchip c-会社">会社</span></td><td class="q">社員に一言だけ伝えられるとしたら？</td><td class="a">ありがとう。……それだけでいいや、うん。</td><td class="len">20</td><td class="tag"><span class="chip rec">感動枠</span></td></tr>
+
+      </tbody>
+    </table>
+    <div class="empty" id="empty">該当する設問がありません。</div>
+  </div>
+</div>
+
+<script>
+  var rowsEl = Array.prototype.slice.call(document.querySelectorAll("#tbody tr"));
+  var countEl = document.getElementById("count");
+  var emptyEl = document.getElementById("empty");
+  var searchEl = document.getElementById("search");
+  var filter = "all";
+
+  function apply() {
+    var kw = searchEl.value.trim().toLowerCase();
+    var n = 0;
+    rowsEl.forEach(function (tr) {
+      var okF = filter === "all"
+        || (filter === "hot" && tr.dataset.tag === "hot")
+        || (filter === "rec" && (tr.dataset.tag === "rec" || tr.dataset.tag === "hot"))
+        || (filter.indexOf("cat:") === 0 && tr.dataset.cat === filter.slice(4));
+      var okK = !kw || tr.textContent.toLowerCase().indexOf(kw) !== -1;
+      var show = okF && okK;
+      tr.classList.toggle("hidden", !show);
+      if (show) n++;
+    });
+    countEl.textContent = n + " / 100 問";
+    emptyEl.classList.toggle("on", n === 0);
+  }
+
+  document.querySelector(".bar").addEventListener("click", function (e) {
+    var b = e.target.closest("button.f");
+    if (!b) return;
+    document.querySelectorAll("button.f").forEach(function (x) { x.classList.remove("on"); });
+    b.classList.add("on");
+    filter = b.dataset.f;
+    apply();
+  });
+  searchEl.addEventListener("input", apply);
+  apply();
+</script>
