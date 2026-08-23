@@ -79,11 +79,7 @@
   .cue { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4vh; text-align: center; }
   .cue .mark { font-size: 13vh; line-height: 1; color: var(--accent); }
   .cue .what { font-family: var(--mincho); font-size: 6vh; font-weight: 600; }
-  .cue .file {
-    font-family: var(--mono); font-size: 3vh; color: var(--ink);
-    background: var(--panel); border: 1px solid var(--accent-d); padding: 1.6vh 3vw; letter-spacing: .06em;
-  }
-  .cue .how { font-size: 2.4vh; color: var(--ink-2); line-height: 1.9; }
+  .cue .sub { font-size: 3vh; color: var(--ink-2); letter-spacing: .06em; }
 
   /* ---------- 正解 ---------- */
   .reveal { display: grid; grid-template-columns: 1fr 1fr; gap: 3vw; align-items: stretch; }
@@ -109,7 +105,7 @@
   }
   .hint b { color: var(--ink); }
   .hint .keys { margin-left: auto; font-family: var(--mono); font-size: 1.6vh; color: var(--ink-3); letter-spacing: .06em; white-space: nowrap; }
-  body.nohint .hint { display: none; }
+  body:not(.showhint) .hint { display: none; }   /* ★既定は非表示。投影に台本を出さないため */
 
   /* ---------- 点検モード ---------- */
   .check { position: fixed; inset: 0; background: #0B1119; overflow-y: auto; padding: 40px 5vw 80px; display: none; }
@@ -128,6 +124,27 @@
   .check code { font-family: var(--mono); background: var(--panel); padding: 2px 6px; border: 1px solid var(--rule); }
   .check ul { padding-left: 1.3em; display: flex; flex-direction: column; gap: 7px; color: var(--ink-2); font-size: 14px; margin-bottom: 26px; }
 
+
+  /* ---------- 進行台本（印刷専用。画面には出ない） ---------- */
+  .script { display: none; }
+  @media print {
+    @page { size: A4; margin: 14mm; }
+    body { background: #fff; color: #000; overflow: visible; height: auto; }
+    .stage, .hint, .glow, .check { display: none !important; }
+    .script { display: block; font-family: var(--gothic); font-size: 10.5pt; line-height: 1.7; }
+    .script h1 { font-family: var(--mincho); font-size: 20pt; margin-bottom: 4mm; }
+    .script .lede { font-size: 9.5pt; color: #444; margin-bottom: 6mm; line-height: 1.7; }
+    .script table { border-collapse: collapse; width: 100%; }
+    .script th, .script td { border: .4pt solid #888; padding: 2.2mm 2.6mm; text-align: left; vertical-align: top; }
+    .script th { background: #eee; font-weight: 700; }
+    .script .qhead td { background: #f4f4f4; font-weight: 700; font-size: 11.5pt; padding-top: 3.5mm; }
+    .script .no { width: 13mm; text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .script .ph { width: 20mm; white-space: nowrap; font-weight: 700; }
+    .script tr { break-inside: avoid; }
+    .script .foot { margin-top: 6mm; font-size: 9pt; color: #444; }
+    .script .warn { color: #000; font-weight: 700; }
+  }
+
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
 
@@ -142,12 +159,13 @@
   <div class="body" id="body"></div>
 </div>
 
-<div class="hint">
+<div class="hint" id="hint">
   <span id="hintText"></span>
-  <span class="keys">→ 次　← 戻る　F 全画面　C 点検　H ヒント非表示</span>
+  <span class="keys">→ 次　← 戻る　F 全画面　P 台本を印刷　C 点検　H 台本の表示切替</span>
 </div>
 
 <div class="check" id="check"></div>
+<div class="script" id="script"></div>
 
 <script>
 /* ============================================================
@@ -258,8 +276,7 @@ function render() {
       <div class="cue">
         <div class="mark">▶</div>
         <div class="what">正解発表</div>
-        <div class="file">${esc(d.video)}</div>
-        <div class="how">動画に切り替えて再生してください。<br>再生が終わったら、このスライドに戻って → を押します。</div>
+        <div class="sub">AI佐々木社長が、自分で正解を告げます。</div>
       </div>`;
   } else {
     const realSide = d.aiSide === "A" ? "B" : "A";
@@ -286,8 +303,9 @@ document.addEventListener("keydown", (e) => {
     if (document.fullscreenElement) document.exitFullscreen();
     else document.documentElement.requestFullscreen?.();
   }
-  else if (e.key === "h" || e.key === "H") document.body.classList.toggle("nohint");
+  else if (e.key === "h" || e.key === "H") document.body.classList.toggle("showhint");
   else if (e.key === "c" || e.key === "C") { document.body.classList.toggle("checking"); renderCheck(); }
+  else if (e.key === "p" || e.key === "P") { renderScript(); window.print(); }
   else if (e.key === "Home") go(0);
 });
 // クリック／タップでも進める（マウス操作したい人向け）
@@ -345,6 +363,43 @@ function renderCheck() {
       <li><b>後方席から読めるか。</b>実際に会場の後ろまで歩いて確認する</li>
     </ul>
     <p class="lede">C キーで元に戻ります。</p>`;
+}
+
+
+/* ---------- 進行台本を組み立てる（P キーで印刷） ---------- */
+function renderScript() {
+  const act = {
+    q:      () => "設問を読み上げる。<b>言い換えない</b>（正解が漏れます）",
+    ab:     () => "<b>AとBを、同じトーン・同じ速度で読む。</b>読んだら「Aだと思う方、拍手！」「Bだと思う方、拍手！」",
+    video:  (d) => `<b>${esc(d.video)}</b> を再生。終わったらスライドに戻る`,
+    answer: () => "正解が出る。<b>ご本人にマイクを向けて一言</b>もらう"
+  };
+  let rows = "", n = 0;
+  QUIZ.forEach((d, i) => {
+    const real = d.aiSide === "A" ? "B" : "A";
+    rows += `<tr class="qhead"><td colspan="3">第${i + 1}問　${esc(d.q).replace(/\n/g, "　")}
+      　<span class="warn">［本物＝${real}／AI＝${d.aiSide}］</span></td></tr>`;
+    PHASES.forEach(p => {
+      n++;
+      rows += `<tr><td class="no">${n}</td><td class="ph">${p.label}</td><td>${act[p.key](d)}</td></tr>`;
+    });
+  });
+  document.getElementById("script").innerHTML = `
+    <h1>#3 本物 vs AI クイズ　進行台本</h1>
+    <p class="lede">
+      画面には台本を出しません。<b>この紙を手元に持って進行してください。</b><br>
+      スライドは <b>→</b> で1枚ずつ進みます（全${slides.length}枚）。戻るときは <b>←</b>。<br>
+      <span class="warn">★［本物＝A／AI＝B］の欄は、演者には渡さないでください。</span>
+      知っていると読み方に差が出ます。<b>PC担当だけが持ちます。</b>
+    </p>
+    <table>
+      <tr><th class="no">枚</th><th class="ph">場面</th><th>やること</th></tr>
+      ${rows}
+    </table>
+    <p class="foot">
+      印刷日時：${new Date().toLocaleString("ja-JP")}　／　
+      内容を差し替えたら、この紙も刷り直してください。
+    </p>`;
 }
 
 render();
