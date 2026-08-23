@@ -1,0 +1,1179 @@
+<title>オープニング動画 絵コンテ｜AI佐々木社長</title>
+<style>
+  :root {
+    --ground: #DFE3E8;
+    --sheet: #FCFCFD;
+    --sheet-2: #F1F3F6;
+    --rule: #B9C2CD;
+    --rule-soft: #D6DCE3;
+    --ink: #1A2029;
+    --ink-2: #5A6674;
+    --ink-3: #8794A2;
+    --accent: #A9761A;
+    --accent-bg: #F6EDD8;
+    --accent-rule: #C8901E;
+    --shadow: 0 1px 2px rgba(26, 32, 41, .07), 0 8px 24px rgba(26, 32, 41, .06);
+
+    --mincho: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "Songti SC", serif;
+    --gothic: "Hiragino Kaku Gothic ProN", "Yu Gothic", "YuGothic", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
+    --mono: ui-monospace, "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+
+    --maxw: 1120px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #14171B;
+      --sheet: #1E232A;
+      --sheet-2: #262C34;
+      --rule: #3B4550;
+      --rule-soft: #2E353E;
+      --ink: #E4E8ED;
+      --ink-2: #9AA5B2;
+      --ink-3: #6F7C8A;
+      --accent: #E0A93A;
+      --accent-bg: #33291338;
+      --accent-rule: #B98A2A;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #14171B;
+    --sheet: #1E232A;
+    --sheet-2: #262C34;
+    --rule: #3B4550;
+    --rule-soft: #2E353E;
+    --ink: #E4E8ED;
+    --ink-2: #9AA5B2;
+    --ink-3: #6F7C8A;
+    --accent: #E0A93A;
+    --accent-bg: #33291338;
+    --accent-rule: #B98A2A;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--gothic);
+    font-size: 15px;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  /* ---------- 題字 ---------- */
+
+  .masthead {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 28px 30px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .masthead-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 6px;
+  }
+
+  h1 {
+    font-family: var(--mincho);
+    font-size: clamp(26px, 4.4vw, 40px);
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: .02em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .subtitle {
+    font-family: var(--mincho);
+    font-size: 15px;
+    color: var(--ink-2);
+    margin: 8px 0 0;
+    letter-spacing: .04em;
+  }
+
+  .runtime {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    line-height: 1.3;
+  }
+  .runtime b {
+    display: block;
+    font-size: 34px;
+    font-weight: 500;
+    letter-spacing: -.02em;
+  }
+  .runtime span {
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+
+  .meta {
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px 24px;
+  }
+  .meta div { display: flex; flex-direction: column; gap: 2px; }
+  .meta dt {
+    font-size: 11px;
+    letter-spacing: .12em;
+    color: var(--ink-3);
+    font-family: var(--mono);
+    text-transform: uppercase;
+  }
+  .meta dd { margin: 0; font-size: 14px; }
+
+  /* ---------- タイムライン ---------- */
+
+  .timeline {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 22px 24px 18px;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    margin: 0 0 14px;
+  }
+
+  .ruler {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    height: 46px;
+  }
+  .seg {
+    background: var(--sheet-2);
+    border: 1px solid var(--rule-soft);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 8px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .seg b {
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .seg span {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+  }
+  .seg.hit {
+    background: var(--accent-bg);
+    border-color: var(--accent-rule);
+    flex: 0 0 8px !important;
+    padding: 0;
+  }
+  .ruler-foot {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-3);
+    font-variant-numeric: tabular-nums;
+    margin-top: 6px;
+    letter-spacing: .06em;
+  }
+
+  /* ---------- 鉄則 ---------- */
+
+  /* ---------- 未検証バナー ---------- */
+
+  .unverified {
+    background: var(--sheet);
+    border: 1px solid var(--accent-rule);
+    border-left: 4px solid var(--accent-rule);
+    box-shadow: var(--shadow);
+    padding: 22px 26px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .unverified h2 {
+    font-family: var(--mincho);
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: .02em;
+    color: var(--accent);
+  }
+  .unverified p { margin: 0; font-size: 13.5px; line-height: 1.75; }
+  .unverified ol { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 4px; }
+  .unverified li { font-size: 13.5px; line-height: 1.7; }
+  .measure {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 13px;
+  }
+  .measure th, .measure td {
+    border: 1px solid var(--rule-soft);
+    padding: 7px 10px;
+    text-align: left;
+    vertical-align: top;
+  }
+  .measure th {
+    background: var(--sheet-2);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .measure td { font-family: var(--mono); font-variant-numeric: tabular-nums; color: var(--ink-2); }
+  .measure td.j { font-family: var(--gothic); }
+  .tablewrap { overflow-x: auto; }
+
+  .rules {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  .rule-card {
+    background: var(--sheet);
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .rule-card h3 {
+    font-family: var(--mincho);
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: .02em;
+  }
+  .rule-card p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.7; }
+  .rule-card .tc {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- 絵コンテ本体 ---------- */
+
+  .sheets {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+
+  .sheet {
+    background: var(--sheet);
+    display: grid;
+    grid-template-columns: 104px minmax(0, 300px) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .spine {
+    border-right: 1px solid var(--rule-soft);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--sheet-2);
+  }
+  .cutno {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+  .cutno small {
+    display: block;
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: var(--ink-3);
+    margin-bottom: 4px;
+  }
+  .tcbox {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--ink-2);
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 8px;
+  }
+  .tcbox b { display: block; color: var(--ink); font-weight: 600; }
+  .dur {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .1em;
+    color: var(--ink-3);
+  }
+  .tag {
+    font-size: 10.5px;
+    letter-spacing: .08em;
+    padding: 2px 7px;
+    border: 1px solid var(--rule);
+    color: var(--ink-2);
+    align-self: flex-start;
+    white-space: nowrap;
+  }
+  .tag.pre { border-color: var(--rule); }
+  .tag.post { border-color: var(--accent-rule); color: var(--accent); background: var(--accent-bg); }
+
+  .pic {
+    border-right: 1px solid var(--rule-soft);
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .frame {
+    border: 1px solid var(--rule);
+    background: #000;
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .cap {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: .06em;
+    line-height: 1.5;
+  }
+
+  .notes {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .notes h3 {
+    font-family: var(--mincho);
+    font-size: 19px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: .02em;
+    line-height: 1.4;
+    text-wrap: balance;
+  }
+  .notes ul { margin: 0; padding-left: 1.1em; display: flex; flex-direction: column; gap: 5px; }
+  .notes li { font-size: 13.5px; line-height: 1.72; }
+  .notes li::marker { color: var(--ink-3); }
+  .notes p { margin: 0; font-size: 13.5px; line-height: 1.72; }
+
+  .field {
+    border-top: 1px solid var(--rule-soft);
+    padding-top: 10px;
+    display: grid;
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 4px 12px;
+    align-items: baseline;
+  }
+  .field dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .14em;
+    color: var(--ink-3);
+    text-transform: uppercase;
+  }
+  .field dd { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
+  .field dd em {
+    font-style: normal;
+    font-family: var(--mincho);
+    color: var(--ink);
+    font-size: 14px;
+  }
+
+  pre {
+    margin: 0;
+    background: var(--sheet-2);
+    border: 1px solid var(--rule-soft);
+    border-left: 2px solid var(--rule);
+    padding: 10px 12px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 11.5px;
+    line-height: 1.65;
+    color: var(--ink-2);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* キメのカットだけ罫線を破る */
+  .sheet.keyframe {
+    grid-template-columns: 104px minmax(0, 1fr);
+    border-top: 2px solid var(--accent-rule);
+    border-bottom: 2px solid var(--accent-rule);
+    background: var(--sheet);
+  }
+  .sheet.keyframe .spine { background: var(--accent-bg); border-right-color: var(--accent-rule); }
+  .sheet.keyframe .cutno { color: var(--accent); }
+  .keyblock {
+    padding: 20px 22px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+    gap: 22px;
+    align-items: start;
+  }
+  .keyblock .frame { border-color: var(--accent-rule); }
+  .keyblock h3 {
+    font-family: var(--mincho);
+    font-size: 23px;
+    margin: 0 0 10px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .hitline {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .14em;
+    color: var(--accent);
+    margin: 0 0 10px;
+  }
+
+  /* ---------- 繋ぎ ---------- */
+
+  .bridge {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 26px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .bridge h2, .checklist h2 {
+    font-family: var(--mincho);
+    font-size: 21px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: .02em;
+  }
+  blockquote {
+    margin: 0;
+    border-left: 2px solid var(--accent-rule);
+    padding: 4px 0 4px 18px;
+    font-family: var(--mincho);
+    font-size: 19px;
+    line-height: 1.85;
+    letter-spacing: .03em;
+  }
+  .bridge p { margin: 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.75; }
+
+  .checklist {
+    background: var(--sheet);
+    border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+    padding: 26px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .checklist ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .checklist li {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 10px;
+    align-items: start;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule-soft);
+    font-size: 14px;
+  }
+  .checklist li:last-child { border-bottom: none; }
+  .box {
+    width: 15px;
+    height: 15px;
+    border: 1px solid var(--ink-3);
+    margin-top: 5px;
+  }
+
+  footer {
+    font-size: 12px;
+    color: var(--ink-3);
+    line-height: 1.8;
+    text-align: center;
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+  }
+
+  .printbtn {
+    align-self: flex-end;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    background: var(--sheet);
+    color: var(--ink-2);
+    border: 1px solid var(--rule);
+    padding: 8px 16px;
+    cursor: pointer;
+  }
+  .printbtn:hover { color: var(--ink); border-color: var(--ink-3); }
+  .printbtn:focus-visible { outline: 2px solid var(--accent-rule); outline-offset: 2px; }
+
+  a { color: var(--accent); }
+
+  @media (max-width: 880px) {
+    .sheet, .sheet.keyframe { grid-template-columns: minmax(0, 1fr); }
+    .spine {
+      border-right: none;
+      border-bottom: 1px solid var(--rule-soft);
+      flex-direction: row;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 18px;
+      flex-wrap: wrap;
+    }
+    .cutno { font-size: 20px; }
+    .cutno small { display: inline; margin-right: 6px; }
+    .tcbox { border-top: none; padding-top: 0; }
+    .pic { border-right: none; }
+    .keyblock { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media print {
+    body { background: #fff; }
+    .wrap { max-width: none; padding: 0; gap: 16px; }
+    .printbtn { display: none; }
+    .masthead, .timeline, .rules, .sheets, .bridge, .checklist { box-shadow: none; }
+    .sheet { break-inside: avoid; page-break-inside: avoid; }
+    .rule-card, .bridge, .checklist { break-inside: avoid; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <div>
+        <p class="eyebrow">Storyboard / Opening Title</p>
+        <h1>オープニング動画 絵コンテ</h1>
+        <p class="subtitle">佐々木社長 ご就任お祝い会　余興 #1「AI佐々木社長 登場」</p>
+      </div>
+      <div class="runtime">
+        <b>36.18</b>
+        <span>sec — with music</span>
+      </div>
+    </div>
+    <dl class="meta">
+      <div><dt>通し時刻</dt><dd>1:00 – 1:36.2</dd></div>
+      <div><dt>楽曲</dt><dd>★権利フリー／生成音源<br>ドロップを29.211秒に合わせる</dd></div>
+      <div><dt>音声</dt><dd>★<b>音を動画に焼き込んで書き出し</b><br>当日は再生ボタンひとつ</dd></div>
+      <div><dt>制作</dt><dd>seedance ＋ 編集ソフト<br>（CapCut / Clipchamp）</dd></div>
+      <div><dt>納品</dt><dd>01_opening.mp4<br>ローカル保存・ネット非依存</dd></div>
+      <div><dt>次に繋ぐ</dt><dd>#2 AI挨拶（24秒）／1:39〜</dd></div>
+    </dl>
+  </header>
+
+  <button class="printbtn" onclick="window.print()">この絵コンテを印刷</button>
+
+  <section class="unverified">
+    <h2>✔ 秒数は音源で実測済みです（2026/8/10）</h2>
+    <p>提供された音源ファイルを解析し、<b>すべての秒数を実測値で確定しました</b>。以下は推定ではなく計測値です。</p>
+    <div class="tablewrap">
+      <table class="measure">
+        <tr><th>冒頭のデジタル無音</th><td>0.000 – 1.570 s</td><th>テンポ</th><td>137.81 BPM</td></tr>
+        <tr><th>イントロ（歌なし）</th><td>1.570 – 29.211 s</td><th>1小節</th><td>1.7415 s</td></tr>
+        <tr><th>キメ＝ドロップ</th><td>29.211 s</td><th>全尺</th><td>36.177 s</td></tr>
+      </table>
+    </div>
+    <p><b>ボーカルの入りを実測で確認しました。</b>センター定位の声帯域エネルギーが29秒手前まで約2dBで一定、<b>29.2秒で5〜8dBに跳ね上がります</b>。ここで初めて声が入り、同時に曲の最初の1分で最大の一撃が来ます。直前でブレイクして音が引く構造なので、<b>キメとしてこれ以上の場所はありません。</b></p>
+    <p style="color:var(--accent)"><b>この秒数の骨格（137.81 BPM／1小節1.7415秒）はそのまま使います。</b>楽曲は権利上の理由で<b>権利フリー／生成音源に差し替え</b>ましたが、同じテンポで作り、<b>ドロップを29.211秒に合わせる</b>ので、カット割りは1フレームも変えません。<b>ここで踊らせません。</b>合わせるべきは「動き」ではなく「<b>判明</b>」──正体が分かる瞬間です。</p>
+    <p style="color:var(--accent)"><b>旧版の「22秒」は誤りでした。</b>実測すると22秒地点では何も起きておらず、小節線ですらありません。あのまま制作していれば、爆発が約7秒早く鳴っていました。</p>
+    <p style="color:var(--ink-2)">検出した主要オンセット（15.296 / 18.776 / 25.731 / 29.211 / 32.688 / 36.168 / 39.645 s）が<b>すべて 1.7415 秒の小節グリッドに一致</b>。グリッドは信頼して構いません。</p>
+  </section>
+
+  <section class="timeline">
+    <p class="section-label">Timing — 36.18秒の割り付け（実測確定）</p>
+    <div class="ruler">
+      <div class="seg" style="flex: 3.09"><b>黒み</b><span>3.09s</span></div>
+      <div class="seg" style="flex: 12.19"><b>シルエット・煽り</b><span>12.19s</span></div>
+      <div class="seg" style="flex: 5.0"><b>歩き（遠）</b><span>5.00s</span></div>
+      <div class="seg" style="flex: 8.93"><b>歩き（寄り）＋カウントダウン</b><span>8.93s</span></div>
+      <div class="seg hit" title="29.211秒 ドロップ＝爆発"></div>
+      <div class="seg" style="flex: 3.48"><b>正体判明＋テロップ</b><span>3.48s ＝2小節</span></div>
+      <div class="seg" style="flex: 3.48"><b>キメ・会釈</b><span>3.48s ＝2小節</span></div>
+    </div>
+    <div class="ruler-foot">
+      <span>00:00</span>
+      <span>29.211 ＝ ドロップ ＝ 爆発</span>
+      <span>36.18</span>
+    </div>
+  </section>
+
+  <section class="rules">
+    <div class="rule-card">
+      <p class="tc">Cue — same instant</p>
+      <h3>音楽と動画は「同時」に出す</h3>
+      <p>★<b>楽曲は動画に焼き込みます。</b>音と映像が同じファイルの中にあるので、<b>ズレようがありません</b>。当日の事前確認は「PCの音が会場スピーカーから出るか」の1点だけです。</p>
+    </div>
+    <div class="rule-card">
+      <p class="tc">29.211 sec — 実測確定</p>
+      <h3>爆発は曲のドロップに当てる</h3>
+      <p>映像は完成済みなので、<b>動かすのは音楽のほうです</b>。Audacityでドロップの位置を実測し、<b>29.211秒に来るよう音源の冒頭を切り詰める／足す</b>。生成音源だから切り貼りができます。</p>
+    </div>
+    <div class="rule-card">
+      <p class="tc">29.2 → 36.2 sec</p>
+      <h3>光の粒子は通しで舞わせる</h3>
+      <p>爆発から最後の会釈まで、粒子を途切れさせません。カットごとに置かず、繋いだ上のレイヤーに1本で乗せます。<b>★青系を選ぶこと。</b>オレンジの炎や金色の紙吹雪だと世界観がずれます。</p>
+    </div>
+  </section>
+
+  <section class="sheets" id="sheets">
+
+    <!-- CUT 1 -->
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>01</div>
+        <div class="tcbox"><b>0.000 – 3.088</b>3.09 sec</div>
+        <span class="tag pre">合意前に制作可</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="真っ黒な画面。何も映っていない。">
+          <rect width="320" height="180" fill="#000"></rect>
+          <rect x="0" y="0" width="320" height="180" fill="url(#vig)"></rect>
+          <defs>
+            <radialGradient id="vig" cx="50%" cy="50%" r="70%">
+              <stop offset="60%" stop-color="#0a0a0c" stop-opacity="0"></stop>
+              <stop offset="100%" stop-color="#000" stop-opacity=".9"></stop>
+            </radialGradient>
+          </defs>
+        </svg>
+        <p class="cap">FULL BLACK ／ 完全な黒み</p>
+      </div>
+      <div class="notes">
+        <h3>黒み ── ズレ吸収バッファ</h3>
+        <ul>
+          <li>画は一切入れない。ロゴもテロップも出さない</li>
+          <li>会場が静まり、「何か始まる」と身構える3秒</li>
+          <li><b>この3秒があるおかげで、音楽と動画の再生ズレが目立ちません。</b>削らないでください</li>
+          <li>音源の冒頭 1.570 秒は<b>ファイル自体が無音</b>。ここは何もしなくても黒み＋無音になります</li>
+        </ul>
+        <dl class="field">
+          <dt>SOUND</dt><dd>イントロ</dd>
+          <dt>制作</dt><dd>編集ソフトで黒コマを3秒置くだけ</dd>
+        </dl>
+      </div>
+    </article>
+
+    <!-- CUT 2 -->
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>02</div>
+        <div class="tcbox"><b>3.088 – 15.279</b>12.19 sec</div>
+        <span class="tag pre">合意前に制作可</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="逆光の中に立つスーツ姿のシルエットと、サイバー風の煽りテロップ。">
+          <defs>
+            <radialGradient id="glow2" cx="50%" cy="62%" r="55%">
+              <stop offset="0%" stop-color="#7fb2e8" stop-opacity=".85"></stop>
+              <stop offset="45%" stop-color="#2c5f9e" stop-opacity=".35"></stop>
+              <stop offset="100%" stop-color="#05070c" stop-opacity="0"></stop>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="180" fill="#05070c"></rect>
+          <ellipse cx="160" cy="112" rx="150" ry="88" fill="url(#glow2)"></ellipse>
+          <g fill="#000" opacity=".96" transform="translate(140,58) scale(0.98)">
+            <circle cx="20" cy="9" r="7.5"></circle>
+            <path d="M12 18h16l2 34H10z"></path>
+            <path d="M12 20l-5 27 4 1 5-24z"></path>
+            <path d="M28 20l5 27-4 1-5-24z"></path>
+            <path d="M14 52l-2 45h6l2-28 2 28h6l-2-45z"></path>
+          </g>
+          <rect x="0" y="150" width="320" height="30" fill="#05070c"></rect>
+          <g opacity=".92">
+            <text x="160" y="36" text-anchor="middle" fill="#a9d4ff" font-family="monospace" font-size="11" letter-spacing="1.6">我が社に、AI化された</text>
+            <text x="160" y="52" text-anchor="middle" fill="#a9d4ff" font-family="monospace" font-size="11" letter-spacing="1.6">最強のボスが降臨する…</text>
+          </g>
+          <g stroke="#8fc4ff" stroke-width=".5" opacity=".18">
+            <line x1="0" y1="70" x2="320" y2="70"></line>
+            <line x1="0" y1="96" x2="320" y2="96"></line>
+            <line x1="0" y1="122" x2="320" y2="122"></line>
+          </g>
+        </svg>
+        <p class="cap">WS ／ FIX ／ 逆光シルエット</p>
+      </div>
+      <div class="notes">
+        <h3>シルエットで立つ ── 煽りテロップ</h3>
+        <ul>
+          <li>スーツ姿の人物が、強い逆光の中に<b>動かずに立っている</b></li>
+          <li>顔は完全に潰す。誰なのかを<b>まだ明かさない</b>のがこのカットの仕事</li>
+          <li>テロップはサイバー風フォント。グリッチ／スキャンラインを薄く重ねる</li>
+          <li>長さは <b>12.19秒（7小節）</b>。15.279秒で曲の構成が変わるので、そこで次のカットへ切り替えます</li>
+        </ul>
+        <dl class="field">
+          <dt>テロップ</dt><dd><em>「我が社に、AI化された最強のボスが降臨する…」</em></dd>
+          <dt>SOUND</dt><dd>イントロ。じわじわ盛り上がる区間（ボーカルなし）</dd>
+          <dt>制作</dt><dd>seedance で生成、テロップは編集ソフトで後乗せ</dd>
+        </dl>
+        <pre>backlit silhouette of a businessman in a suit standing
+confidently, dark cyber background, cool blue rim light,
+cinematic, 10 seconds</pre>
+      </div>
+    </article>
+
+    <!-- CUT 3 -->
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>03</div>
+        <div class="tcbox"><b>15.279 – 23.986</b>8.71 sec</div>
+        <span class="tag pre">合意前に制作可</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="逆光と煙の中、遠くから人物がこちらへ歩いてくる。カウントダウンの3が重なる。">
+          <defs>
+            <radialGradient id="glow3" cx="50%" cy="58%" r="46%">
+              <stop offset="0%" stop-color="#cfe6ff" stop-opacity=".9"></stop>
+              <stop offset="40%" stop-color="#3d76bd" stop-opacity=".38"></stop>
+              <stop offset="100%" stop-color="#05070c" stop-opacity="0"></stop>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="180" fill="#05070c"></rect>
+          <ellipse cx="160" cy="104" rx="120" ry="72" fill="url(#glow3)"></ellipse>
+          <g fill="#9ec8f5" opacity=".16">
+            <polygon points="160,96 96,180 128,180"></polygon>
+            <polygon points="160,96 224,180 192,180"></polygon>
+            <polygon points="160,96 40,180 78,180"></polygon>
+            <polygon points="160,96 280,180 242,180"></polygon>
+          </g>
+          <g fill="#000" opacity=".96" transform="translate(149,86) scale(0.56)">
+            <circle cx="20" cy="9" r="7.5"></circle>
+            <path d="M12 18h16l2 34H10z"></path>
+            <path d="M12 21l-7 24 4 2 7-22z"></path>
+            <path d="M28 21l6 22-4 2-6-20z"></path>
+            <path d="M15 52l-8 44h7l6-27z"></path>
+            <path d="M25 52l7 44h-7l-5-27z"></path>
+          </g>
+          <line x1="0" y1="130" x2="320" y2="130" stroke="#3a4d66" stroke-width=".7" opacity=".5"></line>
+          <text x="160" y="112" text-anchor="middle" fill="#ffffff" opacity=".2" font-family="monospace" font-size="86" font-weight="bold">3</text>
+        </svg>
+        <p class="cap">WS ／ 寄りながら ／ 逆光の歩き</p>
+      </div>
+      <div class="notes">
+        <h3>歩き出す ── 15.279秒、曲の構成が変わる</h3>
+        <ul>
+          <li><b>逆光・煙・光の筋</b>の中を、ゆっくりこちらへ歩いてくる</li>
+          <li>顔はまだ飛ばしたまま。<b>逆光にしておくので本人素材が要りません</b></li>
+          <li><b>ローアングル（あおり）</b>で撮ると威圧感が出て、格段にカッコよくなります</li>
+          <li>CUT 03 と 04 は<b>切らずに1カット</b>。カメラが寄っていくだけで、04でカウントダウンが乗ります</li>
+          <li><b>15.279秒は実測で強いオンセット</b>が出た地点。ここで歩き出すと音と完全に合います</li>
+        </ul>
+        <dl class="field">
+          <dt>テロップ</dt><dd>このカットにはまだ入れない（カウントダウンは 23.986秒＝CUT 04 から）</dd>
+          <dt>SOUND</dt><dd>15.279秒で新しい要素が入る区間（実測でオンセット検出）</dd>
+        </dl>
+        <pre>a businessman in a suit walking slowly toward the camera
+in silhouette, strong backlight, smoke and light beams,
+dark stage, low angle, slow motion, cinematic, 9 seconds</pre>
+      </div>
+    </article>
+
+    <!-- CUT 4 -->
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>04</div>
+        <div class="tcbox"><b>23.986 – 29.211</b>5.23 sec</div>
+        <span class="tag pre">合意前に制作可</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="人物が大きく手前まで迫り、カウントダウンの1が重なる。">
+          <defs>
+            <radialGradient id="glow4" cx="50%" cy="46%" r="52%">
+              <stop offset="0%" stop-color="#eaf4ff" stop-opacity="1"></stop>
+              <stop offset="34%" stop-color="#5b91d4" stop-opacity=".45"></stop>
+              <stop offset="100%" stop-color="#05070c" stop-opacity="0"></stop>
+            </radialGradient>
+          </defs>
+          <rect width="320" height="180" fill="#05070c"></rect>
+          <ellipse cx="160" cy="80" rx="150" ry="92" fill="url(#glow4)"></ellipse>
+          <g fill="#9ec8f5" opacity=".2">
+            <polygon points="160,60 60,180 104,180"></polygon>
+            <polygon points="160,60 260,180 216,180"></polygon>
+          </g>
+          <g fill="#000" opacity=".97" transform="translate(122,20) scale(1.62)">
+            <circle cx="20" cy="9" r="7.5"></circle>
+            <path d="M12 18h16l3 36H9z"></path>
+            <path d="M11 21l-8 22 4 2 8-20z"></path>
+            <path d="M29 21l8 22-4 2-8-20z"></path>
+          </g>
+          <text x="160" y="128" text-anchor="middle" fill="#ffffff" opacity=".26" font-family="monospace" font-size="104" font-weight="bold">1</text>
+        </svg>
+        <p class="cap">BS ／ ローアングル ／ カメラ目前まで</p>
+      </div>
+      <div class="notes">
+        <h3>カウントダウン ── 29.2秒で目の前に到達</h3>
+        <ul>
+          <li>CUT 03 の続き。<b>29.211秒の時点で胸から上まで寄っている</b>構図にする</li>
+          <li>カウントダウンが<b>1小節ごとに1数字</b>で刻まれ、近づいてくる緊張が最大になる</li>
+          <li><b>27.470秒（「1」）で曲がブレイクして音が引きます。</b>画も一度静めて、白く飽和させ始める</li>
+          <li>歩きが遅すぎると間延びします。<b>29.211秒で到達しているか</b>を必ず見る</li>
+        </ul>
+        <dl class="field">
+          <dt>テロップ</dt><dd>「3」<b>23.986</b> ／「2」<b>25.728</b> ／「1」<b>27.470</b> 秒。<b>1数字＝1小節＝1.7415秒</b>。小節頭に置くだけで音に合います</dd>
+          <dt>SOUND</dt><dd>ドラムが最高潮 → <b>27.47秒でブレイク</b> → 次の小節頭（29.211）がキメ</dd>
+        </dl>
+      </div>
+    </article>
+
+    <!-- CUT 5 — キメ -->
+    <article class="sheet keyframe">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>05</div>
+        <div class="tcbox"><b>29.211</b>キメ / 一瞬</div>
+        <span class="tag post">要・本人素材</span>
+      </div>
+      <div class="keyblock">
+        <div>
+          <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="人物がカメラ目前で立ち止まり、背後で青い大爆発が起きて光の粒子が飛び散る。">
+            <defs>
+              <radialGradient id="boom" cx="50%" cy="48%" r="58%">
+                <stop offset="0%" stop-color="#ffffff" stop-opacity="1"></stop>
+                <stop offset="22%" stop-color="#cdf2ff" stop-opacity=".95"></stop>
+                <stop offset="46%" stop-color="#2f9de0" stop-opacity=".75"></stop>
+                <stop offset="74%" stop-color="#123f78" stop-opacity=".45"></stop>
+                <stop offset="100%" stop-color="#03060c" stop-opacity="0"></stop>
+              </radialGradient>
+            </defs>
+            <rect width="320" height="180" fill="#03060c"></rect>
+            <ellipse cx="160" cy="82" rx="168" ry="106" fill="url(#boom)"></ellipse>
+            <g fill="#fff" opacity=".5">
+              <polygon points="160,84 4,30 8,58"></polygon>
+              <polygon points="160,84 316,30 312,58"></polygon>
+              <polygon points="160,84 40,176 76,180"></polygon>
+              <polygon points="160,84 280,176 244,180"></polygon>
+            </g>
+            <g fill="#000" opacity=".97" transform="translate(120,16) scale(1.74)">
+              <circle cx="20" cy="9" r="7.5"></circle>
+              <path d="M12 18h16l3 38H9z"></path>
+              <path d="M11 21l-9 20 4 2 9-18z"></path>
+              <path d="M29 21l9 20-4 2-9-18z"></path>
+            </g>
+            <g data-particles="34" data-seed="5"></g>
+            <rect width="320" height="180" fill="#fff" opacity=".22"></rect>
+          </svg>
+          <p class="cap">BS ／ 立ち止まり ／ 背後で青い大爆発 ＋ 白フラッシュ</p>
+        </div>
+        <div>
+          <p class="hitline">29.211 sec — 楽曲のドロップ（実測値）</p>
+          <h3>立ち止まる、背後が青く爆発する、光の粒子が飛び散る</h3>
+          <ul>
+            <li><b>歩きの終点 ＝ 爆発 ＝ 楽曲のドロップ</b>を、同じ1フレームに揃える</li>
+            <li><b>ここではまだ顔を見せません。</b>人物は爆発を背にしたシルエットのまま。顔が出るのは次のCUT06です</li>
+            <li>だから<b>このカットは生成に向いています</b> ── 顔が映らない＝<b>途中で別人になる問題が起きません</b></li>
+            <li>順序は <b>白の立ち上がり（4〜6コマ）→ 青い爆発 → 光の粒子が飛散し始める</b></li>
+            <li>爆発を背にカメラ目前で立ち止まる ── ヒーローものの王道の構図</li>
+            <li>★<b>終わりは全画面が真っ白。</b>ここが次のカットとの継ぎ目になります</li>
+            <li>★<b>この白が、CUT06の素材が実写でも静止画でも生成でも継ぎ目を隠します</b></li>
+          </ul>
+          <dl class="field">
+            <dt>制作</dt><dd>★<b>このカットは生成で作ります</b>（GEN-5）。<b>参照はCUT04の最終フレーム</b>、終着点を<b>「全画面が真っ白」</b>に決め打つのがコツ。顔が出ないのでドリフトが無関係、白の終わりはモデルが最も破綻しにくい。うまくいかなければ従来どおり<em>青系のオーバーレイ素材を合成</em>（<code>OPENING_VIDEO.md §3-A-5</code>）</dd>
+            <dt>置き方</dt><dd><b>白がピークに達する瞬間を 29.211秒 に置く</b>。白が飽和しきっていなければ、<em>白のソリッドを重ねて不透明度を0→100%</em>にすれば確実に真っ白になります</dd>
+            <dt>注意</dt><dd>音は動画に焼き込むので、<b>合わせるのは書き出し前の1回だけ</b>。本番でズレることはありません</dd>
+          </dl>
+        <pre>Reference the attached image exactly: the same location, the same
+camera angle, the same framing, and the same man standing in the
+same position in silhouette.
+
+He stands completely still and does not move. He does not walk, does
+not step forward, does not turn around and does not look back.
+
+Behind him, a sudden and very fast burst of blue-white energy erupts
+and expands outward. The light floods forward toward the camera and
+grows brighter and brighter, until the entire frame is completely
+saturated and turns pure white.
+
+He remains a dark silhouette rimmed by the light as it grows.
+
+The explosion happens in the first few seconds. The rest of the shot
+is a completely white frame.
+
+Locked camera, one continuous shot, no cuts. Cool blue tones,
+cinematic, no text, no logos.</pre>
+        </div>
+      </div>
+    </article>
+
+    <!-- CUT 6 -->
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>06</div>
+        <div class="tcbox"><b>29.211 – 32.694</b>3.48 sec ＝2小節</div>
+        <span class="tag post">要・本人素材</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="爆発の白が引いて、ダークスーツの人物の顔がはっきり見える。テロップ「AI佐々木社長」。">
+          <defs>
+            <radialGradient id="stage6" cx="50%" cy="38%" r="72%">
+              <stop offset="0%" stop-color="#eaf7ff" stop-opacity=".78"></stop>
+              <stop offset="50%" stop-color="#2b6ea8" stop-opacity=".32"></stop>
+              <stop offset="100%" stop-color="#050a12" stop-opacity="0"></stop>
+            </radialGradient>
+            <linearGradient id="suit6" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#4a5568"></stop>
+              <stop offset="45%" stop-color="#2b3242"></stop>
+              <stop offset="100%" stop-color="#161b25"></stop>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="#050a12"></rect>
+          <rect width="320" height="180" fill="url(#stage6)"></rect>
+          <g fill="#bfe6ff" opacity=".12">
+            <polygon points="60,0 30,180 92,180"></polygon>
+            <polygon points="260,0 228,180 290,180"></polygon>
+          </g>
+          <g transform="translate(122,18) scale(1.62)">
+            <circle cx="20" cy="9" r="7.6" fill="#e8c9a4"></circle>
+            <path d="M12.6 5.5c1.5-4 13.4-4 14.8 0 .6 1.7.2 3-.5 3-1-1.6-3.2-2.6-6.9-2.6s-5.9 1-6.9 2.6c-.7 0-1.1-1.3-.5-3z" fill="#241a10"></path>
+            <path d="M12 18h16l3 38H9z" fill="url(#suit6)"></path>
+            <path d="M11 21l-8 24 4 2 8-22z" fill="url(#suit6)"></path>
+            <path d="M29 21l8 24-4 2-8-22z" fill="url(#suit6)"></path>
+            <path d="M17.4 18h5.2l-2.6 5-2.6-5z" fill="#f7f4ec"></path>
+            <path d="M18.6 22h2.8l1 16-2.4 3-2.4-3z" fill="#2f6fae"></path>
+          </g>
+          <g data-particles="30" data-seed="6"></g>
+          <rect x="0" y="132" width="320" height="34" fill="#000" opacity=".55"></rect>
+          <text x="160" y="155" text-anchor="middle" fill="#bfe6ff" font-family="sans-serif" font-size="19" font-weight="bold" letter-spacing="2">AI佐々木社長</text>
+        </svg>
+        <p class="cap">BS ／ 前明かり ／ 正体判明 ＋ テロップ</p>
+      </div>
+      <div class="notes">
+        <h3>正体判明 ── 白が引いて、顔が現れる</h3>
+        <ul>
+          <li>★<b>ここが山です。</b>29秒引っ張った前振りの答えが、ここで出る</li>
+          <li><b>踊らせません。</b>爆発の白が引き、前から光が当たって<b>顔がはっきり見える</b>──
+            それだけでこのカットの仕事は終わりです</li>
+          <li><b>テロップ「AI佐々木社長」は 30.95秒（bar +1）に出す。</b>
+            顔が見えた直後に名前が出る＝<b>判明 → 命名</b>の順にすると意味が通ります</li>
+          <li>会場200人に「あ、社長だ」と伝わる時間が要るので、<b>2小節（3.5秒）は確保</b>する</li>
+        </ul>
+        <dl class="field">
+          <dt>SOUND</dt><dd><b>ドロップ直後</b>。音がいちばん厚くなる区間なので、画は動かさず<b>止めて見せる</b></dd>
+          <dt>制作</dt><dd>★<b>まず8/20の実写を使ってください。</b>顔が途中で別人になる問題が発生しません。次善は<b>正面の静止画1枚＋ゆっくりズームイン（1.00→1.04倍）</b>。生成は3番目の選択肢です（<code>OPENING_VIDEO.md §3-B</code>）</dd>
+        </dl>
+        <pre>Reference the framing, camera angle and lighting of image1, the
+final frame of the previous shot. The man standing there is image2.
+
+He stands completely still, facing the camera. Chest-up framing,
+low camera angle, bright front spotlight on his face. Cool blue
+digital light particles drift slowly in the air around him.
+
+His head does not turn. His expression does not change. Only the
+particles move and the camera pushes in extremely slowly.
+
+Keep exactly the same face as image2 for the entire shot. Identity
+unchanged, consistent facial features from the first frame to the
+last. One continuous shot, no cuts, no text, no logos.</pre>
+      </div>
+    </article>
+
+    <article class="sheet">
+      <div class="spine">
+        <div class="cutno"><small>CUT</small>07</div>
+        <div class="tcbox"><b>32.694 – 36.177</b>3.48 sec ＝2小節</div>
+        <span class="tag post">要・本人素材</span>
+      </div>
+      <div class="pic">
+        <svg class="frame" viewBox="0 0 320 180" role="img" aria-label="ネクタイを直し、カメラに向かって軽く会釈する。光の粒子はまだ舞っている。">
+          <defs>
+            <radialGradient id="stage7" cx="50%" cy="34%" r="70%">
+              <stop offset="0%" stop-color="#8fc4ea" stop-opacity=".3"></stop>
+              <stop offset="100%" stop-color="#060a10" stop-opacity="0"></stop>
+            </radialGradient>
+            <linearGradient id="suit7" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#3f4859"></stop>
+              <stop offset="50%" stop-color="#252b38"></stop>
+              <stop offset="100%" stop-color="#12161e"></stop>
+            </linearGradient>
+          </defs>
+          <rect width="320" height="180" fill="#060a10"></rect>
+          <rect width="320" height="180" fill="url(#stage7)"></rect>
+          <g transform="translate(122,22) scale(1.55)">
+            <g transform="rotate(10 20 46)">
+              <circle cx="20" cy="9" r="7.6" fill="#d8bb96"></circle>
+              <path d="M12.6 5.5c1.5-4 13.4-4 14.8 0 .6 1.7.2 3-.5 3-1-1.6-3.2-2.6-6.9-2.6s-5.9 1-6.9 2.6c-.7 0-1.1-1.3-.5-3z" fill="#1e160d"></path>
+              <path d="M12 18h16l3 36H9z" fill="url(#suit7)"></path>
+              <path d="M29 21l7 22-4 2-7-20z" fill="url(#suit7)"></path>
+              <path d="M13 22c4 2 7.5 5.5 8.6 10l-4.2 1.6c-1-3.2-3.2-5.6-6.4-7z" fill="url(#suit7)"></path>
+              <path d="M17.4 18h5.2l-2.6 5-2.6-5z" fill="#efe9dc"></path>
+              <path d="M18.6 22h2.8l.9 13-2.3 2.8-2.3-2.8z" fill="#2b6299"></path>
+            </g>
+          </g>
+          <g data-particles="24" data-seed="7"></g>
+          <rect x="0" y="0" width="320" height="180" fill="#000" opacity=".34"></rect>
+        </svg>
+        <p class="cap">BS ／ ネクタイ → 会釈 → 暗転</p>
+      </div>
+      <div class="notes">
+        <h3>キメ ── ネクタイを直し、会釈して落とす</h3>
+        <ul>
+          <li><b>ネクタイをスッと直す → カメラ目線 → 不敵に軽く会釈</b> → 照明が落ちて暗転</li>
+          <li><b>光の粒子はまだ舞い続けている。</b>ここを止めると嘘っぽくなります</li>
+          <li>入りは<b>0.2秒のカット割り</b>（フェードしない）</li>
+          <li>★<b>会釈は「顎を引く程度」（10〜15度）。</b>深いお辞儀にすると、生成では顔が崩れ、大画面では大げさに見えます</li>
+          <li>★<b>暗転はプロンプトに書かず、編集でやる。</b>照明が変わると顔が描き直されます</li>
+          <li>36.177秒で暗転。<b>ここも実測で強いオンセットが出ている地点</b>なので、音にハマります</li>
+        </ul>
+        <dl class="field">
+          <dt>役割</dt><dd><em>映像が静かに着地するので、#2 の挨拶へそのまま繋がります。</em>旧案（踊り狂ったまま終わる）で問題だった「爆アゲ→淡々とした挨拶で冷える」という温度差は、この構成では発生しません</dd>
+          <dt>尺</dt><dd>29秒引っ張って、判明から暗転まで<b>わずか7秒</b>。引っ張るだけ引っ張って短く落とすのが、この構成の狙いです</dd>
+        </dl>
+        <pre>Reference the framing, camera angle and lighting of image1. The
+man standing there is image2.
+
+He straightens his tie with one hand, then lowers his chin in a
+small slow nod toward the camera and holds still. Chest-up framing,
+low camera angle. Cool blue digital light particles drift in the
+air around him.
+
+The movement is small and slow. His head stays facing the camera
+and does not rotate. His expression does not change. The lighting
+stays constant.
+
+Keep exactly the same face as image2 for the entire shot. Identity
+unchanged, consistent facial features from the first frame to the
+last. One continuous shot, no cuts, no text, no logos.</pre>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="bridge">
+    <h2>36.18秒 → #2 AI挨拶へ</h2>
+    <p>暗転したら、演者が短く受けます ──「……<b>登場！</b>」（2〜3秒）。<b>映像が静かに着地しているので、大声で煽ると逆に浮きます。</b>楽曲は動画の中で36.18秒にフェードアウト済みなので、音響の操作はありません。<b>1:39 から #2 の挨拶（24秒）</b>、<b>#3 クイズの開始は 2:03</b>。15分枠のバッファは 1:27 で、余裕があります。</p>
+    <blockquote>「……ただいまの映像、盛大に光の粒が飛び散っておりました。<br>　あれ、<b>全部私です。</b>」</blockquote>
+    <p>#2 の<b>1文目はこれで固定</b>します。飛び散った粒子を「自分の一部」と言い切ることで、<b>AIが実体を持たない</b>ことを笑いに変える仕掛けです。派手な登場を自分で回収しつつ、そのまま自己紹介にもなっています。<b>光の粒子の演出とセットで使ってください。</b></p>
+  </section>
+
+  <section class="checklist">
+    <h2>8/20 合意ミーティングで確認すること</h2>
+    <ul>
+      <li><span class="box"></span><span>この絵コンテを画面で見せながら、<b>全尺を通しで説明</b>する</span></li>
+      <li><span class="box"></span><span><b>逆光の中を歩いてくる → 背後で青く大爆発</b>の登場でよいか</span></li>
+      <li><span class="box"></span><span><b>サイバーな青い光の粒子</b>が舞う演出でよいか（#2の「あれ、全部私です」の台詞とセットで説明する）</span></li>
+      <li><span class="box"></span><span><b>通常のダークスーツ</b>でよいか（※<b>踊りません。</b>立って決めるだけです）</span></li>
+      <li><span class="box"></span><span>最後に<b>ネクタイを直してカメラ目線で会釈する</b>キメでよいか</span></li>
+      <li><span class="box"></span><span>テロップ「<b>AI佐々木社長</b>」の出し方でよいか</span></li>
+      <li><span class="box"></span><span>シルエットに重ねる<b>煽りテロップの文言</b>でよいか</span></li>
+      <li><span class="box"></span><span><b>当日限りの上映</b>か、後日の社内共有も可か</span></li>
+    </ul>
+    <p style="margin:0;font-size:13px;color:var(--ink-2);line-height:1.75">★<b>旧案（金のスーツ＋お札が舞う）は取りやめました。</b>衣装は通常のダークスーツ、演出は<b>AIらしいサイバーな青い光の粒子</b>です。楽曲も権利上の理由で<b>権利フリー／生成音源</b>に変更し、<b>音を動画に焼き込む</b>ため、当日の同期作業はなくなりました。</p>
+  </section>
+
+  <footer>
+    CUT 01–05（黒みから爆発まで）は逆光で顔を飛ばすため、<b>本人素材なしで 8/18 までに先行制作できます</b>。<br>
+    CUT 06–07（正体判明とキメ）は 8/20 の合意・撮影後、8/21–8/24 に生成します。<br>
+    <b>踊らせないので、最悪は正面の静止画1枚＋軽いズームでも成立します。</b><br>
+    <b>楽曲は権利フリー／生成音源を使い、音を動画に焼き込みます。ドロップを 29.211秒 に合わせてください。</b><br>
+    本コンテンツはご本人の同意を得て制作するAIによる再現です。イベント終了後、アバター・音声クローンは削除します。
+  </footer>
+
+</div>
+
+<script>
+  // 光の粒子のオーバーレイ（決定論的に配置：再読み込みしても同じ絵になる）
+  (function () {
+    var SVGNS = "http://www.w3.org/2000/svg";
+
+    function rng(seed) {
+      var s = seed * 9301 + 49297;
+      return function () {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      };
+    }
+
+    var TINT = ["#bfe9ff", "#7fd4ff", "#4ea8f0", "#e8f7ff"];
+
+    document.querySelectorAll("[data-particles]").forEach(function (g) {
+      var count = parseInt(g.getAttribute("data-particles"), 10);
+      var rand = rng(parseInt(g.getAttribute("data-seed"), 10) || 1);
+      for (var i = 0; i < count; i++) {
+        var x = rand() * 316;
+        var y = rand() * 172;
+        var color = TINT[Math.floor(rand() * TINT.length) % TINT.length];
+        var op = (0.4 + rand() * 0.6).toFixed(2);
+        var r = 0.6 + rand() * 1.9;
+
+        // 光の芯
+        var dot = document.createElementNS(SVGNS, "circle");
+        dot.setAttribute("cx", x.toFixed(1));
+        dot.setAttribute("cy", y.toFixed(1));
+        dot.setAttribute("r", r.toFixed(2));
+        dot.setAttribute("fill", color);
+        dot.setAttribute("opacity", op);
+        g.appendChild(dot);
+
+        // にじみ（グロー）
+        var halo = document.createElementNS(SVGNS, "circle");
+        halo.setAttribute("cx", x.toFixed(1));
+        halo.setAttribute("cy", y.toFixed(1));
+        halo.setAttribute("r", (r * 3.2).toFixed(2));
+        halo.setAttribute("fill", color);
+        halo.setAttribute("opacity", (op * 0.18).toFixed(3));
+        g.appendChild(halo);
+
+        // 一部は上昇する尾を引く破片にする
+        if (rand() > 0.62) {
+          var streak = document.createElementNS(SVGNS, "rect");
+          var h = 4 + rand() * 12;
+          streak.setAttribute("x", (x - r * 0.4).toFixed(1));
+          streak.setAttribute("y", (y - h).toFixed(1));
+          streak.setAttribute("width", (r * 0.8).toFixed(2));
+          streak.setAttribute("height", h.toFixed(1));
+          streak.setAttribute("rx", (r * 0.4).toFixed(2));
+          streak.setAttribute("fill", color);
+          streak.setAttribute("opacity", (op * 0.32).toFixed(3));
+          streak.setAttribute("transform", "rotate(" + (rand() * 24 - 12).toFixed(1) + " " + x.toFixed(1) + " " + y.toFixed(1) + ")");
+          g.appendChild(streak);
+        }
+      }
+    });
+  })();
+</script>

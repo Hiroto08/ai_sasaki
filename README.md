@@ -26,6 +26,24 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 イベント運用（同時200名・1日限定）を想定し、1人あたり発話上限（既定30回）と毎分制限つき。
 
 **📗 イベントで公開する手順（Google Cloud初心者向け）→ [docs/DEPLOY_GUIDE.md](docs/DEPLOY_GUIDE.md)**
+### 📚 イベント用ドキュメント（読む順）
+
+| # | ドキュメント | 何が書いてあるか |
+|---|---|---|
+| 0 | [**docs/SCHEDULE.md**](docs/SCHEDULE.md) | **9/1本番の逆算スケジュール**。いつ何をやるか（日付入り） |
+| 0.5 | [**docs/SURVEY.md**](docs/SURVEY.md) | **周辺アンケート設計**。AIの解像度を上げる最重要工程（今日から着手可） |
+| 0.6 | [**docs/SURVEY_RESULT.md**](docs/SURVEY_RESULT.md) | ★**アンケート集計結果とAIへの反映案**（25名・340件）。**現ペルソナとの乖離を含む** |
+| 1 | [**docs/EVENT_RUNDOWN.md**](docs/EVENT_RUNDOWN.md) | 15分の構成・費用・全体像 |
+| 2 | [**docs/BUILD_GUIDE.md**](docs/BUILD_GUIDE.md) | **構築手順書**。各作業を1手ずつ |
+| 3 | [**docs/SERVICE_SETUP.md**](docs/SERVICE_SETUP.md) | HeyGen／ElevenLabs／seedance の画面操作 |
+| 3.4 | [**docs/AVATAR_LOOK.md**](docs/AVATAR_LOOK.md) | **アバターのルック設計と背景生成プロンプト**／**#3クイズのA/Bスライド設計** |
+| 3.5 | [**docs/OPENING_VIDEO.md**](docs/OPENING_VIDEO.md) | **オープニング動画のシンクロシート**（36.18秒・秒数確定済み）／**楽曲は権利フリー・生成音源を動画に焼き込む** |
+| 3.6 | [**docs/storyboard.html**](docs/storyboard.html) | **絵コンテ**（7カットの画・秒数・演出メモ）。ブラウザで開く／印刷可。**8/20に本人へ見せる用** |
+| 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
+| 5 | [**docs/MC_SCRIPT.md**](docs/MC_SCRIPT.md) | **当日の実行台本**。開演60分前〜撤収まで |
+
+会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
+大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。
 
 ## クイックスタート（完全ローカル動作）
 
@@ -105,6 +123,12 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 |---|---|
 | `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
+| `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
+| `public/qa.html` | **フリー質問オペレーター卓**。回答生成→音声再生をワンクリック（#4用） |
+| `data/content/qa_presets.json` | **想定質問と確認済み回答**（answerを埋めると本番は即再生） |
+| `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |
+| `data/content/stage_script.json` | **事前確認済みの回答（台本モード）**。本番はAIを呼ばずこれを再生＝失敗しない |
+| （API）`/api/memories` `/api/finale` | **会場からの「思い出」投稿と、それを織り込んだフィナーレ生成** |
 | `data/config.json` | **口癖・口調・アバター写真のパラメーター設定**（編集即反映） |
 | `data/modes/normal.json` `spicy.json` | **通常/辛口モードの口調定義**（トグルで差し替わる部分） |
 | `data/content/*.json` | **おみくじ・クイズ・診断・挨拶・定型応答**（配列追記で増やせる） |
@@ -112,6 +136,7 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `data/knowledge.md` | 公開情報ナレッジベース（出典付き） |
 | `Dockerfile` | Cloud Runデプロイ用（依存ゼロのまま） |
 | `scripts/loadtest.js` | 200人同時の負荷テストスクリプト |
+| `assets/README.md` | **制作素材の置き場所**（参照画像・生成動画・本人素材・完成品）。中身はコミットしない |
 | `docs/DEPLOY_GUIDE.md` | **Google Cloud初心者向けデプロイ手順書** |
 | `docs/APP_DESIGN.md` | **イベント版 要件定義・設計書**（QR入場・合言葉・辛口モード・無料枠構成） |
 | `docs/PLAN.md` | 構築計画書（事例リサーチ・アーキテクチャ・ロードマップ） |

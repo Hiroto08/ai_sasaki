@@ -185,6 +185,33 @@
   }
   .avatar-frame.aura { animation: spicyAura 1s ease-in-out infinite; }
 
+  /* ---- 会場イベント用：思い出の投稿 ---- */
+  .memory-bar { display: flex; align-items: center; gap: 10px; padding: 0 22px 8px; }
+  .memory-bar button {
+    font-size: 13px; font-weight: 700; padding: 9px 16px; border-radius: 999px; cursor: pointer;
+    border: none; color: #123; background: linear-gradient(120deg, var(--lime), #d5ea7a);
+    box-shadow: var(--shadow-1);
+  }
+  .memory-bar button:hover { filter: brightness(1.06); }
+  .memory-done { font-size: 12px; color: var(--deep-2); font-weight: 700; }
+  .memory-modal { position: fixed; inset: 0; z-index: 90; display: none; align-items: center; justify-content: center; padding: 20px; background: rgba(0,30,20,.55); }
+  .memory-modal.open { display: flex; }
+  .memory-card { background: var(--card); border-radius: 18px; padding: 26px 24px; max-width: 420px; width: 100%; box-shadow: var(--shadow-2); }
+  .memory-card h2 { font-size: 17px; margin-bottom: 8px; }
+  .memory-card p { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; margin-bottom: 14px; }
+  .memory-card textarea {
+    width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
+    font-family: inherit; font-size: 15px; line-height: 1.7; outline: none; background: var(--bg); resize: vertical;
+  }
+  .memory-card textarea:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
+  .memory-count { text-align: right; font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+  .memory-actions { display: flex; gap: 10px; margin-top: 12px; }
+  .memory-actions button { flex: 1; padding: 12px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; }
+  #memoryCancel { border: 1px solid var(--line); background: #fff; color: var(--ink-2); }
+  #memorySend { border: none; background: var(--deep); color: #fff; }
+  #memorySend:disabled { opacity: .5; }
+  .memory-err { color: var(--spicy); font-size: 12px; min-height: 16px; margin-top: 8px; text-align: center; }
+
   /* ---- 合言葉入場ゲート ---- */
   .gate {
     position: fixed; inset: 0; z-index: 100; padding: 20px;
@@ -340,11 +367,18 @@
       <div class="messages" id="messages"></div>
       <div class="suggest" id="suggest">
         <button>🎋 今日の社長おみくじ</button>
-        <button>💳 キャッシュレス度を診断して</button>
+        <button>⛳ ゴルフの調子はどうですか？</button>
         <button>💡 社長クイズを出して</button>
+        <button>💳 キャッシュレス度を診断して</button>
         <button>🍜 ランチ何にするか決めて</button>
         <button>😮‍💨 やる気が出ません…</button>
         <button>🏢 なぜこの会社に入ったの？</button>
+        <button>🌶️ 辛口で一言ください</button>
+      </div>
+      <!-- 会場イベント用：ご本人への思い出投稿（memoryEnabled が true のときだけ表示） -->
+      <div class="memory-bar" id="memoryBar" style="display:none">
+        <button type="button" id="memoryOpen">📮 佐々木さんへの「思い出」を送る</button>
+        <span class="memory-done" id="memoryDone"></span>
       </div>
       <div class="remaining" id="remaining"></div>
       <form class="input-bar" id="chatForm">
@@ -353,6 +387,23 @@
       </form>
     </section>
   </main>
+
+  <!-- 思い出投稿モーダル -->
+  <div class="memory-modal" id="memoryModal">
+    <form class="memory-card" id="memoryForm">
+      <h2>📮 佐々木さんへの「思い出」</h2>
+      <p>あなたが知っている佐々木さんを、ひとこと教えてください。<br>
+        集まった声は、この後 <strong>AI社長からのお祝いの言葉</strong> になります。</p>
+      <textarea id="memoryText" maxlength="120" rows="3"
+        placeholder="例：いつも「気が利くね！」と褒めてくださる／会議で必ず現場の話を聞いてくれる"></textarea>
+      <div class="memory-count"><span id="memoryLen">0</span> / 120</div>
+      <div class="memory-actions">
+        <button type="button" id="memoryCancel">閉じる</button>
+        <button type="submit" id="memorySend">送る</button>
+      </div>
+      <div class="memory-err" id="memoryErr"></div>
+    </form>
+  </div>
 
   <!-- 合言葉入場ゲート -->
   <div class="gate" id="gate">
@@ -400,7 +451,7 @@ const history = [];
 let token = sessionStorage.getItem("token") || "";
 // 応答モード（normal / spicy）
 let chatMode = sessionStorage.getItem("chatMode") || "normal";
-let greetings = { modeToSpicy: [], modeToNormal: [] };
+let greetings = { modeToSpicy: [], modeToNormal: [], spicyPunch: "" };
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // --- アバターアニメーション ---
@@ -453,6 +504,14 @@ fetch("/api/config").then(r => r.json()).then(cfg => {
   }
   modeBadge.textContent = cfg.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
   if (cfg.greetings) greetings = cfg.greetings;
+  // 会場イベント用：思い出の投稿ボタン
+  if (cfg.eventMode && cfg.eventMode.memoryEnabled) {
+    document.getElementById("memoryBar").style.display = "";
+    if (cfg.eventMode.memoryQuestion) {
+      document.querySelector("#memoryForm p").innerHTML =
+        `${cfg.eventMode.memoryQuestion}<br>集まった声は、この後 <strong>AI社長からのお祝いの言葉</strong> になります。`;
+    }
+  }
   if (Array.isArray(cfg.modes)) {
     const n = cfg.modes.find(m => m.id === "normal");
     const s = cfg.modes.find(m => m.id === "spicy");
@@ -537,6 +596,52 @@ function toggleMode() {
     if (msgs && msgs.length) postAssistant(rand(msgs));
   }
 }
+// --- 会場イベント用：思い出の投稿 ---
+const memoryModal = document.getElementById("memoryModal");
+const memoryText = document.getElementById("memoryText");
+const memoryErr = document.getElementById("memoryErr");
+const memorySend = document.getElementById("memorySend");
+let memorySentCount = 0;
+
+document.getElementById("memoryOpen").addEventListener("click", () => {
+  memoryModal.classList.add("open");
+  memoryErr.textContent = "";
+  memoryText.focus();
+});
+document.getElementById("memoryCancel").addEventListener("click", () => memoryModal.classList.remove("open"));
+memoryModal.addEventListener("click", (e) => { if (e.target === memoryModal) memoryModal.classList.remove("open"); });
+memoryText.addEventListener("input", () => { document.getElementById("memoryLen").textContent = memoryText.value.length; });
+
+document.getElementById("memoryForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = memoryText.value.trim();
+  if (!text) return;
+  memorySend.disabled = true;
+  memoryErr.textContent = "";
+  try {
+    const res = await fetch("/api/memories", {
+      method: "POST",
+      headers: { "content-type": "application/json", authorization: "Bearer " + token },
+      body: JSON.stringify({ text }),
+    });
+    if (res.ok) {
+      memorySentCount++;
+      memoryModal.classList.remove("open");
+      memoryText.value = ""; document.getElementById("memoryLen").textContent = "0";
+      document.getElementById("memoryDone").textContent = `✓ ${memorySentCount}件 お送りいただきました！`;
+    } else {
+      const d = await res.json().catch(() => ({}));
+      memoryErr.textContent = d.error === "ng"
+        ? "その言葉は使えません。お祝いの席にふさわしい表現でお願いします。"
+        : "送信できませんでした。もう一度お試しください。";
+    }
+  } catch {
+    memoryErr.textContent = "通信エラーが発生しました。";
+  } finally {
+    memorySend.disabled = false;
+  }
+});
+
 modeSwitch.addEventListener("click", toggleMode);
 modeSwitch.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggleMode(); } });
 renderMode();
@@ -586,8 +691,10 @@ async function send(text) {
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
   const typing = showThinking();
-  // 辛口切替後の最初の発話なら、2秒考えてから決め台詞→生成回答、の演出を行う
-  const doPunch = spicyPunchPending && chatMode === "spicy";
+  // 辛口切替後の最初の発話 かつ 決め台詞(spicyPunch)が設定されている場合のみ、
+  // 2秒考えてから決め台詞→生成回答、の演出を行う（spicyPunchが空なら演出なし＝非表示）
+  const punchText = (greetings.spicyPunch || "").trim();
+  const doPunch = spicyPunchPending && chatMode === "spicy" && punchText !== "";
   const startT = Date.now();
   try {
     const res = await fetch("/api/chat", {
@@ -611,8 +718,8 @@ async function send(text) {
       if (wait > 0) await new Promise((r) => setTimeout(r, wait));
       typing.remove();
       spicyPunchPending = false;
-      addMsg("assistant", "森っちなんでいるの？"); // 決め台詞は履歴に残さない演出
-      startSpeaking("森っちなんでいるの？");
+      addMsg("assistant", punchText); // 決め台詞は履歴に残さない演出（data/content/greetings.json の spicyPunch）
+      startSpeaking(punchText);
       await new Promise((r) => setTimeout(r, 700));
     } else {
       typing.remove();
