@@ -170,7 +170,8 @@
   }
   .input-bar input {
     flex: 1; padding: 13px 18px; border: 1.5px solid var(--line); border-radius: 999px;
-    font-size: 14px; outline: none; background: var(--bg); transition: border-color .15s, box-shadow .15s, background .15s;
+    font-size: 16px; /* ★16px未満だとiOSがフォーカス時にページを勝手に拡大する */
+    outline: none; background: var(--bg); transition: border-color .15s, box-shadow .15s, background .15s;
   }
   .input-bar input:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
   .input-bar button {
@@ -215,7 +216,7 @@
   .memory-card p { font-size: 12.5px; color: var(--ink-2); line-height: 1.8; margin-bottom: 14px; }
   .memory-card textarea {
     width: 100%; padding: 12px 14px; border: 1.5px solid var(--line); border-radius: 12px;
-    font-family: inherit; font-size: 15px; line-height: 1.7; outline: none; background: var(--bg); resize: vertical;
+    font-family: inherit; font-size: 16px; /* ★iOSの自動ズーム対策 */ line-height: 1.7; outline: none; background: var(--bg); resize: vertical;
   }
   .memory-card textarea:focus { border-color: var(--deep-3); background: #fff; box-shadow: 0 0 0 3px var(--lime-tint); }
   .memory-count { text-align: right; font-size: 11px; color: var(--ink-3); margin-top: 4px; }
@@ -303,6 +304,57 @@
   @media (prefers-reduced-motion: reduce) {
     .msg, .gate-card { animation: none; }
     * { transition: none !important; }
+  }
+
+  /* ================= スマホ向けの補正 ================= */
+
+  /* 横向きにしたときにiOSが文字を勝手に太らせるのを防ぐ */
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+  /* タップ時の灰色のちらつきを消す（代わりに:activeで明確に反応させる） */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* ボタンの文字が長押しで選択されてしまうのを防ぐ */
+  button, .switch, .disclaimer summary { -webkit-user-select: none; user-select: none; }
+
+  /* チャットを端まで送ったときに、ページ全体が引っぱられるのを止める */
+  .messages { overscroll-behavior: contain; }
+
+  /* ホバーできない端末では、ホバー演出を無効にする
+     （タッチだと :hover が押した後も残り、ボタンが浮いたままになる） */
+  @media (hover: none) {
+    .suggest button:hover,
+    .input-bar button:hover,
+    .memory-bar button:hover { transform: none; }
+    .suggest button:hover { background: var(--card); border-color: var(--line); }
+    .input-bar button:hover { background: var(--deep); }
+  }
+
+  /* 押した瞬間の手応えをはっきりさせる */
+  .suggest button:active { background: var(--lime-tint); border-color: var(--lime); }
+  .input-bar button:active { filter: brightness(.92); }
+
+  @media (max-width: 700px) {
+    /* タップ目標を確保する（小さすぎると、横スクロール中に押し損なう） */
+    .suggest button { min-height: 40px; font-size: 13px; padding: 9px 16px; }
+    .input-bar button { min-height: 46px; }
+    .input-bar input { min-height: 46px; }
+
+    /* アバターの帯を薄くして、会話の面積を稼ぐ */
+    .avatar-pane { padding: 6px 12px; gap: 8px; }
+    .avatar-pane svg, #avatarPhoto { width: 40px !important; height: 46px !important; }
+
+    /* 画面いっぱいに使う */
+    .messages { padding: 14px 12px 6px; }
+    .msg { max-width: 92%; }
+    .input-bar { padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+    .input-bar button { padding: 13px 20px; }
+
+    /* 横向きのとき、アバター帯は畳んで会話を優先する */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .avatar-pane, .disclaimer { display: none; }
+      .suggest { padding: 3px 12px 5px; }
+    }
   }
 </style>
 </head>
@@ -761,6 +813,16 @@ async function send(text) {
 }
 
 form.addEventListener("submit", (e) => { e.preventDefault(); send(input.value); });
+
+// スマホでキーボードが開くと表示領域が縮む。最新の発言が隠れないよう下端へ送る。
+input.addEventListener("focus", () => {
+  setTimeout(() => { messagesEl.scrollTop = messagesEl.scrollHeight; }, 300);
+});
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", () => {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  });
+}
 document.getElementById("suggest").addEventListener("click", (e) => {
   const btn = e.target.closest("button");
   if (!btn) return;
