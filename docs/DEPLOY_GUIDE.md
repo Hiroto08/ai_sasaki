@@ -192,6 +192,80 @@ gcloud run deploy ai-shacho \
 > ❗ 回答の末尾等に「デモモード」と出る場合はAPIキーが効いていません。
 > 下のトラブルシューティング①へ。
 
+## STEP 4.5：本人の写真に差し替える（許諾取得後）
+
+**設定は最初から入っています。必要なのは写真ファイルを置くことだけです。**
+
+```jsonc
+// data/config.json — すでにこの状態
+"avatar": { "image": "avatar.png", "consentConfirmed": true }
+```
+
+サーバーは「**許諾フラグが true**」かつ「**ファイルが実在する**」ときだけ写真を表示します。
+どちらか欠けると、自動でイラストのままになります（事故防止のため）。
+
+### 4.5-1. 写真を用意する
+
+| 項目 | 指定 |
+|---|---|
+| ファイル名 | ★**`avatar.png`**（この名前でないと読まれません） |
+| 形式 | PNG |
+| サイズ | **縦長・200×230px 以上**（表示は 200×230 に `object-fit: cover` で切り抜き） |
+| 構図 | ★**顔が中央**に来るように。上下が切れる前提で余白を取る |
+| 背景 | 無地が無難（合言葉画面では 104×120px の小さい表示にもなります） |
+
+### 4.5-2. Cloud Shell に置く
+
+Cloud Shell 右上の **⋮（縦三点）→「アップロード」** でPCから `avatar.png` を送り、
+`~/ai_sasaki/public/` へ移動します。
+
+```bash
+mv ~/avatar.png ~/ai_sasaki/public/avatar.png
+ls -l ~/ai_sasaki/public/avatar.png    # 表示されればOK
+```
+
+### 4.5-3. 再デプロイ
+
+```bash
+cd ~/ai_sasaki
+gcloud run deploy ai-shacho --source . --region asia-northeast1
+```
+
+> 💡 環境変数は前回の指定が引き継がれるので、`--set-env-vars` は付け直さなくて構いません。
+> （付け直す場合は**全部**を指定してください。一部だけ書くと残りが消えます）
+
+### 🚨 4.5-4. 写真が反映されないときは、まずここを見る
+
+**`.gcloudignore` が無いと、gcloud は `.gitignore` を代用します。**
+`.gitignore` は本人の写真をリポジトリに入れないため `public/*.png` を除外しているので、
+**そのままだとアップロード自体から写真が抜け落ちます。**
+エラーも警告も出ないまま、イラストのまま公開されるという分かりにくい失敗です。
+
+→ **リポジトリに `.gcloudignore` を用意済みです**（2026/8/23 追加）。
+　`git pull` して、ファイルがあることを確認してください。
+
+```bash
+cd ~/ai_sasaki && git pull && ls -l .gcloudignore
+```
+
+**チェックリスト**
+
+- [ ] `ls ~/ai_sasaki/public/avatar.png` でファイルが見える
+- [ ] `ls ~/ai_sasaki/.gcloudignore` が存在する
+- [ ] ファイル名が `avatar.png`（大文字small違い・`.PNG`・`.jpg` は不可）
+- [ ] 再デプロイ後、`https://サービスURL/avatar.png` を直接開いて写真が出る
+      → ここで404なら、アップロードに含まれていません
+
+> ⚠️ ★**写真はリポジトリにコミットされません**（本人の顔のため）。
+> `git clone` をやり直すと写真は消えます。**その場合は 4.5-2 からやり直してください。**
+> Cloud Shell のホームは保持されるので、`git pull` するだけなら消えません。
+
+> 🚨 **イベント終了後、写真を削除してください。**
+> `gcloud run services delete ai-shacho --region asia-northeast1` でサービスごと消せます
+> （STEP 8）。本人の顔を含むコンテナイメージも Artifact Registry から削除します。
+
+---
+
 ## STEP 5：QRコードを作る
 
 1. **https://quickchart.io/qr-code-api/** などの無料QR生成、または検索で出る任意の

@@ -112,10 +112,16 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 本人の許諾が得られるまではイラストアバターで動作する。許諾取得後は：
 
 1. `public/avatar.png` に写真（PNG形式、推奨 縦長 200×230px 以上）を置く
-2. `data/config.json` の `avatar.consentConfirmed` を `true` にする
+2. `data/config.json` の `avatar.consentConfirmed` を `true` にする（**設定済み**）
 
 この2つが揃ったときだけ写真に切り替わる（どちらか欠けるとイラストのまま）。
 写真は `.gitignore` 済みでリポジトリにはコミットされない。発話時は写真が軽く動く。
+
+> 🚨 **Cloud Run にデプロイする場合の注意。**
+> `.gitignore` が `public/*.png` を除外しているため、**`.gcloudignore` が無いと
+> gcloud がそれを代用し、写真がアップロードから抜け落ちます**（エラーは出ません）。
+> リポジトリに `.gcloudignore` を用意済みです。手順は
+> [`docs/DEPLOY_GUIDE.md` STEP 4.5](docs/DEPLOY_GUIDE.md) を参照。
 
 ## 構成
 
