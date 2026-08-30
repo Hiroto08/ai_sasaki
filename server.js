@@ -144,16 +144,76 @@ const LENGTH_RULE = [
   "",
   "**声に出して読んで、3秒で終わる長さ。それがあなたの返答です。**",
   "",
+  "### これを書いた瞬間、AIに戻ります（1語でも禁止）",
+  "",
+  "```",
+  "承知しました／かしこまりました／〜についてご説明します",
+  "ポイントは3つあります／〜という点が重要です",
+  "他にご質問はありますか？／お役に立てれば幸いです",
+  "素晴らしいご質問ですね／おっしゃる通りです",
+  "```",
+  "",
+  "**役に立とうとしないでください。**あなたは手伝う人ではなく、そこにいて喋っている人です。",
+  "聞かれたこと全部に答えなくていい。一番大事な1つだけ答えて、終わってください。",
+  "",
   "エンタメモードのキャラクター設定を最優先し、楽しく、しかし品位を保って応答すること。",
 ].join("\n");
 
-function buildSystemPrompt(config, mode) {
+// ---- 会話の状態に応じた指示 ----
+// 「初対面かどうか」「直前に何を喋ったか」で指示を変える。
+// AIらしさが出るのは、毎回リセットして同じ書き出し・同じ持ちネタを繰り返すとき。
+// 会話履歴から実際に使った書き出しとネタを拾って、明示的に禁止する。
+const TOPIC_TAGS = [
+  { key: "巨人・野球", re: /巨人|ジャイアンツ|野球|東京ドーム|バッター|ピッチャー/ },
+  { key: "ゴルフ", re: /ゴルフ|ラウンド|スコア|パター|ドライバー|ティー/ },
+  { key: "食べもの・お酒", re: /寿司|鮨|焼肉|ラーメン|お酒|ビール|ワイン|飲み|居酒屋/ },
+  { key: "決済・キャッシュレス", re: /キャッシュレス|決済|クレジット|タッチ|Vポイント|カード/ },
+];
+
+function conversationSection(messages) {
+  const past = (messages || []).filter((m) => m.role === "assistant" && m.content);
+  if (past.length === 0) {
+    return [
+      "## いまの会話の状態：初対面（1回目）",
+      "",
+      "相手はいま来たところです。軽く受けて、すぐ相手の話に入ってください。",
+      "- 名乗るのは一言だけ。経歴・肩書き・意気込みを並べない",
+      "- 「何でも聞いてください」と言わない。ご用聞きをしない",
+    ].join("\n");
+  }
+
+  const recent = past.slice(-3);
+  const last = (past[past.length - 1].content || "").replace(/^[\s「\n]+/, "");
+  const opener = last.slice(0, 8);
+  const usedTopics = TOPIC_TAGS
+    .filter((t) => recent.some((m) => t.re.test(m.content)))
+    .map((t) => t.key);
+
+  return [
+    `## いまの会話の状態：会話の途中（次があなたの${past.length + 1}回目の発言）`,
+    "",
+    "**挨拶も自己紹介も、もう済んでいます。**もう一度名乗らない。前置きを置かない。",
+    "いきなり続きから話してください。",
+    "",
+    `- ★**直前の返答はこう始めました → 「${opener}…」**`,
+    "  **同じ書き出しで始めないでください。**別の入り方にすること",
+    usedTopics.length
+      ? `- ★**直近で${usedTopics.map((t) => `「${t}」`).join("・")}の話はもう出しました。**` +
+        "しばらく封印。同じネタを繰り返すと、一気に作り物に見えます"
+      : "- 持ちネタ（巨人・ゴルフ・食・決済）は、流れで自然に出るときだけ。1回の返答に1つまで",
+    "- 相手が使った言葉を拾って返す。そのほうが聞いている感じが出ます",
+    "- ★**相手のテンションに合わせる。**軽い相手には軽く、まじめな相談にはまじめに",
+  ].join("\n");
+}
+
+function buildSystemPrompt(config, mode, messages) {
   return [
     persona,
     "\n---\n" + speechStyleSection(config),
     "\n---\n" + modeSection(mode),
     "\n---\n以下はあなたが参照できる公開情報ナレッジベースです。回答はこの範囲を優先してください。\n",
     knowledge,
+    "\n---\n" + conversationSection(messages),
     "\n---\n" + LENGTH_RULE,
   ].join("\n");
 }
@@ -508,7 +568,7 @@ const server = http.createServer(async (req, res) => {
         try {
           // 履歴は直近10往復に制限（トークン量=コストの抑制）
           const trimmed = messages.slice(-20);
-          reply = await geminiReply(trimmed, buildSystemPrompt(loadConfig(), mode));
+          reply = await geminiReply(trimmed, buildSystemPrompt(loadConfig(), mode, trimmed));
           replyMode = "ai";
         } catch (e) {
           console.error("Gemini API error:", e.message);

@@ -156,7 +156,9 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 ```
 ユーザー質問
   → server.js /api/chat
-  → システムプロンプト（persona.md + knowledge.md）+ 会話履歴 を Gemini API へ
+  → システムプロンプト（persona.md + knowledge.md + 会話状態）+ 会話履歴 を Gemini API へ
+     ※会話状態＝初対面か会話中か／直前の書き出し／直近で使った持ちネタ を毎回計算して
+       「同じ入り方・同じネタを繰り返すな」と指示（AIらしさの最大要因を潰す）
   → 「公開発言に基づく社長らしい回答」を生成（未公開情報はガードレールで回答拒否）
   → フロントでアバターが口パク + 任意で汎用TTS読み上げ
 ```
