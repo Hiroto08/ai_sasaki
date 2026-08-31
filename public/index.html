@@ -127,6 +127,15 @@
     font-size: 14px; line-height: 1.85; white-space: pre-wrap;
     animation: msgIn .28s ease both;
   }
+  /* AIが混ぜてくるマークダウン記法の表示（mdToHtml で復元される） */
+  .msg strong { font-weight: 700; color: var(--deep-3); }
+  .msg em { font-style: normal; background: linear-gradient(transparent 62%, var(--lime-tint) 62%); }
+  .msg code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .92em;
+    background: rgba(0, 0, 0, .05); border-radius: 4px; padding: 1px 5px;
+  }
+  .msg.user strong { color: inherit; }
+  .msg.user em { background: rgba(255, 255, 255, .22); }
   .msg.user {
     align-self: flex-end; background: linear-gradient(135deg, var(--deep-2), var(--deep-3));
     color: #fff; border-bottom-right-radius: 5px; box-shadow: var(--shadow-1);
@@ -150,9 +159,22 @@
   .typing .dots i:nth-child(3) { animation-delay: .3s; }
   @keyframes bounce { 0%, 60%, 100% { transform: none; opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
 
-  /* ---- 提案チップ ---- */
-  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 22px 10px; }
-  .suggest button { flex-shrink: 0; }
+  /* ---- 提案チップ（横1列。数を増やしても縦に伸びず、スワイプで送る）---- */
+  .suggest-wrap { position: relative; }
+  /* 右端にフェードをかけて「まだ続きがある」ことを見せる */
+  .suggest-wrap::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 34px;
+    background: linear-gradient(to right, rgba(247, 249, 246, 0), var(--bg) 78%);
+    pointer-events: none;
+  }
+  .suggest {
+    display: flex; flex-wrap: nowrap; gap: 8px; padding: 4px 22px 10px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .suggest::-webkit-scrollbar { display: none; }
+  .suggest button { flex-shrink: 0; scroll-snap-align: start; white-space: nowrap; }
   .suggest button {
     font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
     border: 1px solid var(--line); background: var(--card); color: var(--deep-2);
@@ -292,11 +314,8 @@
     .mode-toggle span { white-space: nowrap; }
     .messages { padding: 16px 14px 8px; }
     .msg { max-width: 88%; font-size: 13.5px; }
-    .suggest {
-      flex-wrap: nowrap; overflow-x: auto; padding: 4px 14px 8px;
-      scrollbar-width: none; -webkit-overflow-scrolling: touch;
-    }
-    .suggest::-webkit-scrollbar { display: none; }
+    /* 横スクロールの指定は共通側に移した。ここは余白だけ詰める */
+    .suggest { padding: 4px 14px 8px; }
     .disclaimer summary { padding: 5px 12px; gap: 6px; }
     header .sub { display: none; }
     .disclaimer { font-size: 10px; }
@@ -363,6 +382,8 @@
     <summary>🎭 <strong>エンタメ用のAIパロディ</strong>です。本人の発言ではありません<span class="more">詳しく</span></summary>
     <p>公開情報のみから構築したAIによる創作です。回答は佐々木丈也氏本人の発言・見解ではなく、
     本人および三井住友カード株式会社の監修や承認を受けたものではありません。</p>
+    <p>会の記録として、やりとりの内容を保存しています（お名前などは取得していません）。
+    お困りの内容や個人情報の入力はお控えください。</p>
   </details>
   <header>
     <!-- ブランドマーク（オリジナルの抽象モチーフ。実在企業のロゴではない） -->
@@ -437,11 +458,25 @@
     </aside>
     <section class="chat-pane">
       <div class="messages" id="messages"></div>
-      <div class="suggest" id="suggest">
-        <button data-msg="おみくじを引いてください">🎋 おみくじ</button>
-        <button data-msg="ゴルフの調子はどうですか？">⛳ ゴルフの調子は</button>
-        <button data-msg="やる気が出ません">😮‍💨 やる気が出ない</button>
-        <button data-msg="辛口で一言ください" data-spicy="1">🌶️ 辛口で一言</button>
+      <!-- 候補の質問。横1列に連なり、指でスワイプして選ぶ。増やすときはボタンを足すだけ -->
+      <div class="suggest-wrap">
+        <div class="suggest" id="suggest">
+          <button data-msg="おみくじを引いてください">🎋 おみくじ</button>
+          <button data-msg="辛口で一言ください" data-spicy="1">🌶️ 辛口で一言</button>
+          <button data-msg="丸一日休みが取れたら何をしますか？">🏌️ 丸一日休みが取れたら</button>
+          <button data-msg="やる気が出ません">😮‍💨 やる気が出ない</button>
+          <button data-msg="部下が会議に遅刻してきました。なんと言いますか？">⏰ 部下が遅刻してきた</button>
+          <button data-msg="キャッシュレス度を診断してください">💳 キャッシュレス度診断</button>
+          <button data-msg="今日のランチ、何を食べたらいいですか？">🍜 ランチ何にしよう</button>
+          <button data-msg="巨人、最近どうですか？">⚾ 巨人どうですか</button>
+          <button data-msg="仕事で失敗してしまいました…">😰 失敗しちゃいました</button>
+          <button data-msg="転職しようか迷っています">🤔 転職を迷ってる</button>
+          <button data-msg="上司とうまくいきません">😑 上司と合わない</button>
+          <button data-msg="クイズを出してください">💡 クイズ出して</button>
+          <button data-msg="社長になって一番変わったことは何ですか？">👔 社長になって変わったこと</button>
+          <button data-msg="人を見るとき、どこを見ていますか？">👀 人のどこを見てる？</button>
+          <button data-msg="佐々木さん、おめでとうございます！">🎉 おめでとうございます</button>
+        </div>
       </div>
       <!-- 会場イベント用：ご本人への思い出投稿（memoryEnabled が true のときだけ表示） -->
       <div class="memory-bar" id="memoryBar" style="display:none">
@@ -717,7 +752,7 @@ renderMode();
 function startSpeaking(text) {
   speaking = true;
   if (ttsToggle.checked && "speechSynthesis" in window) {
-    const u = new SpeechSynthesisUtterance(text.replace(/※.*$/s, ""));
+    const u = new SpeechSynthesisUtterance(stripMd(text).replace(/※.*$/s, ""));
     u.lang = "ja-JP"; u.rate = 1.0;
     const v = speechSynthesis.getVoices().find(v => v.lang.startsWith("ja"));
     if (v) u.voice = v;
@@ -740,6 +775,29 @@ function showThinking() {
   return typing;
 }
 
+// AIが **強調** のようなマークダウン記法を混ぜてくることがある。
+// プロンプト側でも禁止しているが、出てしまったときにそのまま記号が見えないよう
+// 表示側でも受け止める。HTMLは必ずエスケープしてから最小限の記法だけ復元する。
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function mdToHtml(text) {
+  return escapeHtml(text)
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[\s（「])\*(?!\s)([^*\n]+?)\*(?=$|[\s。、）」！？])/g, "$1<em>$2</em>")
+    .replace(/`([^`\n]+?)`/g, "<code>$1</code>")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+// 読み上げ・口パク用。記号は読ませない
+function stripMd(text) {
+  return String(text)
+    .replace(/\*{1,3}([^*]+?)\*{1,3}/g, "$1")
+    .replace(/`([^`]+?)`/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+
 function addMsg(role, text) {
   const div = document.createElement("div");
   div.className = "msg " + (role === "user" ? "user" : "bot");
@@ -748,7 +806,14 @@ function addMsg(role, text) {
     who.className = "who"; who.textContent = "AI社長";
     div.appendChild(who);
   }
-  div.appendChild(document.createTextNode(text));
+  if (role === "assistant") {
+    const body = document.createElement("span");
+    body.innerHTML = mdToHtml(text);
+    div.appendChild(body);
+  } else {
+    // 利用者の入力はそのまま文字として扱う（記法を解釈しない）
+    div.appendChild(document.createTextNode(text));
+  }
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
 }

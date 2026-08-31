@@ -52,6 +52,7 @@
     overflow-y: auto; max-height: 100%; padding-right: 12px;
     text-shadow: 0 2px 12px rgba(0,0,0,.3);
   }
+  #answer strong { font-weight: 800; color: var(--lime); }
   #answer::-webkit-scrollbar { width: 10px; }
   #answer::-webkit-scrollbar-thumb { background: rgba(255,255,255,.25); border-radius: 8px; }
   .placeholder { color: rgba(255,255,255,.45); font-size: 30px; font-weight: 400; }
@@ -264,16 +265,38 @@ fetch("/api/stage-script").then(r => r.json()).then(d => {
   refreshScriptUI();
 }).catch(() => {});
 
+// AIが **強調** を混ぜてくることがある。ここは会場に投影されるので、
+// 記号がそのまま大写しにならないよう、打ち出す前に落として最後に強調へ戻す。
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function stripMd(text) {
+  return String(text)
+    .replace(/\*{1,3}([^*]+?)\*{1,3}/g, "$1")
+    .replace(/`([^`]+?)`/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+function mdToHtml(text) {
+  return escapeHtml(text)
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong>$1</strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/`([^`\n]+?)`/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+
 // 文字を少しずつ出す（台本再生でも"いま話している"感を出すため）
 let typeTimer = null;
 function typeOut(text) {
   clearInterval(typeTimer);
   answerEl.textContent = "";
+  // 打っている最中は記号なしの素のテキスト、打ち終わったら強調ありに差し替える
+  const plain = stripMd(text);
   let i = 0;
   typeTimer = setInterval(() => {
     i += 2;
-    answerEl.textContent = text.slice(0, i);
-    if (i >= text.length) { clearInterval(typeTimer); answerEl.textContent = text; }
+    answerEl.textContent = plain.slice(0, i);
+    if (i >= plain.length) { clearInterval(typeTimer); answerEl.innerHTML = mdToHtml(text); }
   }, 28);
 }
 
