@@ -40,9 +40,6 @@ const XI_KEY = process.env.ELEVENLABS_API_KEY || "";
 const XI_VOICE = process.env.ELEVENLABS_VOICE_ID || "";
 const XI_MODEL = process.env.ELEVENLABS_MODEL || "eleven_multilingual_v2";
 const TTS_CACHE_DIR = path.join(__dirname, "data", "cache", "tts");
-// 応対ログ閲覧用の管理キー。未設定なら管理画面は使えない（既定で閉じる）。
-const ADMIN_KEY = process.env.ADMIN_KEY || "";
-const LOG_MAX = parseInt(process.env.LOG_MAX || "3000", 10); // メモリ上に保持する件数
 
 const persona = fs.readFileSync(path.join(__dirname, "data", "persona.md"), "utf8");
 const knowledge = fs.readFileSync(path.join(__dirname, "data", "knowledge.md"), "utf8");
@@ -310,59 +307,6 @@ async function synthesize(text) {
   return { buf, cache: false };
 }
 
-// ---- 応対ログ ----
-// 2系統に出す。用途が違うので両方必要。
-//   ① メモリ上のリングバッファ  … /admin.html から当日すぐ見る・CSVで落とす
-//   ② 標準出力へ1行JSON        … Cloud Logging に残る。インスタンスが再起動しても消えない
-// 会話内容そのものを保存するので、入口の注記で録りますと明示している。
-const chatLog = [];
-// トークンから利用者IDを作る。合言葉は全員共通なので個人特定はできないが、
-// 「同じ人の連続した発話」はこれで追える。トークンそのものは保存しない。
-function logUid(token) {
-  return crypto.createHash("sha256").update(String(token)).digest("hex").slice(0, 8);
-}
-function logChat(entry) {
-  const rec = { ts: new Date().toISOString(), ...entry };
-  chatLog.push(rec);
-  if (chatLog.length > LOG_MAX) chatLog.splice(0, chatLog.length - LOG_MAX);
-  // Cloud Logging 側で拾えるよう、1行のJSONで出す
-  try { console.log("CHATLOG " + JSON.stringify(rec)); } catch { /* 出力失敗は無視 */ }
-}
-function logStats() {
-  const users = new Set(chatLog.map((r) => r.uid));
-  const spicy = chatLog.filter((r) => r.mode === "spicy").length;
-  const errors = chatLog.filter((r) => r.replyMode === "demo-fallback").length;
-  const ms = chatLog.map((r) => r.ms).filter((n) => typeof n === "number").sort((a, b) => a - b);
-  return {
-    total: chatLog.length,
-    users: users.size,
-    spicy,
-    errors,
-    medianMs: ms.length ? ms[Math.floor(ms.length / 2)] : 0,
-    firstTs: chatLog.length ? chatLog[0].ts : null,
-    lastTs: chatLog.length ? chatLog[chatLog.length - 1].ts : null,
-  };
-}
-function logCsv() {
-  const esc = (v) => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
-  const head = ["日時", "利用者ID", "モード", "応答種別", "所要ms", "質問", "回答"];
-  const rows = chatLog.map((r) => [
-    new Date(r.ts).toLocaleString("ja-JP", { timeZone: "Asia/Tokyo" }),
-    r.uid, r.mode, r.replyMode, r.ms, r.q, r.a,
-  ]);
-  // Excel で文字化けしないよう BOM + CRLF
-  return "﻿" + [head, ...rows].map((r) => r.map(esc).join(",")).join("\r\n") + "\r\n";
-}
-// 管理キーの照合（クエリ ?key= か Authorization ヘッダ）
-function adminOk(req, urlObj) {
-  if (!ADMIN_KEY) return false;
-  const given = (urlObj && urlObj.searchParams.get("key")) ||
-    String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
-  if (!given) return false;
-  const a = Buffer.from(given), b = Buffer.from(ADMIN_KEY);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
-}
-
 // ---- 認証（合言葉 → HMAC署名トークン。DB不要） ----
 function issueToken() {
   const nonce = crypto.randomBytes(12).toString("hex");
@@ -440,10 +384,6 @@ function finalePrompt(basePrompt, sampleSize = 40) {
 }
 
 const server = http.createServer(async (req, res) => {
-  // パスとクエリを先に分解しておく（管理APIが ?key= を読むため）
-  const reqUrl = new URL(req.url, "http://localhost");
-  const reqPath = reqUrl.pathname;
-
   // フロント表示用の設定（表示名・写真アバター・モード一覧など）
   if (req.method === "GET" && req.url === "/api/config") {
     const config = loadConfig();
@@ -627,7 +567,6 @@ const server = http.createServer(async (req, res) => {
       }
 
       let reply, replyMode;
-      const startedAt = Date.now();
       if (API_KEY) {
         try {
           // 履歴は直近10往復に制限（トークン量=コストの抑制）
@@ -643,43 +582,10 @@ const server = http.createServer(async (req, res) => {
         reply = demoReply(messages[messages.length - 1].content, mode);
         replyMode = "demo";
       }
-      logChat({
-        uid: logUid(token),
-        mode,
-        replyMode,
-        ms: Date.now() - startedAt,
-        q: String(messages[messages.length - 1].content || "").slice(0, 500),
-        a: String(reply || "").slice(0, 1000),
-      });
       return json(res, 200, { reply, mode: replyMode, remaining: rate.remaining });
     } catch (e) {
       return json(res, 500, { error: String(e.message || e) });
     }
-  }
-
-  // ---- 応対ログの閲覧（ADMIN_KEY が必要）----
-  if (req.method === "GET" && reqPath === "/api/admin/logs") {
-    if (!adminOk(req, reqUrl)) {
-      return json(res, 401, {
-        error: ADMIN_KEY ? "管理キーが違います。" : "ADMIN_KEY が未設定のため、応対ログは無効です。",
-      });
-    }
-    return json(res, 200, { stats: logStats(), logs: chatLog });
-  }
-  if (req.method === "GET" && reqPath === "/api/admin/logs.csv") {
-    if (!adminOk(req, reqUrl)) return json(res, 401, { error: "unauthorized" });
-    const name = `ai-shacho-log-${new Date().toISOString().slice(0, 10)}.csv`;
-    res.writeHead(200, {
-      "content-type": "text/csv; charset=utf-8",
-      "content-disposition": `attachment; filename="${name}"`,
-    });
-    return res.end(logCsv());
-  }
-  if (req.method === "DELETE" && reqPath === "/api/admin/logs") {
-    if (!adminOk(req, reqUrl)) return json(res, 401, { error: "unauthorized" });
-    const n = chatLog.length;
-    chatLog.length = 0;
-    return json(res, 200, { ok: true, cleared: n });
   }
 
   // 静的ファイル配信

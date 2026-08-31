@@ -86,22 +86,6 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
 | `MAX_TURNS` | 1人あたり発話上限 | `30` |
 | `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |
-| `ADMIN_KEY` | **応対ログ画面（`/admin.html`）の管理キー。未設定なら閲覧不可** | （なし） |
-| `LOG_MAX` | メモリ上に保持する応対ログの件数 | `3000` |
-
-## 応対ログ（`/admin.html`）
-
-利用者とのやりとりを2系統に記録する。
-
-| 記録先 | 見方 | 消えるか |
-|---|---|---|
-| サーバーのメモリ（最大 `LOG_MAX` 件） | `/admin.html` に `ADMIN_KEY` を入れて閲覧・CSV保存 | **再起動で消える** |
-| 標準出力（`CHATLOG` 付きの1行JSON） | Cloud Logging の「ログエクスプローラ」で `CHATLOG` を検索 | 残る |
-
-`/admin.html` では発話数・利用者数・辛口モードの利用回数・APIエラー数・応答時間の中央値が出て、
-キーワードで絞り込める。**イベント終了後はCSVで保存すること**（メモリ上のログは再起動で消えるため）。
-利用者IDはトークンのハッシュ値で、個人は特定できない（同じ人の連続発話は追える）。
-会話内容を保存する旨は、アプリ冒頭の注記に明記している。
 
 ## 口癖のパラメーター設定（data/config.json）
 
@@ -150,7 +134,6 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
 | `public/qa.html` | **フリー質問オペレーター卓**。回答生成→音声再生をワンクリック（#4用） |
-| `public/admin.html` | **応対ログ画面**。`ADMIN_KEY` で開き、全会話の閲覧・絞り込み・CSV保存 |
 | `data/content/qa_presets.json` | **想定質問と確認済み回答**（answerを埋めると本番は即再生） |
 | `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |
 | `data/content/stage_script.json` | **事前確認済みの回答（台本モード）**。本番はAIを呼ばずこれを再生＝失敗しない |
