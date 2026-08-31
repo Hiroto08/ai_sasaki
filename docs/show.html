@@ -21,6 +21,18 @@
        上から順に割り当たる（docs/video/ に規定の名前で置いてあれば自動）。
      ============================================================ */
   :root {
+    /* ★会場での文字サイズ調整つまみ。1 が既定。
+       後ろの席から読みにくければ上げる／詰まって見えるなら下げる。
+       スライドの文字だけが変わり、動画・QR・操作画面は変わりません。
+
+       ★1920x1080で全19枚を実測した結果：
+           1.0  余裕あり（既定）
+           1.1  ここまでは全枚数はみ出さない
+           1.2  ✕ Q2の設問が画面からはみ出す
+       上げるなら 1.1 まで。それ以上必要なら、QA の設問文を短くするか
+       改行位置を増やしてください。 */
+    --t: 1;
+
     --deep: #00432e;
     --lime: #b8d935;
     --ink: #f4f7f2;
@@ -39,7 +51,7 @@
   .slide {
     position: absolute; inset: 0;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    padding: 6vh 8vw; text-align: center;
+    padding: 5vh 6vw; text-align: center;
     opacity: 0; visibility: hidden;
     transition: opacity .5s ease;
     background: radial-gradient(120% 90% at 50% 0%, #0b3b28 0%, #041a12 55%, #000 100%);
@@ -75,22 +87,22 @@
   .title .badge {
     display: inline-flex; align-items: center; gap: 1.2em;
     border: 2px solid #e2564a; color: #ff8c7f;
-    font-size: 1.9vh; font-weight: 800; letter-spacing: .42em;
-    padding: 1vh 2.6vh; border-radius: 4px; margin-bottom: 5vh; padding-right: 1.2vh;
+    font-size: calc(2.4vh * var(--t)); font-weight: 800; letter-spacing: .42em;
+    padding: 1.1vh 2.8vh; border-radius: 4px; margin-bottom: 5vh; padding-right: 1.2vh;
   }
   .title .kicker {
-    font-size: 3.2vh; letter-spacing: .58em; color: var(--lime); font-weight: 700;
+    font-size: calc(3.9vh * var(--t)); letter-spacing: .58em; color: var(--lime); font-weight: 700;
     margin-bottom: 3vh; padding-left: .58em;
   }
   .title h1 {
-    font-size: 8.6vh; font-weight: 800; letter-spacing: .02em; line-height: 1.3;
-    max-width: 92vw;
+    font-size: calc(9.4vh * var(--t)); font-weight: 800; letter-spacing: .01em; line-height: 1.28;
+    max-width: 96vw;
   }
   .title .rule { width: 16vh; height: 4px; background: var(--lime); border-radius: 2px; margin: 5vh 0 4vh; }
-  .title .sub { font-size: 4vh; color: #dbe8dd; line-height: 1.8; font-weight: 600; letter-spacing: .12em; }
+  .title .sub { font-size: calc(5vh * var(--t)); color: #dbe8dd; line-height: 1.8; font-weight: 600; letter-spacing: .12em; }
   .title .foot {
     position: absolute; left: 0; right: 0; bottom: 4vh;
-    font-size: 1.7vh; color: rgba(255,255,255,.32); letter-spacing: .3em;
+    font-size: calc(2.1vh * var(--t)); color: rgba(255,255,255,.34); letter-spacing: .3em;
   }
 
   /* ---- つなぎスライド（MCが喋っている間に映しておく）----
@@ -106,13 +118,13 @@
     background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,.014) 6px 7px);
   }
   .bridge .mark {
-    font-size: 2.2vh; letter-spacing: .42em; color: rgba(184,217,53,.72);
+    font-size: calc(2.8vh * var(--t)); letter-spacing: .42em; color: rgba(184,217,53,.75);
     font-weight: 700; margin-bottom: 5vh; padding-left: .42em;
   }
-  .bridge .cap { font-size: 5.6vh; font-weight: 700; line-height: 1.6; letter-spacing: .04em; }
+  .bridge .cap { font-size: calc(7.2vh * var(--t)); font-weight: 700; line-height: 1.6; letter-spacing: .04em; }
   .bridge .cap .n {
-    display: block; font-size: 2.4vh; letter-spacing: .5em; color: var(--lime);
-    margin-bottom: 2.4vh; padding-left: .5em; font-weight: 800;
+    display: block; font-size: calc(3.1vh * var(--t)); letter-spacing: .5em; color: var(--lime);
+    margin-bottom: 2.6vh; padding-left: .5em; font-weight: 800;
   }
   /* ゆっくり呼吸する3点。ここだけが動く */
   .bridge .dots { display: flex; gap: 1.6vh; margin-top: 6vh; }
@@ -128,20 +140,20 @@
   }
   .bridge .foot {
     position: absolute; left: 0; right: 0; bottom: 4vh;
-    font-size: 1.5vh; color: rgba(255,255,255,.2); letter-spacing: .34em;
+    font-size: calc(1.9vh * var(--t)); color: rgba(255,255,255,.22); letter-spacing: .34em;
   }
 
   /* ---- 汎用テキスト・待機 ---- */
-  .standby-title { font-size: 7vh; font-weight: 800; letter-spacing: .06em; }
-  .standby-sub { font-size: 3vh; color: var(--dim); margin-top: 3vh; }
+  .standby-title { font-size: calc(8.4vh * var(--t)); font-weight: 800; letter-spacing: .06em; }
+  .standby-sub { font-size: calc(3.8vh * var(--t)); color: var(--dim); margin-top: 3vh; }
 
   /* ---- 設問スライド（動画の前）---- */
   .qnum {
-    display: inline-block; font-size: 3vh; font-weight: 800; letter-spacing: .18em;
+    display: inline-block; font-size: calc(4vh * var(--t)); font-weight: 800; letter-spacing: .18em;
     color: #041a12; background: var(--lime); border-radius: 999px;
-    padding: .8vh 3.6vh; margin-bottom: 5vh; padding-left: 4vh;
+    padding: 1vh 4vh; margin-bottom: 5vh; padding-left: 4.4vh;
   }
-  .qtext { font-size: 4.6vh; font-weight: 700; line-height: 1.85; white-space: pre-wrap; max-width: 92vw; }
+  .qtext { font-size: calc(6.2vh * var(--t)); font-weight: 700; line-height: 1.72; white-space: pre-wrap; max-width: 96vw; }
 
   /* ---- AI社長の回答スライド（動画の後）---- */
   .slide.answer {
@@ -150,29 +162,29 @@
       linear-gradient(155deg, #00301f 0%, #00432e 55%, #001a13 100%);
   }
   .answer .kicker2 {
-    font-size: 2.4vh; letter-spacing: .45em; color: var(--lime);
+    font-size: calc(3.2vh * var(--t)); letter-spacing: .45em; color: var(--lime);
     font-weight: 800; margin-bottom: 4vh; padding-left: .45em;
   }
   .answer .atext {
-    font-size: 6.4vh; font-weight: 800; line-height: 1.65; white-space: pre-wrap;
-    max-width: 90vw; letter-spacing: .02em;
+    font-size: calc(8.6vh * var(--t)); font-weight: 800; line-height: 1.55; white-space: pre-wrap;
+    max-width: 96vw; letter-spacing: .02em;
   }
   .answer .qref {
-    font-size: 2.4vh; color: rgba(255,255,255,.45); line-height: 1.8;
-    margin-top: 6vh; max-width: 74vw; white-space: pre-wrap;
+    font-size: calc(3.4vh * var(--t)); color: rgba(255,255,255,.5); line-height: 1.75;
+    margin-top: 5vh; max-width: 84vw; white-space: pre-wrap;
   }
 
   /* ---- QR ---- */
-  .qr-fallback { font-size: 3.4vh; line-height: 2; }
-  .qr-fallback code { color: var(--lime); font-size: 3.4vh; word-break: break-all; }
+  .qr-fallback { font-size: calc(4.2vh * var(--t)); line-height: 1.9; }
+  .qr-fallback code { color: var(--lime); font-size: calc(3.8vh * var(--t)); word-break: break-all; }
 
   /* 動画が割り当たっていないときの代役（通し稽古用） */
   .missing {
     border: 3px dashed rgba(184,217,53,.5); border-radius: 2vh;
-    padding: 6vh 8vh; font-size: 3.4vh; line-height: 2;
+    padding: 6vh 8vh; font-size: calc(4.2vh * var(--t)); line-height: 1.9;
     margin: 6vh 8vw;   /* 素材のスライドは余白0なので、代役側で余白を持つ */
   }
-  .missing b { color: var(--lime); font-size: 4.4vh; }
+  .missing b { color: var(--lime); font-size: calc(5.4vh * var(--t)); }
 
   /* ---- 暗転 ---- */
   #blackout { position: fixed; inset: 0; background: #000; z-index: 50; opacity: 0; visibility: hidden; transition: opacity .3s ease; }
