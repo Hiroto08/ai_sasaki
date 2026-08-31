@@ -1,0 +1,59 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:1920px; height:1080px; }
+  body {
+    background:#070B12; color:#EAF1FA;
+    font-family:"Noto Sans CJK JP",sans-serif;
+    display:grid; grid-template-columns:1fr auto;
+    align-items:center; gap:96px; padding:110px 120px;
+    position:relative; overflow:hidden;
+  }
+  .glow { position:absolute; border-radius:50%; filter:blur(130px); }
+  .g1 { width:920px; height:920px; left:-280px; top:-340px; background:rgba(31,111,235,.30); }
+  .g2 { width:780px; height:780px; right:-210px; bottom:-320px; background:rgba(91,156,255,.18); }
+
+  .copy { position:relative; display:flex; flex-direction:column; gap:30px; min-width:0; }
+  .kicker {
+    font-family:"DejaVu Sans Mono",monospace; font-size:23px; letter-spacing:.3em;
+    color:#6FA8FF; text-transform:uppercase;
+  }
+  h1 { font-family:"Noto Serif CJK JP",serif; font-weight:600; letter-spacing:.02em; }
+  h1 span { display:block; font-size:88px; line-height:1.3; white-space:nowrap; }
+
+  .rule { width:96px; height:5px; background:#1F6FEB; }
+
+  .pass { display:flex; align-items:center; gap:30px; }
+  .pass .label {
+    font-size:27px; color:#8FB6E8; letter-spacing:.18em;
+    border:1px solid #2C4A73; padding:9px 20px; flex:none;
+  }
+  .pass .word {
+    font-family:"Noto Serif CJK JP",serif; font-size:92px; font-weight:700;
+    letter-spacing:.14em; color:#fff; line-height:1; white-space:nowrap;
+  }
+
+  .foot { display:flex; flex-direction:column; gap:12px; margin-top:6px; }
+  .note { font-size:22px; color:#7C93AD; line-height:1.7; }
+  .urltext { font-family:"DejaVu Sans Mono",monospace; font-size:18px; color:#546C87; }
+
+  .qrwrap { position:relative; display:flex; flex-direction:column; align-items:center; gap:20px; }
+  .qrbox { background:#fff; padding:26px; width:500px; flex:none; }
+  .qrbox svg { display:block; width:100%; height:auto; }
+  .qrcap { font-size:22px; color:#8FB6E8; letter-spacing:.06em; }
+</style>
+<div class="glow g1"></div><div class="glow g2"></div>
+<div class="copy">
+  <div class="kicker">Talk with AI Sasaki</div>
+  <h1><span>AI社長と、</span><span>話してみてください。</span></h1>
+  <div class="rule"></div>
+  <div class="pass"><span class="label">合言葉</span><span class="word">おめでとう</span></div>
+  <div class="foot">
+    <div class="note">エンタメ用のAIパロディです。ご本人の発言ではありません。</div>
+    <div class="urltext">https://ai-shacho-981107538052.asia-northeast1.run.app/</div>
+  </div>
+</div>
+<div class="qrwrap">
+  <div class="qrbox"><svg class="qr" viewBox="-2 -2 37 37" role="img" aria-label="AI佐々木社長アプリのQRコード"><rect x="-2" y="-2" width="37" height="37" fill="#ffffff"></rect><path d="M0 0h7v1h-7zM9 0h3v1h-3zM13 0h2v1h-2zM19 0h1v1h-1zM21 0h1v1h-1zM23 0h1v1h-1zM26 0h7v1h-7zM0 1h1v1h-1zM6 1h1v1h-1zM11 1h1v1h-1zM13 1h4v1h-4zM18 1h1v1h-1zM20 1h3v1h-3zM24 1h1v1h-1zM26 1h1v1h-1zM32 1h1v1h-1zM0 2h1v1h-1zM2 2h3v1h-3zM6 2h1v1h-1zM8 2h2v1h-2zM11 2h3v1h-3zM15 2h2v1h-2zM18 2h1v1h-1zM21 2h1v1h-1zM24 2h1v1h-1zM26 2h1v1h-1zM28 2h3v1h-3zM32 2h1v1h-1zM0 3h1v1h-1zM2 3h3v1h-3zM6 3h1v1h-1zM8 3h3v1h-3zM14 3h4v1h-4zM20 3h1v1h-1zM23 3h1v1h-1zM26 3h1v1h-1zM28 3h3v1h-3zM32 3h1v1h-1zM0 4h1v1h-1zM2 4h3v1h-3zM6 4h1v1h-1zM8 4h1v1h-1zM15 4h1v1h-1zM19 4h5v1h-5zM26 4h1v1h-1zM28 4h3v1h-3zM32 4h1v1h-1zM0 5h1v1h-1zM6 5h1v1h-1zM8 5h1v1h-1zM10 5h1v1h-1zM12 5h2v1h-2zM15 5h2v1h-2zM18 5h1v1h-1zM20 5h2v1h-2zM26 5h1v1h-1zM32 5h1v1h-1zM0 6h7v1h-7zM8 6h1v1h-1zM10 6h1v1h-1zM12 6h1v1h-1zM14 6h1v1h-1zM16 6h1v1h-1zM18 6h1v1h-1zM20 6h1v1h-1zM22 6h1v1h-1zM24 6h1v1h-1zM26 6h7v1h-7zM8 7h4v1h-4zM15 7h1v1h-1zM21 7h4v1h-4zM0 8h1v1h-1zM2 8h5v1h-5zM9 8h1v1h-1zM13 8h1v1h-1zM15 8h4v1h-4zM20 8h1v1h-1zM22 8h1v1h-1zM24 8h1v1h-1zM26 8h5v1h-5zM0 9h1v1h-1zM2 9h2v1h-2zM5 9h1v1h-1zM8 9h5v1h-5zM19 9h1v1h-1zM21 9h1v1h-1zM23 9h1v1h-1zM26 9h2v1h-2zM29 9h2v1h-2zM32 9h1v1h-1zM0 10h1v1h-1zM2 10h2v1h-2zM6 10h2v1h-2zM9 10h3v1h-3zM15 10h1v1h-1zM18 10h1v1h-1zM21 10h1v1h-1zM28 10h1v1h-1zM30 10h2v1h-2zM1 11h2v1h-2zM7 11h2v1h-2zM11 11h2v1h-2zM14 11h2v1h-2zM18 11h1v1h-1zM21 11h4v1h-4zM26 11h1v1h-1zM28 11h5v1h-5zM1 12h1v1h-1zM6 12h2v1h-2zM15 12h1v1h-1zM17 12h3v1h-3zM25 12h1v1h-1zM28 12h2v1h-2zM0 13h3v1h-3zM7 13h1v1h-1zM10 13h2v1h-2zM13 13h4v1h-4zM18 13h4v1h-4zM23 13h1v1h-1zM25 13h2v1h-2zM31 13h2v1h-2zM0 14h7v1h-7zM8 14h1v1h-1zM10 14h4v1h-4zM18 14h1v1h-1zM25 14h2v1h-2zM28 14h4v1h-4zM0 15h1v1h-1zM3 15h2v1h-2zM7 15h1v1h-1zM9 15h1v1h-1zM16 15h1v1h-1zM18 15h5v1h-5zM24 15h3v1h-3zM28 15h3v1h-3zM1 16h1v1h-1zM4 16h3v1h-3zM8 16h3v1h-3zM16 16h5v1h-5zM22 16h1v1h-1zM25 16h1v1h-1zM27 16h2v1h-2zM32 16h1v1h-1zM0 17h2v1h-2zM3 17h2v1h-2zM7 17h1v1h-1zM9 17h3v1h-3zM13 17h2v1h-2zM17 17h1v1h-1zM19 17h1v1h-1zM23 17h1v1h-1zM26 17h2v1h-2zM29 17h4v1h-4zM2 18h1v1h-1zM4 18h3v1h-3zM8 18h1v1h-1zM12 18h1v1h-1zM15 18h1v1h-1zM17 18h1v1h-1zM20 18h1v1h-1zM22 18h1v1h-1zM25 18h1v1h-1zM27 18h2v1h-2zM30 18h2v1h-2zM1 19h2v1h-2zM4 19h1v1h-1zM8 19h4v1h-4zM14 19h2v1h-2zM21 19h1v1h-1zM27 19h5v1h-5zM1 20h3v1h-3zM5 20h2v1h-2zM10 20h3v1h-3zM16 20h1v1h-1zM18 20h2v1h-2zM22 20h4v1h-4zM27 20h3v1h-3zM0 21h1v1h-1zM2 21h2v1h-2zM7 21h1v1h-1zM9 21h2v1h-2zM12 21h4v1h-4zM18 21h2v1h-2zM22 21h2v1h-2zM26 21h1v1h-1zM30 21h1v1h-1zM32 21h1v1h-1zM0 22h1v1h-1zM2 22h5v1h-5zM10 22h1v1h-1zM12 22h6v1h-6zM21 22h1v1h-1zM27 22h5v1h-5zM0 23h1v1h-1zM7 23h1v1h-1zM10 23h1v1h-1zM12 23h4v1h-4zM19 23h3v1h-3zM25 23h1v1h-1zM28 23h1v1h-1zM30 23h3v1h-3zM0 24h1v1h-1zM2 24h5v1h-5zM9 24h1v1h-1zM13 24h1v1h-1zM15 24h6v1h-6zM22 24h1v1h-1zM24 24h5v1h-5zM31 24h1v1h-1zM8 25h1v1h-1zM10 25h1v1h-1zM12 25h1v1h-1zM14 25h1v1h-1zM19 25h1v1h-1zM21 25h1v1h-1zM24 25h1v1h-1zM28 25h1v1h-1zM30 25h1v1h-1zM32 25h1v1h-1zM0 26h7v1h-7zM9 26h2v1h-2zM12 26h1v1h-1zM14 26h3v1h-3zM18 26h1v1h-1zM20 26h1v1h-1zM23 26h2v1h-2zM26 26h1v1h-1zM28 26h1v1h-1zM30 26h2v1h-2zM0 27h1v1h-1zM6 27h1v1h-1zM8 27h3v1h-3zM12 27h2v1h-2zM18 27h1v1h-1zM20 27h2v1h-2zM24 27h1v1h-1zM28 27h3v1h-3zM32 27h1v1h-1zM0 28h1v1h-1zM2 28h3v1h-3zM6 28h1v1h-1zM8 28h2v1h-2zM11 28h1v1h-1zM14 28h2v1h-2zM18 28h2v1h-2zM22 28h1v1h-1zM24 28h6v1h-6zM31 28h2v1h-2zM0 29h1v1h-1zM2 29h3v1h-3zM6 29h1v1h-1zM8 29h4v1h-4zM13 29h1v1h-1zM15 29h2v1h-2zM18 29h3v1h-3zM22 29h4v1h-4zM28 29h2v1h-2zM31 29h2v1h-2zM0 30h1v1h-1zM2 30h3v1h-3zM6 30h1v1h-1zM8 30h2v1h-2zM11 30h2v1h-2zM20 30h1v1h-1zM22 30h1v1h-1zM26 30h2v1h-2zM29 30h2v1h-2zM0 31h1v1h-1zM6 31h1v1h-1zM9 31h1v1h-1zM11 31h2v1h-2zM16 31h1v1h-1zM20 31h3v1h-3zM26 31h1v1h-1zM28 31h3v1h-3zM0 32h7v1h-7zM8 32h2v1h-2zM11 32h3v1h-3zM16 32h3v1h-3zM23 32h2v1h-2zM27 32h1v1h-1zM31 32h1v1h-1z" fill="#000000" shape-rendering="crispEdges"></path></svg></div>
+  <div class="qrcap">スマホのカメラで読み取ってください</div>
+</div>
+</html>
