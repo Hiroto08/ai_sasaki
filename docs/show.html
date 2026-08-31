@@ -7,7 +7,7 @@
 <style>
   /* ============================================================
      本番進行ランナー
-     タイトル → 登場動画 → 自己紹介動画 → Q1 → Q2 → Q3 → QR
+     タイトル → 登場動画 → 自己紹介動画 →（設問→動画→ご本人の回答）×3 → QR
      を1枚のページで通す。ページ遷移が起きないので画面切り替えが発生しない。
      本編のあいだには「つなぎスライド」を挟んであり、MCが喋っている間はそれを映す。
 
@@ -135,20 +135,32 @@
   .standby-title { font-size: 7vh; font-weight: 800; letter-spacing: .06em; }
   .standby-sub { font-size: 3vh; color: var(--dim); margin-top: 3vh; }
 
-  /* ---- クイズのA/Bスライド（既定では使っていない。必要なら SHOW に足す）---- */
-  .kicker2 { font-size: 2.2vh; letter-spacing: .35em; color: var(--lime); font-weight: 700; margin-bottom: 3vh; }
-  .qtext { font-size: 5.4vh; font-weight: 700; line-height: 1.7; white-space: pre-wrap; }
+  /* ---- 設問スライド（動画の前）---- */
   .qnum {
-    display: inline-block; font-size: 3vh; font-weight: 800; letter-spacing: .1em;
-    color: #041a12; background: var(--lime); border-radius: 999px; padding: .5vh 3vh; margin-bottom: 4vh;
+    display: inline-block; font-size: 3vh; font-weight: 800; letter-spacing: .18em;
+    color: #041a12; background: var(--lime); border-radius: 999px;
+    padding: .8vh 3.6vh; margin-bottom: 5vh; padding-left: 4vh;
   }
-  .ab { display: flex; gap: 4vh; width: 100%; max-width: 1500px; margin-top: 2vh; }
-  .opt {
-    flex: 1; background: rgba(255,255,255,.06); border: 2px solid rgba(184,217,53,.35);
-    border-radius: 2.4vh; padding: 4vh 3.4vh; text-align: left;
+  .qtext { font-size: 4.6vh; font-weight: 700; line-height: 1.85; white-space: pre-wrap; max-width: 92vw; }
+
+  /* ---- 本人の回答スライド（動画の後）---- */
+  .slide.answer {
+    background:
+      radial-gradient(85% 65% at 50% -10%, rgba(184,217,53,.2) 0%, transparent 60%),
+      linear-gradient(155deg, #00301f 0%, #00432e 55%, #001a13 100%);
   }
-  .opt .tag { font-size: 4.6vh; font-weight: 800; color: var(--lime); display: block; margin-bottom: 2vh; line-height: 1; }
-  .opt p { font-size: 3.2vh; line-height: 1.75; }
+  .answer .kicker2 {
+    font-size: 2.4vh; letter-spacing: .45em; color: var(--lime);
+    font-weight: 800; margin-bottom: 4vh; padding-left: .45em;
+  }
+  .answer .atext {
+    font-size: 6.4vh; font-weight: 800; line-height: 1.65; white-space: pre-wrap;
+    max-width: 90vw; letter-spacing: .02em;
+  }
+  .answer .qref {
+    font-size: 2.4vh; color: rgba(255,255,255,.45); line-height: 1.8;
+    margin-top: 6vh; max-width: 74vw; white-space: pre-wrap;
+  }
 
   /* ---- QR ---- */
   .qr-fallback { font-size: 3.4vh; line-height: 2; }
@@ -325,8 +337,36 @@ const BRIDGE = {
 // つなぎを挟むかどうか。false にすると本編だけの並びに戻ります
 const USE_BRIDGE = true;
 
+// ★クイズ3問。設問スライド → 動画 → ご本人の回答スライド、の順に展開されます。
+//   q     : 設問（動画の前に出す）
+//   a     : ご本人の実際の回答（動画の後に出す）
+//   video : この設問の動画ファイル名（規定名。ドロップで割り当てるなら何でもよい）
+const QA = [
+  {
+    no: "Q1",
+    q: "急に丸一日、自由に過ごせる休暇が取れました。\nあなたなら、何をしますか？",
+    a: "言うまでもなく、ゴルフ。",
+    video: "03_q1.mp4",
+    bridge: { n: "TEST 02", cap: "検証、続けます" },
+  },
+  {
+    no: "Q2",
+    q: "会議室に入ると、一人を除いて全員が集まっていました。\n「まだ始めないのか？」と聞いたとき、\n小西さんがバツの悪そうな顔をして入ってきました。\n\nあなたは開口一番、何と言いますか？",
+    a: "「集まってくれてありがとう」と言う。",
+    video: "04_q2.mp4",
+    bridge: { n: "TEST 03", cap: "最後の検証です" },
+  },
+  {
+    no: "Q3",
+    q: "朝、予定を確認したら30分しか空き時間がありませんでした。\nその枠に急遽、小澤さんが打ち合わせをセットしてきました。\n\nその時、どうしますか？",
+    a: "喫煙欲を優先して、\n気にせずタバコを吸いに行く。",
+    video: "05_q3.mp4",
+    bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" },
+  },
+];
+
 // ★本番の並び（本編）。この順に進みます。
-//   type   : title / video / qr / standby /（必要なら quiz-q, quiz-ab も使えます）
+//   type   : title / video / quiz-q / quiz-a / qr / standby
 //   cue    : 進行役へのメモ（★画面には出ません。C キーの印刷用カンペにだけ出ます）
 //   bridge : このスライドのあとに挟むつなぎ画面。
 //            { n: 小見出し, cap: 大きい文字 }。省略・null なら挟みません。
@@ -343,22 +383,21 @@ const CONTENT = [
   { type: "video", file: "02_intro.mp4", label: "③ 自己紹介動画",
     cue: "MCの受けのあと →（つなぎへ）",
     bridge: { n: "TEST 01", cap: "これより、精度検証に入ります" } },
-
-  { type: "video", file: "03_q1.mp4", label: "④ Q1",
-    cue: "MCが設問を振る → 再生。ご本人に一言もらってから →（つなぎへ）",
-    bridge: { n: "TEST 02", cap: "検証、続けます" } },
-
-  { type: "video", file: "04_q2.mp4", label: "⑤ Q2",
-    cue: "同上。急がない",
-    bridge: { n: "TEST 03", cap: "最後の検証です" } },
-
-  { type: "video", file: "05_q3.mp4", label: "⑥ Q3",
-    cue: "同上。ここが最後の問題",
-    bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" } },
-
-  { type: "qr", label: "⑦ 入場QR（クロージング）",
-    cue: "「お手元のスマホでどうぞ」。合言葉はスライドに出ています（読み上げると確実）" },
 ];
+
+// クイズ3問を「設問 → 動画 → ご本人の回答」の3枚組で差し込む
+QA.forEach((x) => {
+  CONTENT.push({ type: "quiz-q", no: x.no, q: x.q, label: `${x.no} 設問`,
+    cue: "MCが設問を読み上げる。会場に考えさせてから →（動画へ）" });
+  CONTENT.push({ type: "video", file: x.video, label: `${x.no} AI社長の回答（動画）`,
+    cue: "再生。終わっても自動では進みません。ためてから →（ご本人の回答へ）" });
+  CONTENT.push({ type: "quiz-a", no: x.no, a: x.a, q: x.q, label: `${x.no} ご本人の回答`,
+    cue: "★ここが一番笑うところ。ご本人に一言もらう。落ち着いたら →", bridge: x.bridge });
+});
+
+CONTENT.push(
+  { type: "qr", label: "⑦ 入場QR（クロージング）",
+    cue: "「お手元のスマホでどうぞ」。合言葉はスライドに出ています（読み上げると確実）" });
 
 // 本編のあいだに、つなぎスライドを挟み込む
 const SHOW = [];
@@ -437,14 +476,15 @@ SHOW.forEach((sl, i) => {
     slots.push({ showIndex: i, kind: "image", el: img, ph, label: sl.label, file: sl.file || QR_IMAGE, src: null, ready: false });
 
   } else if (sl.type === "quiz-q") {
-    d.innerHTML = `<div class="qnum">Q${esc(sl.n)}</div><div class="qtext">${esc(sl.q)}</div>`;
+    d.innerHTML = `<div class="qnum">${esc(sl.no)}</div>` +
+      `<div class="qtext">${esc(sl.q)}</div>`;
 
-  } else if (sl.type === "quiz-ab") {
-    d.innerHTML = `<div class="kicker2">どちらが本物の佐々木社長？</div>
-      <div class="ab">
-        <div class="opt"><span class="tag">A</span><p>${esc(sl.a)}</p></div>
-        <div class="opt"><span class="tag">B</span><p>${esc(sl.b)}</p></div>
-      </div>`;
+  } else if (sl.type === "quiz-a") {
+    d.classList.add("answer");
+    d.innerHTML = `<div class="kicker2">${esc(sl.no)}　ご本人の回答</div>` +
+      `<div class="atext">${esc(sl.a)}</div>` +
+      // 設問を小さく添えておく。会場が問いを忘れていても、答えが刺さる
+      `<div class="qref">${esc(String(sl.q).replace(/\n+/g, " ").trim())}</div>`;
 
   } else {
     d.innerHTML = `<div class="standby-title">${esc(sl.title || "")}</div>` +
