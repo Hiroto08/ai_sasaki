@@ -161,7 +161,25 @@
     color: #041a12; background: var(--lime); border-radius: 999px;
     padding: 1vh 4vh; margin-bottom: 5vh; padding-left: 4.4vh;
   }
-  .qtext { font-size: calc(6.2vh * var(--t)); font-weight: 700; line-height: 1.72; white-space: pre-wrap; max-width: 96vw; }
+  /* 設問は「状況説明」と「問い」で大きさを変える。
+     全部同じ大きさだと行が幅いっぱいまで伸びて、どこで切れているか分からなくなる。
+     改行は QA の q に書いた位置がそのまま出る（自動折り返しに任せない）。 */
+  .qtext { max-width: 94vw; }
+  .qtext .sit {
+    display: block; font-size: calc(5.2vh * var(--t)); font-weight: 600;
+    line-height: 1.85; color: rgba(255,255,255,.9); white-space: pre-wrap;
+    line-break: strict; overflow-wrap: normal;
+  }
+  .qtext .ask {
+    display: block; font-size: calc(7vh * var(--t)); font-weight: 800;
+    line-height: 1.6; margin-top: 4.5vh; white-space: pre-wrap;
+    line-break: strict; overflow-wrap: normal;
+  }
+  /* 状況説明と問いのあいだの区切り */
+  .qtext .ask::before {
+    content: ""; display: block; width: 12vh; height: 3px; border-radius: 2px;
+    background: rgba(184,217,53,.55); margin: 0 auto 4vh;
+  }
 
   /* ---- AI社長の回答スライド（動画の後）---- */
   .slide.answer {
@@ -364,21 +382,21 @@ const USE_BRIDGE = true;
 const QA = [
   {
     no: "Q1",
-    q: "急に丸一日、自由に過ごせる休暇が取れました。\nあなたなら、何をしますか？",
+    q: "急に丸一日、自由に過ごせる休暇が取れました。\n\nあなたなら、何をしますか？",
     a: "言うまでもなく、ゴルフ。",   // AI社長の回答
     video: "03_q1.mp4",
     bridge: { n: "TEST 02", cap: "検証、続けます" },
   },
   {
     no: "Q2",
-    q: "会議室に入ると、一人を除いて全員が集まっていました。\n「まだ始めないのか？」と聞いたとき、\n小西さんがバツの悪そうな顔をして入ってきました。\n\nあなたは開口一番、何と言いますか？",
+    q: "会議室に入ると、一人を除いて\n全員が集まっていました。\n「まだ始めないのか？」と聞いたとき、\n小西さんがバツの悪そうな顔をして\n入ってきました。\n\nあなたは開口一番、何と言いますか？",
     a: "「集まってくれてありがとう」と言う。",
     video: "04_q2.mp4",
     bridge: { n: "TEST 03", cap: "最後の検証です" },
   },
   {
     no: "Q3",
-    q: "朝、予定を確認したら30分しか空き時間がありませんでした。\nその枠に急遽、小澤さんが打ち合わせをセットしてきました。\n\nその時、どうしますか？",
+    q: "朝、予定を確認したら\n30分しか空き時間がありませんでした。\nその枠に急遽、小澤さんが\n打ち合わせをセットしてきました。\n\nその時、どうしますか？",
     a: "喫煙欲を優先して、\n気にせずタバコを吸いに行く。",
     video: "05_q3.mp4",
     bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" },
@@ -496,8 +514,15 @@ SHOW.forEach((sl, i) => {
     slots.push({ showIndex: i, kind: "image", el: img, ph, label: sl.label, file: sl.file || QR_IMAGE, src: null, ready: false });
 
   } else if (sl.type === "quiz-q") {
+    // 空行で「状況説明」と「問い」に分ける。空行が無ければ全体を問いとして扱う
+    const parts = String(sl.q).split(/\n\s*\n/);
+    const ask = parts.pop();
+    const sit = parts.join("\n").trim();
     d.innerHTML = `<div class="qnum">${esc(sl.no)}</div>` +
-      `<div class="qtext">${esc(sl.q)}</div>`;
+      `<div class="qtext">` +
+        (sit ? `<span class="sit">${esc(sit)}</span>` : "") +
+        `<span class="ask">${esc(ask.trim())}</span>` +
+      `</div>`;
 
   } else if (sl.type === "quiz-a") {
     d.classList.add("answer");
