@@ -47,22 +47,38 @@
   .slide.plain { background: #000; }
   .slide video { width: 100%; height: 100%; object-fit: contain; background: #000; }
 
-  /* ---- タイトルスライド ---- */
+  /* ---- タイトルスライド（社内の極秘レビュー資料に見せる）---- */
   .slide.title {
     background:
-      radial-gradient(80% 60% at 78% -8%, rgba(184,217,53,.20) 0%, transparent 58%),
-      radial-gradient(70% 55% at 8% 108%, rgba(10,107,74,.55) 0%, transparent 60%),
-      linear-gradient(150deg, #00241a 0%, #00432e 55%, #005a3d 100%);
+      radial-gradient(80% 60% at 78% -8%, rgba(184,217,53,.16) 0%, transparent 58%),
+      radial-gradient(70% 55% at 8% 108%, rgba(10,107,74,.5) 0%, transparent 60%),
+      linear-gradient(150deg, #001a13 0%, #00301f 55%, #004530 100%);
+  }
+  /* 目の細かい罫線。書類っぽさを足す */
+  .slide.title::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,.016) 6px 7px);
+  }
+  .title .badge {
+    display: inline-flex; align-items: center; gap: 1.2em;
+    border: 2px solid #e2564a; color: #ff8c7f;
+    font-size: 1.9vh; font-weight: 800; letter-spacing: .42em;
+    padding: 1vh 2.6vh; border-radius: 4px; margin-bottom: 5vh; padding-right: 1.2vh;
   }
   .title .kicker {
-    font-size: 2.6vh; letter-spacing: .5em; color: var(--lime); font-weight: 700;
-    margin-bottom: 4vh; padding-left: .5em;
+    font-size: 3.2vh; letter-spacing: .58em; color: var(--lime); font-weight: 700;
+    margin-bottom: 3vh; padding-left: .58em;
   }
-  .title h1 { font-size: 11vh; font-weight: 800; letter-spacing: .04em; line-height: 1.25; }
-  .title .rule {
-    width: 16vh; height: 4px; background: var(--lime); border-radius: 2px; margin: 5vh 0 4vh;
+  .title h1 {
+    font-size: 8.6vh; font-weight: 800; letter-spacing: .02em; line-height: 1.3;
+    max-width: 92vw;
   }
-  .title .sub { font-size: 3.4vh; color: #cfe0d3; line-height: 1.9; }
+  .title .rule { width: 16vh; height: 4px; background: var(--lime); border-radius: 2px; margin: 5vh 0 4vh; }
+  .title .sub { font-size: 4vh; color: #dbe8dd; line-height: 1.8; font-weight: 600; letter-spacing: .12em; }
+  .title .foot {
+    position: absolute; left: 0; right: 0; bottom: 4vh;
+    font-size: 1.7vh; color: rgba(255,255,255,.32); letter-spacing: .3em;
+  }
 
   /* ---- 汎用テキスト・待機 ---- */
   .standby-title { font-size: 7vh; font-weight: 800; letter-spacing: .06em; }
@@ -116,7 +132,7 @@
   #boot {
     position: fixed; inset: 0; z-index: 100; background: #04140e; overflow-y: auto;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
-    gap: 2.4vh; padding: 5vh 6vw; text-align: center;
+    gap: 2vh; padding: 4vh 6vw; text-align: center;
   }
   #boot.done { display: none; }
   #boot h1 { font-size: 3.4vh; letter-spacing: .08em; }
@@ -124,9 +140,13 @@
   #boot .note b { color: var(--lime); }
 
   /* 動画の割り当て表 */
-  #slots { width: min(880px, 92vw); border: 1px solid rgba(184,217,53,.3); border-radius: 14px; overflow: hidden; }
+  /* 行数が増えても開始画面からはみ出さないよう、表の中だけスクロールさせる */
+  #slots {
+    width: min(880px, 92vw); border: 1px solid rgba(184,217,53,.3); border-radius: 14px;
+    max-height: 44vh; overflow-y: auto; overscroll-behavior: contain;
+  }
   .slot {
-    display: flex; align-items: center; gap: 14px; padding: 11px 16px;
+    display: flex; align-items: center; gap: 14px; padding: 9px 16px;
     border-bottom: 1px solid rgba(255,255,255,.08); font-size: 15px; text-align: left;
   }
   .slot:last-child { border-bottom: none; }
@@ -201,14 +221,14 @@
   <div id="slots"></div>
 
   <div id="drop">
-    <b>ここに動画をまとめてドロップ</b>（クリックでファイル選択も可）<br>
-    <small>ファイル名は何でも構いません。<b>上の並び順に、上から割り当てます。</b>
-    1本だけ差し替えたいときは、その行に直接ドロップしてください。</small>
+    <b>ここに動画とQR画像をまとめてドロップ</b>（クリックでファイル選択も可）<br>
+    <small>ファイル名は何でも構いません。<b>動画は動画の枠へ、画像はQRの枠へ、名前順に上から入ります。</b>
+    1つだけ差し替えたいときは、その行に直接ドロップしてください。</small>
   </div>
-  <input type="file" id="picker" accept="video/*" multiple>
+  <input type="file" id="picker" accept="video/*,image/*" multiple>
 
   <div class="bar"><i id="bootBar"></i></div>
-  <div id="bootStat">動画を探しています…</div>
+  <div id="bootStat">素材を探しています…</div>
   <div id="checkNote"></div>
   <div id="bootErr"></div>
   <button id="startBtn" disabled>開始</button>
@@ -219,14 +239,17 @@
    ★ここだけ書き換えれば本番の中身が変わります
    ================================================================ */
 
-// タイトルスライド（新規）
+// タイトルスライド
 const TITLE = {
-  kicker: "就任記念 特別企画",
-  main: "AI社長と、\nあそぶ。",
-  sub: "佐々木丈也 社長\nご就任 おめでとうございます",
+  badge:  "CONFIDENTIAL ／ 社外秘",
+  kicker: "極秘プロジェクト",
+  main:   "「AI社長（President-1.0）」",
+  sub:    "社内開発レビュー会",
+  foot:   "取扱注意 — 本資料の複製・持ち出しを禁ずる",
 };
 
-// 入場QRの画像（このHTMLから見た相対パス）
+// 入場QRの画像。この名前で置いてあれば自動で入る。
+// 無くても、開始画面に画像をドロップすれば割り当たります。
 const QR_IMAGE = "../assets/qr/qr_slide_1920.png";
 const QR_URL = "https://ai-shacho-981107538052.asia-northeast1.run.app/";
 
@@ -279,10 +302,12 @@ SHOW.forEach((sl, i) => {
   if (sl.type === "title") {
     d.classList.add("title");
     d.innerHTML =
+      (TITLE.badge ? `<div class="badge">${esc(TITLE.badge)}</div>` : "") +
       `<div class="kicker">${esc(TITLE.kicker)}</div>` +
       `<h1>${esc(TITLE.main).replace(/\n/g, "<br>")}</h1>` +
       `<div class="rule"></div>` +
-      `<div class="sub">${esc(TITLE.sub).replace(/\n/g, "<br>")}</div>`;
+      `<div class="sub">${esc(TITLE.sub).replace(/\n/g, "<br>")}</div>` +
+      (TITLE.foot ? `<div class="foot">${esc(TITLE.foot)}</div>` : "");
 
   } else if (sl.type === "video") {
     d.classList.add("plain");
@@ -294,21 +319,20 @@ SHOW.forEach((sl, i) => {
     ph.innerHTML = `<b>${esc(sl.label)}</b><br>動画がまだ割り当てられていません<br>` +
       `<span style="color:#93a89b;font-size:2.6vh">開始画面でドロップすると入ります</span>`;
     d.appendChild(ph);
-    slots.push({ showIndex: i, el: v, ph, label: sl.label, file: sl.file, src: null, ready: false });
+    slots.push({ showIndex: i, kind: "video", el: v, ph, label: sl.label, file: sl.file, src: null, ready: false });
 
   } else if (sl.type === "qr") {
+    // QRも動画と同じ枠組みで扱う（規定の場所にあれば自動、無ければドロップ）
     d.classList.add("qr", "plain");
     const img = document.createElement("img");
-    img.src = QR_IMAGE;
     img.alt = "AI社長アプリの入場QRコード";
-    img.onerror = () => {
-      d.classList.remove("plain");
-      d.innerHTML = `<div class="qr-fallback">スマホで読み取ってください<br>
-        <code>${esc(QR_URL)}</code><br>
-        <span style="color:#93a89b;font-size:2.4vh">
-        （QR画像が見つかりません。scripts/make_qr_slide.sh を実行してください）</span></div>`;
-    };
     d.appendChild(img);
+    const ph = document.createElement("div");
+    ph.className = "missing";
+    ph.innerHTML = `<b>${esc(sl.label)}</b><br>QR画像がまだ割り当てられていません<br>` +
+      `<span style="color:#93a89b;font-size:2.4vh">開始画面でドロップすると入ります<br>${esc(QR_URL)}</span>`;
+    d.appendChild(ph);
+    slots.push({ showIndex: i, kind: "image", el: img, ph, label: sl.label, file: sl.file || QR_IMAGE, src: null, ready: false });
 
   } else if (sl.type === "quiz-q") {
     d.innerHTML = `<div class="qnum">Q${esc(sl.n)}</div><div class="qtext">${esc(sl.q)}</div>`;
@@ -340,14 +364,15 @@ function paintSlots() {
   slotsBox.innerHTML = slots.map((s, i) => `
     <div class="slot ${s.ready ? "ok" : ""}" data-slot="${i}">
       <span class="no">${i + 1}</span>
-      ${s.ready
-        ? `<video class="thumb" src="${esc(s.src)}" muted preload="metadata" title="クリックで音なし再生（中身の確認用）"></video>`
-        : `<span class="thumb empty"></span>`}
+      ${!s.ready ? `<span class="thumb empty"></span>`
+        : s.kind === "image"
+          ? `<img class="thumb" src="${esc(s.src)}" alt="">`
+          : `<video class="thumb" src="${esc(s.src)}" muted preload="metadata" title="クリックで音なし再生（中身の確認用）"></video>`}
       <span class="name">${esc(s.label)}</span>
       <span class="file ${s.ready ? "" : "none"}">${esc(s.ready ? s.srcName : "未割当（ここにドロップ）")}</span>
       <span class="swap">
-        <button data-up="${i}" ${i === 0 ? "disabled" : ""} title="ひとつ上と入れ替え">▲</button>
-        <button data-down="${i}" ${i === slots.length - 1 ? "disabled" : ""} title="ひとつ下と入れ替え">▼</button>
+        <button data-up="${i}" ${i === 0 || slots[i - 1].kind !== s.kind ? "disabled" : ""} title="ひとつ上と入れ替え">▲</button>
+        <button data-down="${i}" ${i === slots.length - 1 || slots[i + 1].kind !== s.kind ? "disabled" : ""} title="ひとつ下と入れ替え">▼</button>
       </span>
     </div>`).join("");
   // サムネイルは頭の絵より少し進めたほうが中身が分かる
@@ -356,11 +381,11 @@ function paintSlots() {
   });
   const done = slots.filter((s) => s.ready).length;
   bootBar.style.width = (slots.length ? (done / slots.length) * 100 : 100) + "%";
-  bootStat.textContent = `動画 ${done} / ${slots.length} 本 割り当て済み`;
+  bootStat.textContent = `素材 ${done} / ${slots.length} 個 割り当て済み（動画5・QR画像1）`;
   bootErr.textContent = done === slots.length ? ""
-    : `⚠️ ${slots.length - done} 本が未割当です。このままでも進行の練習はできます（その場面は代役が出ます）。`;
+    : `⚠️ ${slots.length - done} 個が未割当です。このままでも進行の練習はできます（その場面は代役が出ます）。`;
   document.getElementById("checkNote").textContent = done
-    ? "★まとめてドロップした場合、並びはファイル名順です。サムネイルを押して中身を確かめ、違っていたら ▲▼ で入れ替えてください。"
+    ? "★まとめてドロップした場合、並びはファイル名順です。サムネイルで中身を確かめ、違っていたら ▲▼ で入れ替えてください。"
     : "";
 }
 
@@ -376,6 +401,7 @@ slotsBox.addEventListener("click", (e) => {
 // 割り当てを入れ替える（まとめてドロップの並びが違ったときの直し方）
 function swapSlots(i, j) {
   if (i < 0 || j < 0 || i >= slots.length || j >= slots.length) return;
+  if (slots[i].kind !== slots[j].kind) return;   // 動画↔画像は入れ替えない
   const a = slots[i], b = slots[j];
   [a.src, b.src] = [b.src, a.src];
   [a.srcName, b.srcName] = [b.srcName, a.srcName];
@@ -387,7 +413,7 @@ function swapSlots(i, j) {
   paintSlots();
 }
 
-// 1つのスロットに動画を割り当てる
+// 1つのスロットに素材を割り当てる（動画・画像の両方）
 function assign(i, src, name) {
   const s = slots[i];
   if (s.src && s.src.startsWith("blob:")) URL.revokeObjectURL(s.src);
@@ -395,7 +421,7 @@ function assign(i, src, name) {
   s.el.src = src;
   s.el.style.display = "";
   s.ph.style.display = "none";
-  s.el.load();
+  if (s.kind !== "image") s.el.load();
   paintSlots();
 }
 function unassigned(i) {
@@ -403,24 +429,28 @@ function unassigned(i) {
   s.ready = false; s.el.style.display = "none"; s.ph.style.display = "";
 }
 
-// ① まず docs/video/ の規定ファイル名を試す（あれば手間ゼロ）
+// ① まず規定の場所を試す（あれば手間ゼロ）
+//    動画 … docs/video/ の規定ファイル名 ／ QR … QR_IMAGE のパス
 let probed = 0;
 slots.forEach((s, i) => {
   unassigned(i);
   if (!s.file) { probed++; return; }
-  const probe = document.createElement("video");
-  probe.preload = "metadata";
+  const path = s.kind === "image" ? s.file : VIDEO_DIR + s.file;
+  const shortName = path.split("/").pop();
+  const probe = s.kind === "image" ? new Image() : document.createElement("video");
+  if (s.kind !== "image") probe.preload = "metadata";
   let settled = false;
   const finish = (ok) => {
     if (settled) return; settled = true;
-    if (ok) assign(i, VIDEO_DIR + s.file, s.file);
+    if (ok) assign(i, path, shortName);
     probed++;
     if (probed >= slots.length) { paintSlots(); startBtn.disabled = false; }
   };
-  probe.addEventListener("loadedmetadata", () => finish(true), { once: true });
+  if (s.kind === "image") probe.addEventListener("load", () => finish(true), { once: true });
+  else probe.addEventListener("loadedmetadata", () => finish(true), { once: true });
   probe.addEventListener("error", () => finish(false), { once: true });
   setTimeout(() => finish(false), 6000);
-  probe.src = VIDEO_DIR + s.file;
+  probe.src = path;
 });
 if (!slots.length) { startBtn.disabled = false; }
 paintSlots();
@@ -429,15 +459,27 @@ paintSlots();
 const drop = document.getElementById("drop");
 const picker = document.getElementById("picker");
 
+const isVideoFile = (f) => f.type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(f.name);
+const isImageFile = (f) => f.type.startsWith("image/") || /\.(png|jpe?g|webp|gif|svg)$/i.test(f.name);
+const byName = (a, b) => a.name.localeCompare(b.name, "ja", { numeric: true });
+
 function takeFiles(files, targetSlot) {
-  const list = Array.from(files).filter((f) => f.type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(f.name));
+  const list = Array.from(files).filter((f) => isVideoFile(f) || isImageFile(f));
   if (!list.length) return;
+
   if (targetSlot != null) {                    // 1行にドロップ＝その枠だけ差し替え
-    assign(targetSlot, URL.createObjectURL(list[0]), list[0].name);
+    const want = slots[targetSlot].kind === "image" ? isImageFile : isVideoFile;
+    const f = list.find(want) || list[0];      // 種類が合うものを優先
+    assign(targetSlot, URL.createObjectURL(f), f.name);
     return;
   }
-  list.sort((a, b) => a.name.localeCompare(b.name, "ja", { numeric: true }));
-  list.slice(0, slots.length).forEach((f, k) => assign(k, URL.createObjectURL(f), f.name));
+  // まとめてドロップ＝動画は動画の枠へ、画像は画像の枠へ、それぞれ名前順で上から
+  const vids = list.filter(isVideoFile).sort(byName);
+  const imgs = list.filter(isImageFile).sort(byName);
+  const vSlots = slots.map((s, i) => (s.kind === "video" ? i : -1)).filter((i) => i >= 0);
+  const iSlots = slots.map((s, i) => (s.kind === "image" ? i : -1)).filter((i) => i >= 0);
+  vids.slice(0, vSlots.length).forEach((f, k) => assign(vSlots[k], URL.createObjectURL(f), f.name));
+  imgs.slice(0, iSlots.length).forEach((f, k) => assign(iSlots[k], URL.createObjectURL(f), f.name));
 }
 
 ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => {
@@ -471,7 +513,7 @@ window.addEventListener("drop", (e) => { if (!e.target.closest("#drop, #slots"))
 startBtn.addEventListener("click", async () => {
   // 無音で一瞬再生してすぐ止める＝以降の play() が許可される
   for (const s of slots) {
-    if (!s.ready) continue;
+    if (!s.ready || s.kind !== "video") continue;   // 画像は解錠の対象外
     try { s.el.muted = true; await s.el.play(); s.el.pause(); s.el.currentTime = 0; s.el.muted = false; }
     catch (e) { /* 解錠できなくても進む */ }
   }
@@ -485,7 +527,7 @@ startBtn.addEventListener("click", async () => {
 /* ---------------- 進行 ---------------- */
 function currentVideo() {
   const s = slots.find((x) => x.showIndex === idx);
-  return s && s.ready ? s.el : null;
+  return s && s.ready && s.kind === "video" ? s.el : null;
 }
 function show(n) {
   n = Math.max(0, Math.min(SHOW.length - 1, n));
