@@ -46,7 +46,19 @@
   }
   .slide.on { opacity: 1; visibility: visible; }
   .slide.plain { background: #000; }
-  .slide video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+  /* ---- 動画・画像は画面いっぱいに出す ----
+     .slide の余白（6vh 8vw）が効いていると端が空くので、素材のスライドだけ余白を0にする。
+     object-fit は既定で cover（画面を埋める。素材と画面の比率が違うと端が切れる）。
+     素材を切りたくない場合は、下の FIT を "contain" にすると全体が入る（帯が出る）。 */
+  .slide.media { padding: 0; }
+  /* 代役（未割当）を出しているあいだは中央に寄せたいので flex のまま使う */
+  .slide.media video,
+  .slide.media img { width: 100%; height: 100%; background: #000; display: block; }
+  .slide.media.fit-cover video,
+  .slide.media.fit-cover img { object-fit: cover; }
+  .slide.media.fit-contain video,
+  .slide.media.fit-contain img { object-fit: contain; }
 
   /* ---- タイトルスライド（社内の極秘レビュー資料に見せる）---- */
   .slide.title {
@@ -139,7 +151,6 @@
   .opt p { font-size: 3.2vh; line-height: 1.75; }
 
   /* ---- QR ---- */
-  .slide.qr img { width: 100%; height: 100%; object-fit: contain; }
   .qr-fallback { font-size: 3.4vh; line-height: 2; }
   .qr-fallback code { color: var(--lime); font-size: 3.4vh; word-break: break-all; }
 
@@ -147,6 +158,7 @@
   .missing {
     border: 3px dashed rgba(184,217,53,.5); border-radius: 2vh;
     padding: 6vh 8vh; font-size: 3.4vh; line-height: 2;
+    margin: 6vh 8vw;   /* 素材のスライドは余白0なので、代役側で余白を持つ */
   }
   .missing b { color: var(--lime); font-size: 4.4vh; }
 
@@ -287,6 +299,15 @@ const TITLE = {
   foot:   "取扱注意 — 本資料の複製・持ち出しを禁ずる",
 };
 
+// 動画・画像の映し方
+//   "cover"   … 画面いっぱいに広げる。素材と画面の比率が違うと端が切れる（既定）
+//   "contain" … 素材の全体を映す。比率が違うと上下または左右に黒帯が出る
+// 素材も投影も 16:9 なら、どちらでも見た目は同じです。
+const FIT = {
+  video: "cover",
+  image: "cover",   // ★QRを切りたくない場合はここを "contain" に
+};
+
 // 入場QRの画像。この名前で置いてあれば自動で入る。
 // 無くても、開始画面に画像をドロップすれば割り当たります。
 const QR_IMAGE = "../assets/qr/qr_slide_1920.png";
@@ -391,7 +412,7 @@ SHOW.forEach((sl, i) => {
       (BRIDGE.foot ? `<div class="foot">${esc(BRIDGE.foot)}</div>` : "");
 
   } else if (sl.type === "video") {
-    d.classList.add("plain");
+    d.classList.add("plain", "media", "fit-" + (FIT.video === "contain" ? "contain" : "cover"));
     const v = document.createElement("video");
     v.preload = "auto"; v.playsInline = true; v.controls = false;
     d.appendChild(v);
@@ -404,7 +425,7 @@ SHOW.forEach((sl, i) => {
 
   } else if (sl.type === "qr") {
     // QRも動画と同じ枠組みで扱う（規定の場所にあれば自動、無ければドロップ）
-    d.classList.add("qr", "plain");
+    d.classList.add("qr", "plain", "media", "fit-" + (FIT.image === "contain" ? "contain" : "cover"));
     const img = document.createElement("img");
     img.alt = "AI社長アプリの入場QRコード";
     d.appendChild(img);
