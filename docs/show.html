@@ -9,6 +9,7 @@
      本番進行ランナー
      タイトル → 登場動画 → 自己紹介動画 → Q1 → Q2 → Q3 → QR
      を1枚のページで通す。ページ遷移が起きないので画面切り替えが発生しない。
+     本編のあいだには「つなぎスライド」を挟んであり、MCが喋っている間はそれを映す。
 
      操作：→/Enter/クリック=次へ  Space=動画の再生/一時停止  ←=戻る
            B=暗転  H=進行情報の表示  C=印刷用カンペ
@@ -78,6 +79,44 @@
   .title .foot {
     position: absolute; left: 0; right: 0; bottom: 4vh;
     font-size: 1.7vh; color: rgba(255,255,255,.32); letter-spacing: .3em;
+  }
+
+  /* ---- つなぎスライド（MCが喋っている間に映しておく）----
+     真っ黒だと「映写が落ちた？」に見えるので、静かに動き続けさせる。
+     ただしMCより目立ってはいけないので、動きは最小限にする。 */
+  .slide.bridge {
+    background:
+      radial-gradient(70% 55% at 50% 50%, rgba(10,107,74,.35) 0%, transparent 65%),
+      linear-gradient(160deg, #001510 0%, #00241a 60%, #000f0b 100%);
+  }
+  .slide.bridge::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,.014) 6px 7px);
+  }
+  .bridge .mark {
+    font-size: 2.2vh; letter-spacing: .42em; color: rgba(184,217,53,.72);
+    font-weight: 700; margin-bottom: 5vh; padding-left: .42em;
+  }
+  .bridge .cap { font-size: 5.6vh; font-weight: 700; line-height: 1.6; letter-spacing: .04em; }
+  .bridge .cap .n {
+    display: block; font-size: 2.4vh; letter-spacing: .5em; color: var(--lime);
+    margin-bottom: 2.4vh; padding-left: .5em; font-weight: 800;
+  }
+  /* ゆっくり呼吸する3点。ここだけが動く */
+  .bridge .dots { display: flex; gap: 1.6vh; margin-top: 6vh; }
+  .bridge .dots i {
+    width: 1.3vh; height: 1.3vh; border-radius: 50%; background: var(--lime);
+    opacity: .25; animation: breathDot 2.8s ease-in-out infinite;
+  }
+  .bridge .dots i:nth-child(2) { animation-delay: .35s; }
+  .bridge .dots i:nth-child(3) { animation-delay: .7s; }
+  @keyframes breathDot {
+    0%, 100% { opacity: .18; transform: scale(.86); }
+    50%      { opacity: .85; transform: scale(1); }
+  }
+  .bridge .foot {
+    position: absolute; left: 0; right: 0; bottom: 4vh;
+    font-size: 1.5vh; color: rgba(255,255,255,.2); letter-spacing: .34em;
   }
 
   /* ---- 汎用テキスト・待機 ---- */
@@ -257,31 +296,62 @@ const QR_URL = "https://ai-shacho-981107538052.asia-northeast1.run.app/";
 // 名前が違っても、開始画面にドロップすれば割り当たります。
 const VIDEO_DIR = "video/";
 
-// ★本番の並び。この配列の順に進みます。
-//   type: title / video / qr / standby /（必要なら quiz-q, quiz-ab も使えます）
-//   cue : 進行役へのメモ（★画面には出ません。C キーの印刷用カンペにだけ出ます）
-const SHOW = [
+// つなぎスライドの共通部分（MCが喋っている間に映しておく画面）
+const BRIDGE = {
+  mark: "AI社長（President-1.0）",
+  foot: "CONFIDENTIAL ／ 社外秘",
+};
+// つなぎを挟むかどうか。false にすると本編だけの並びに戻ります
+const USE_BRIDGE = true;
+
+// ★本番の並び（本編）。この順に進みます。
+//   type   : title / video / qr / standby /（必要なら quiz-q, quiz-ab も使えます）
+//   cue    : 進行役へのメモ（★画面には出ません。C キーの印刷用カンペにだけ出ます）
+//   bridge : このスライドのあとに挟むつなぎ画面。
+//            { n: 小見出し, cap: 大きい文字 }。省略・null なら挟みません。
+//            ★次に何が出るかを言い過ぎないこと（オチが割れます）
+const CONTENT = [
   { type: "title", label: "① タイトル",
-    cue: "開場中はこれを映しておく。MCが振ったら →" },
+    cue: "開場中はこれを映しておく。MCが振ったら →（つなぎへ）",
+    bridge: { n: "AGENDA 01", cap: "開発チームより、\nご報告があります" } },
 
   { type: "video", file: "01_appearance.mp4", label: "② 登場動画",
-    cue: "再生。終わっても自動では進みません。受けてから →" },
+    cue: "再生。終わっても自動では進みません。受けてから →（つなぎへ）",
+    bridge: { n: "AGENDA 02", cap: "President-1.0、\n起動を確認" } },
 
   { type: "video", file: "02_intro.mp4", label: "③ 自己紹介動画",
-    cue: "MCの受けのあと →" },
+    cue: "MCの受けのあと →（つなぎへ）",
+    bridge: { n: "TEST 01", cap: "これより、精度検証に入ります" } },
 
   { type: "video", file: "03_q1.mp4", label: "④ Q1",
-    cue: "MCが設問を振る → 再生。ご本人に一言もらってから →" },
+    cue: "MCが設問を振る → 再生。ご本人に一言もらってから →（つなぎへ）",
+    bridge: { n: "TEST 02", cap: "検証、続けます" } },
 
   { type: "video", file: "04_q2.mp4", label: "⑤ Q2",
-    cue: "同上。急がない" },
+    cue: "同上。急がない",
+    bridge: { n: "TEST 03", cap: "最後の検証です" } },
 
   { type: "video", file: "05_q3.mp4", label: "⑥ Q3",
-    cue: "同上。ここが最後の問題" },
+    cue: "同上。ここが最後の問題",
+    bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" } },
 
   { type: "qr", label: "⑦ 入場QR（クロージング）",
     cue: "「お手元のスマホでどうぞ」。合言葉はスライドに出ています（読み上げると確実）" },
 ];
+
+// 本編のあいだに、つなぎスライドを挟み込む
+const SHOW = [];
+CONTENT.forEach((c) => {
+  SHOW.push(c);
+  if (USE_BRIDGE && c.bridge) {
+    SHOW.push({
+      type: "bridge",
+      n: c.bridge.n, cap: c.bridge.cap,
+      label: `▷ つなぎ（${c.bridge.n}）`,
+      cue: "★MCが喋っている間はこれを映しておく。次の合図で →",
+    });
+  }
+});
 
 /* ================================================================
    ここから下は進行の仕組み。通常は触らなくて大丈夫です
@@ -308,6 +378,17 @@ SHOW.forEach((sl, i) => {
       `<div class="rule"></div>` +
       `<div class="sub">${esc(TITLE.sub).replace(/\n/g, "<br>")}</div>` +
       (TITLE.foot ? `<div class="foot">${esc(TITLE.foot)}</div>` : "");
+
+  } else if (sl.type === "bridge") {
+    d.classList.add("bridge");
+    d.innerHTML =
+      `<div class="mark">${esc(BRIDGE.mark)}</div>` +
+      `<div class="cap">` +
+        (sl.n ? `<span class="n">${esc(sl.n)}</span>` : "") +
+        esc(sl.cap || "").replace(/\n/g, "<br>") +
+      `</div>` +
+      `<div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>` +
+      (BRIDGE.foot ? `<div class="foot">${esc(BRIDGE.foot)}</div>` : "");
 
   } else if (sl.type === "video") {
     d.classList.add("plain");
