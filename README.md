@@ -80,12 +80,32 @@ Gemini API（`generativelanguage.googleapis.com`）のみ。
 | 変数 | 内容 | 既定値 |
 |---|---|---|
 | `GEMINI_API_KEY` | Google Gemini APIキー。未設定ならデモモード（`GOOGLE_API_KEY` でも可） | （なし） |
-| `MODEL` | 使用モデル | `gemini-2.5-flash` |
+| `MODEL` | 使用モデル。**2.5系でも3系でも動く**（下記） | `gemini-2.5-flash` |
+| `MAX_OUTPUT_TOKENS` | 1回の出力上限。通常は触らない | 2.5系 `512` / 3系 `2048` |
 | `PORT` | 待ち受けポート | `3000` |
 | `PASSPHRASE` | 入場用の合言葉 | `おめでとう` |
 | `SECRET` | トークン署名鍵（省略時は起動ごとにランダム） | （自動生成） |
 | `MAX_TURNS` | 1人あたり発話上限 | `30` |
 | `MAX_PER_MIN` | 1人あたり毎分発話上限 | `6` |
+
+### モデルの切り替え（世代差はサーバー側で吸収済み）
+
+`MODEL` を変えるだけで世代を移行できる。**再デプロイ不要**（環境変数の更新だけで数十秒）。
+
+```bash
+gcloud run services update ai-shacho --region asia-northeast1 \
+  --update-env-vars "MODEL=gemini-3.7-flash"
+```
+
+> 🚨 **「思考」の指定方法が世代で違う。**
+> 2.5系は `thinkingConfig.thinkingBudget`（`0` で無効化できる）、
+> 3系は `thinkingConfig.thinkingLevel`（`LOW`/`HIGH` など。0にはできない）。
+> **両方を同時に送るとエラーになる。**
+> `server.js` がモデル名から世代を判定して片方だけ送るので、`MODEL` の差し替えだけで動く。
+>
+> 思考トークンも出力枠を消費するため、3系では出力上限を自動で広げている
+> （狭いままだと思考で枠を使い切り、**本文が空で返る**）。
+> 起動ログに `思考設定: ...` として実際の設定が出るので、そこで確認できる。
 
 ## 口癖のパラメーター設定（data/config.json）
 

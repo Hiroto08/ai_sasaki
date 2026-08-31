@@ -895,6 +895,31 @@ function scrollToEnd(force) {
   if (force || nearBottom()) messagesEl.scrollTop = messagesEl.scrollHeight;
 }
 
+// 表示前の整形。AIはペルソナの見本を真似て、行頭に字下げを入れたり
+// 一文ごとに改行したりする。吹き出しの中ではそれが隙間だらけに見えるので、
+// 会話の返答は改行を畳んでひとつながりにする（間は一拍ずつの表示側で作る）。
+// おみくじ・診断・クイズのような書式のあるものは、改行を保ったままにする。
+function tidyReply(text) {
+  let t = String(text).replace(/\r/g, "");
+  // 行頭の字下げ（全角スペースなど）を落とす
+  t = t.split("\n").map((l) => l.replace(/^[ \t　]+/, "")).join("\n");
+  // 空行が続いても1つまで
+  t = t.replace(/\n{3,}/g, "\n\n").trim();
+  const lines = t.split("\n").filter((l) => l.trim());
+  // 書式のあるもの（おみくじ・診断・クイズなど）は、改行が意味を持つので畳まない。
+  //   ・【】や箇条書き、丸数字、Q./A. で始まる行がある
+  //   ・空行で段落が分けてある
+  //   ・4行以上ある
+  const formatted =
+    /[【】]/.test(t) ||
+    /^([・\-*＊●○①-⑳]|[QA]\s*[.．]|\d+[.、）)])/m.test(t) ||
+    /\n\s*\n/.test(t) ||
+    lines.length > 3;
+  // 会話の返答だけ、一文ごとの改行を畳んでひとつながりにする
+  if (!formatted) t = t.replace(/\n+/g, "");
+  return t;
+}
+
 // 返答を「話し言葉の一拍」ごとに切る。
 // この社長は3文以内・短文で話す設計なので、まとめて出すとリズムが死ぬ。
 // 句点と改行で切って、間を置きながら出すと「いま喋っている」感になる。
@@ -924,7 +949,7 @@ function addMsg(role, text) {
     who.className = "who"; who.textContent = "AI社長";
     div.appendChild(who);
     const body = document.createElement("span");
-    body.innerHTML = mdToHtml(text);
+    body.innerHTML = mdToHtml(tidyReply(text));
     div.appendChild(body);
   } else {
     // 利用者の入力はそのまま文字として扱う（記法を解釈しない）
@@ -947,15 +972,16 @@ async function addMsgBeats(text) {
   messagesEl.appendChild(div);
   scrollToEnd(true);
 
+  const clean = tidyReply(text);
   // 動きを減らす設定の人には、一拍ずつではなく一度に出す
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    body.innerHTML = mdToHtml(text);
+    body.innerHTML = mdToHtml(clean);
     scrollToEnd(true);
     return div;
   }
 
   let shown = "";
-  const beats = splitBeats(text);
+  const beats = splitBeats(clean);
   for (let i = 0; i < beats.length; i++) {
     shown += beats[i];
     body.innerHTML = mdToHtml(shown);

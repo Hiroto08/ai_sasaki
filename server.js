@@ -125,6 +125,8 @@ const LENGTH_RULE = [
   "- **聞かれていないことを説明しない**",
   "- **箇条書きにしない。**これは会話です",
   "- **記号で強調しない。**`**強調**` `#` `- ` などのマークダウン記法は使わない。声に出す言葉です",
+  "- ★**改行しない。**3文とも続けて、ひとつながりで書く。**行頭に空白を入れない**",
+  "  （下の見本は読みやすさのために折り返してありますが、**折り返し方は真似しないでください**）",
   "",
   "例外：おみくじ・診断・クイズの定型フォーマットのみ、行数より内容を優先してよい。",
   "",
@@ -239,6 +241,21 @@ function demoReply(text, mode) {
 }
 
 // ---- Google Gemini API 呼び出し ----
+// 「思考」の指定方法が世代で違う。ここを間違えると本文が空で返ってくる。
+//   2.5系 … thinkingConfig.thinkingBudget（0 で無効化できる）
+//   3系   … thinkingConfig.thinkingLevel（LOW/HIGH など。0 にはできない）
+// ★両方を同時に送るとエラーになるため、モデル名を見てどちらか一方だけ送る。
+// これにより MODEL 環境変数を差し替えるだけで世代を移行できる。
+const IS_GEN3_PLUS = /^gemini-([3-9]|\d{2,})/.test(String(MODEL));
+function thinkingConfigForModel() {
+  // 2〜3行のキャラ会話に長い思考は要らない。どちらの世代でも最小に寄せる。
+  return IS_GEN3_PLUS ? { thinkingLevel: "LOW" } : { thinkingBudget: 0 };
+}
+// 思考トークンも出力枠を消費する。3系は思考を0にできないぶん枠を広く取る
+//（本文の長さは §LENGTH_RULE のプロンプト側で抑えている）。
+const MAX_OUTPUT_TOKENS = parseInt(
+  process.env.MAX_OUTPUT_TOKENS || (IS_GEN3_PLUS ? "2048" : "512"), 10);
+
 async function geminiReply(messages, systemPrompt) {
   // Gemini は role が "user" / "model"。assistant を model に変換する。
   const contents = messages.map((m) => ({
@@ -247,7 +264,7 @@ async function geminiReply(messages, systemPrompt) {
   }));
   const url =
     `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`;
-  const res = await fetch(url, {
+  const call = (thinking) => fetch(url, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -257,14 +274,25 @@ async function geminiReply(messages, systemPrompt) {
       systemInstruction: { parts: [{ text: systemPrompt }] },
       contents,
       generationConfig: {
-        maxOutputTokens: 512,   // 3文・120字に収める方針（§LENGTH_RULE）。余裕を見て512
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         temperature: 0.9,
-        // gemini-2.5系は「思考」トークンも出力枠を消費し、本文が途中で切れる原因になる。
-        // 2〜3行のキャラ会話には思考は不要なので無効化し、枠をすべて本文に使う。
-        thinkingConfig: { thinkingBudget: 0 },
+        ...(thinking ? { thinkingConfig: thinking } : {}),
       },
     }),
   });
+
+  let res = await call(thinkingConfigForModel());
+  // 思考の指定が受け付けられないモデルに当たっても、本番で落ちないようにする。
+  // 指定なしでもう一度だけ投げ直す（既定の思考設定で動く）。
+  if (res.status === 400) {
+    const detail = await res.text();
+    if (/thinking/i.test(detail)) {
+      console.warn("thinkingConfig が拒否されたため、指定なしで再試行します:", detail.slice(0, 200));
+      res = await call(null);
+    } else {
+      throw new Error(`Gemini API 400: ${detail}`);
+    }
+  }
   if (!res.ok) throw new Error(`Gemini API ${res.status}: ${await res.text()}`);
   const data = await res.json();
   const cand = data.candidates && data.candidates[0];
@@ -608,6 +636,10 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, () => {
   console.log(`AI社長アプリ起動: http://localhost:${PORT}`);
   console.log(`モード: ${API_KEY ? `Gemini API (${MODEL})` : "デモ（GEMINI_API_KEY 未設定）"}`);
+  if (API_KEY) {
+    const t = IS_GEN3_PLUS ? "thinkingLevel=LOW（3系）" : "thinkingBudget=0（2.5系）";
+    console.log(`思考設定: ${t} / 出力上限: ${MAX_OUTPUT_TOKENS}トークン`);
+  }
   console.log(`合言葉: ${PASSPHRASE}（環境変数 PASSPHRASE で変更可）`);
   console.log(`上限: ${MAX_TURNS}発話/人, ${MAX_PER_MIN}発話/分`);
 });
