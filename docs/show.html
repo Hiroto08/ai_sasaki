@@ -7,7 +7,7 @@
 <style>
   /* ============================================================
      本番進行ランナー
-     タイトル → 登場動画 → 自己紹介動画 →（設問→動画→ご本人の回答）×3 → QR
+     タイトル → 登場動画 → 自己紹介動画 →（設問→動画→AI社長の回答）×3 → QR
      を1枚のページで通す。ページ遷移が起きないので画面切り替えが発生しない。
      本編のあいだには「つなぎスライド」を挟んであり、MCが喋っている間はそれを映す。
 
@@ -143,7 +143,7 @@
   }
   .qtext { font-size: 4.6vh; font-weight: 700; line-height: 1.85; white-space: pre-wrap; max-width: 92vw; }
 
-  /* ---- 本人の回答スライド（動画の後）---- */
+  /* ---- AI社長の回答スライド（動画の後）---- */
   .slide.answer {
     background:
       radial-gradient(85% 65% at 50% -10%, rgba(184,217,53,.2) 0%, transparent 60%),
@@ -337,15 +337,15 @@ const BRIDGE = {
 // つなぎを挟むかどうか。false にすると本編だけの並びに戻ります
 const USE_BRIDGE = true;
 
-// ★クイズ3問。設問スライド → 動画 → ご本人の回答スライド、の順に展開されます。
+// ★クイズ3問。設問スライド → 動画 → AI社長の回答スライド、の順に展開されます。
 //   q     : 設問（動画の前に出す）
-//   a     : ご本人の実際の回答（動画の後に出す）
+//   a     : ★AI佐々木社長の回答（動画の後に出す）
 //   video : この設問の動画ファイル名（規定名。ドロップで割り当てるなら何でもよい）
 const QA = [
   {
     no: "Q1",
     q: "急に丸一日、自由に過ごせる休暇が取れました。\nあなたなら、何をしますか？",
-    a: "言うまでもなく、ゴルフ。",
+    a: "言うまでもなく、ゴルフ。",   // AI社長の回答
     video: "03_q1.mp4",
     bridge: { n: "TEST 02", cap: "検証、続けます" },
   },
@@ -385,13 +385,13 @@ const CONTENT = [
     bridge: { n: "TEST 01", cap: "これより、精度検証に入ります" } },
 ];
 
-// クイズ3問を「設問 → 動画 → ご本人の回答」の3枚組で差し込む
+// クイズ3問を「設問 → 動画 → AI社長の回答」の3枚組で差し込む
 QA.forEach((x) => {
   CONTENT.push({ type: "quiz-q", no: x.no, q: x.q, label: `${x.no} 設問`,
     cue: "MCが設問を読み上げる。会場に考えさせてから →（動画へ）" });
-  CONTENT.push({ type: "video", file: x.video, label: `${x.no} AI社長の回答（動画）`,
-    cue: "再生。終わっても自動では進みません。ためてから →（ご本人の回答へ）" });
-  CONTENT.push({ type: "quiz-a", no: x.no, a: x.a, q: x.q, label: `${x.no} ご本人の回答`,
+  CONTENT.push({ type: "video", file: x.video, label: `${x.no} 動画`,
+    cue: "再生。終わっても自動では進みません。ためてから →（AI社長の回答へ）" });
+  CONTENT.push({ type: "quiz-a", no: x.no, a: x.a, q: x.q, label: `${x.no} AI社長の回答`,
     cue: "★ここが一番笑うところ。ご本人に一言もらう。落ち着いたら →", bridge: x.bridge });
 });
 
@@ -481,9 +481,9 @@ SHOW.forEach((sl, i) => {
 
   } else if (sl.type === "quiz-a") {
     d.classList.add("answer");
-    d.innerHTML = `<div class="kicker2">${esc(sl.no)}　ご本人の回答</div>` +
+    d.innerHTML = `<div class="kicker2">${esc(sl.no)}　AI社長（President-1.0）の回答</div>` +
       `<div class="atext">${esc(sl.a)}</div>` +
-      // 設問を小さく添えておく。会場が問いを忘れていても、答えが刺さる
+      // 設問を小さく添えておく。動画を挟むと会場が問いを忘れるため
       `<div class="qref">${esc(String(sl.q).replace(/\n+/g, " ").trim())}</div>`;
 
   } else {
