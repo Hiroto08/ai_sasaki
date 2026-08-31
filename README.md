@@ -42,8 +42,35 @@ AI社長と、おみくじ・診断・クイズ・雑談で遊べる。
 | 4 | [**docs/DEPLOY_GUIDE.md**](docs/DEPLOY_GUIDE.md) | アプリをCloud Runで公開する手順 |
 | 5 | [**docs/MC_SCRIPT.md**](docs/MC_SCRIPT.md) | **当日の実行台本**。開演60分前〜撤収まで |
 | 6 | [**docs/qr_sheet.html**](docs/qr_sheet.html) | ★**入場QR**。#5の投影スライドと、A4に4枚並ぶ卓上カード（ブラウザで開いて印刷） |
+| 6.5 | [**docs/show.html**](docs/show.html) | ★★**本番進行ランナー**。OP動画→挨拶→クイズ5問→QR を**1枚のページで通す**（画面切り替えなし）。`→`次へ／`Space`動画停止／`C`カンペ印刷 |
 | 7 | [**docs/quiz_slides.html**](docs/quiz_slides.html) | ★**#3クイズの進行スライド**（5問×4枚）。設問→A/B→動画キュー→正解。**先頭のQUIZを書き換えるだけで差し替え可** |
 | 7.5 | [**docs/quiz_pool.html**](docs/quiz_pool.html) | ★**クイズ設問プール100問**とAI側の回答。分類・キーワードで絞り込んで5問選ぶ（元データは `data/content/quiz_pool.json`） |
+
+## 本番の進行（docs/show.html）
+
+**当日の投影は [`docs/show.html`](docs/show.html) 1枚で通す。**
+オープニング動画・AI社長の挨拶・クイズ5問・入場QRを全部このページに入れてあるので、
+**ファイルを開き直す必要がなく、画面切り替えが一度も起きない。**
+
+| キー | 動作 |
+|---|---|
+| `→` / `Enter` / クリック | 次へ進む |
+| **`Space`** | **動画の再生／一時停止だけ**（★進みません） |
+| `←` | ひとつ戻る |
+| `B` | 暗転 |
+| `H` | 進行情報の帯（**会場に映るので本番中は消す**） |
+| `C` | 進行カンペを別ウィンドウで開く（印刷して紙で持つ） |
+
+- **開幕に「開始」ボタンを必ず押す。** ここで音声が解錠される（押さないと動画が無音になる）
+- 全動画を事前に読み込み、**100%になるまで開始できない**（本番でのバッファ待ちを防ぐ）
+- **動画が終わっても自動で進まない。**MCの合図で `→` を押す
+- 動画は [`docs/video/`](docs/video/README.md) に決まったファイル名で置く。
+  **無くても代役が出るので、いまから通し稽古できる**
+- 差し替えはファイル先頭の `QUIZ` 配列を書き換えるだけ（`docs/quiz_slides.html` と同じ形）
+
+> 🚨 **`public/` ではなく `docs/` に置いてある。**
+> `public/` は Cloud Run で公開されるため、**クイズの答えが入ったこのファイルを置くと
+> 参加者に見られる。**
 
 会場のスクリーン投影には **`/stage.html`**（ステージモード）を使う。司会がボタンで進行でき、
 大文字表示・辛口モードの赤い覇気演出・`H`キーで操作パネル非表示に対応。
@@ -179,6 +206,7 @@ gcloud run services update ai-shacho --region asia-northeast1 \
 | `server.js` | 依存ゼロのNodeサーバー。`/api/chat` でGemini API or デモ応答 |
 | `public/index.html` | チャットUI + イラストアバター（まばたき・口パク）+ 読み上げ |
 | `public/stage.html` | **ステージモード（大画面投影用）**。司会が操作、200人の会場向け大文字表示 |
+| `docs/show.html` | ★**本番進行ランナー**。全パートを1枚で通す（画面切り替えなし）。動画は `docs/video/` |
 | `public/qa.html` | **フリー質問オペレーター卓**。回答生成→音声再生をワンクリック（#4用） |
 | `data/content/qa_presets.json` | **想定質問と確認済み回答**（answerを埋めると本番は即再生） |
 | `data/content/stage_presets.json` | **ステージ進行ボタンの台本**（label/prompt を編集して差し替え可） |

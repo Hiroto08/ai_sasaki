@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>本番進行ランナー｜AI社長 余興</title>
+<style>
+  /* ============================================================
+     本番進行ランナー
+     全パート（OP動画→挨拶→クイズ5問→QR）を1枚のページで通す。
+     ページ遷移もファイルオープンも起きないので画面切り替えが発生しない。
+
+     操作：→/Enter/クリック=次へ  Space=動画の再生/一時停止  ←=戻る
+           B=暗転  H=進行情報の表示  C=印刷用カンペ
+
+     ★Space に「進む」を割り当てていないのは、動画を止めようとして
+       次に飛ぶ事故を防ぐため。進行は → のみ。
+     ============================================================ */
+  :root {
+    --deep: #00432e;
+    --lime: #b8d935;
+    --ink: #f4f7f2;
+    --dim: #93a89b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    height: 100%; background: #000; color: var(--ink); overflow: hidden;
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic UI", "Yu Gothic", Meiryo, sans-serif;
+    font-feature-settings: "palt";
+  }
+  body.hide-cursor { cursor: none; }
+
+  /* ---- ステージ（全スライドを重ねて置き、不透明度で見せ替える）---- */
+  #stage { position: fixed; inset: 0; }
+  .slide {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 6vh 8vw; text-align: center;
+    opacity: 0; visibility: hidden;
+    transition: opacity .45s ease;
+    background: radial-gradient(120% 90% at 50% 0%, #0b3b28 0%, #041a12 55%, #000 100%);
+  }
+  .slide.on { opacity: 1; visibility: visible; }
+  .slide.plain { background: #000; }
+
+  /* 動画は画面いっぱい。黒帯は黒のまま */
+  .slide video { width: 100%; height: 100%; object-fit: contain; background: #000; }
+
+  /* ---- 各パートの見た目 ---- */
+  .kicker {
+    font-size: 2.2vh; letter-spacing: .35em; color: var(--lime);
+    font-weight: 700; margin-bottom: 3vh;
+  }
+  .qtext { font-size: 5.4vh; font-weight: 700; line-height: 1.7; white-space: pre-wrap; }
+  .qnum {
+    display: inline-block; font-size: 3vh; font-weight: 800; letter-spacing: .1em;
+    color: #041a12; background: var(--lime); border-radius: 999px;
+    padding: .5vh 3vh; margin-bottom: 4vh;
+  }
+  .ab { display: flex; gap: 4vh; width: 100%; max-width: 1500px; margin-top: 2vh; }
+  .opt {
+    flex: 1; background: rgba(255,255,255,.06); border: 2px solid rgba(184,217,53,.35);
+    border-radius: 2.4vh; padding: 4vh 3.4vh; text-align: left;
+  }
+  .opt .tag {
+    font-size: 4.6vh; font-weight: 800; color: var(--lime); line-height: 1;
+    display: block; margin-bottom: 2vh;
+  }
+  .opt p { font-size: 3.2vh; line-height: 1.75; }
+  .opt.win { border-color: var(--lime); background: rgba(184,217,53,.16); }
+  .opt.lose { opacity: .34; }
+
+  .verdict { font-size: 6.6vh; font-weight: 800; line-height: 1.5; }
+  .verdict .hit { color: var(--lime); }
+  .sub { font-size: 3vh; color: var(--dim); margin-top: 3vh; line-height: 1.8; }
+
+  .slide.qr { justify-content: center; gap: 4vh; }
+  .slide.qr img { width: 100%; height: 100%; object-fit: contain; }
+  .qr-fallback { font-size: 3.4vh; line-height: 2; }
+  .qr-fallback code { color: var(--lime); font-size: 4vh; word-break: break-all; }
+
+  .standby-title { font-size: 7vh; font-weight: 800; letter-spacing: .06em; }
+  .standby-sub { font-size: 3vh; color: var(--dim); margin-top: 3vh; }
+
+  /* 動画ファイルが無いときの代役（本番前の通し稽古用） */
+  .missing {
+    border: 3px dashed rgba(184,217,53,.5); border-radius: 2vh;
+    padding: 6vh 8vh; font-size: 3.4vh; line-height: 2;
+  }
+  .missing b { color: var(--lime); font-size: 4vh; }
+
+  /* ---- 暗転 ---- */
+  #blackout {
+    position: fixed; inset: 0; background: #000; z-index: 50;
+    opacity: 0; visibility: hidden; transition: opacity .3s ease;
+  }
+  #blackout.on { opacity: 1; visibility: visible; }
+
+  /* ---- 進行情報（★既定は非表示。会場に映るため）---- */
+  #hud {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    background: rgba(0,0,0,.86); border-top: 2px solid var(--lime);
+    padding: 10px 18px; display: none; align-items: center; gap: 22px;
+    font-size: 14px; letter-spacing: .02em;
+  }
+  #hud.on { display: flex; }
+  #hud .now { font-weight: 800; color: var(--lime); font-size: 16px; }
+  #hud .next { color: var(--dim); }
+  #hud .clock { margin-left: auto; font-variant-numeric: tabular-nums; font-size: 20px; font-weight: 700; }
+  #hud .keys { color: var(--dim); font-size: 12px; }
+  #hud .vstate { color: #ffd166; font-weight: 700; }
+
+  /* ---- 開始オーバーレイ（音声の解錠と事前読み込み）---- */
+  #boot {
+    position: fixed; inset: 0; z-index: 100; background: #04140e;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3vh; padding: 6vh; text-align: center;
+  }
+  #boot.done { display: none; }
+  #boot h1 { font-size: 4vh; letter-spacing: .08em; }
+  #boot .note { color: var(--dim); font-size: 2.2vh; line-height: 2; max-width: 46em; }
+  #boot .note b { color: var(--lime); }
+  .bar { width: min(560px, 70vw); height: 12px; background: rgba(255,255,255,.12); border-radius: 999px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--lime); transition: width .25s ease; }
+  #bootStat { font-size: 2vh; color: var(--dim); font-variant-numeric: tabular-nums; }
+  #startBtn {
+    font: inherit; font-size: 3vh; font-weight: 800; letter-spacing: .1em;
+    padding: 2.2vh 7vh; border: none; border-radius: 999px;
+    background: var(--lime); color: #04140e; cursor: pointer;
+  }
+  #startBtn:disabled { opacity: .35; cursor: progress; }
+  #bootErr { color: #ffb4a2; font-size: 2vh; line-height: 1.9; max-width: 46em; }
+</style>
+</head>
+<body>
+
+<div id="stage"></div>
+<div id="blackout"></div>
+
+<div id="hud">
+  <span class="now" id="hudNow">—</span>
+  <span class="vstate" id="hudV"></span>
+  <span class="next" id="hudNext"></span>
+  <span class="keys">→次へ ／ Space動画停止 ／ ←戻る ／ B暗転 ／ Hこの帯 ／ C カンペ印刷</span>
+  <span class="clock" id="hudClock">00:00</span>
+</div>
+
+<div id="boot">
+  <h1>本番進行ランナー</h1>
+  <p class="note">
+    このまま<b>フルスクリーン</b>で本番を通します。画面の切り替えは起きません。<br>
+    <b>「開始」を押すと音声が解錠されます。</b>押さずに始めると動画が無音になります。<br>
+    進行は <b>→</b>、動画の一時停止は <b>Space</b> です。
+  </p>
+  <div class="bar"><i id="bootBar"></i></div>
+  <div id="bootStat">動画を読み込んでいます…</div>
+  <div id="bootErr"></div>
+  <button id="startBtn" disabled>開始</button>
+</div>
+
+<script>
+/* ================================================================
+   ★ここだけ書き換えれば本番の中身が変わります
+   ================================================================ */
+
+// 動画ファイルの置き場所（このHTMLから見た相対パス）
+const VIDEO_DIR = "video/";
+
+// クイズ5問。docs/quiz_slides.html と同じ形なので、そのままコピーできます。
+//   aiSide … AI社長が選んだほう（"A" か "B"）＝正解発表で光るほう
+const QUIZ = [
+  {
+    q: "東京ドームで野球を観た帰り。\n席を立つとき、どうしますか？",
+    a: "周りに落ちてるゴミも拾って、まとめて捨てて帰るよ。",
+    b: "余韻に浸りたいから、席で少し待ってから出るかな。",
+    aiSide: "B",
+    video: "03_q1_reveal.mp4"
+  },
+  {
+    q: "自販機で、前の人がお釣りを取り忘れました。\nもう、だいぶ向こうまで歩いて行っています。",
+    a: "取り出し口に戻して、そのままにしておくかな。",
+    b: "走って追いかけて、渡してくるよ。それくらいするでしょ。",
+    aiSide: "A",
+    video: "04_q2_reveal.mp4"
+  },
+  {
+    q: "大事な会食と、部の宴会。\n同じ日にダブルブッキングしてしまいました。",
+    a: "両方行く。顔だけでも出さないと気が済まないんだよ。",
+    b: "先に約束したほうへ行く。あとで必ず埋め合わせるよ。",
+    aiSide: "B",
+    video: "05_q3_reveal.mp4"
+  },
+  {
+    q: "若かりし野球選手だった頃。\nドラフトで、阪神タイガースに指名されました。",
+    a: "行くよ。プロに行けるなら、球団は選ばない。",
+    b: "……ちょっと考えさせてくれる？　心の準備がいるんだよ。",
+    aiSide: "A",
+    video: "06_q4_reveal.mp4"
+  },
+  {
+    q: "部下が、大きな失敗の報告に来ました。\n第一声は何と言いますか？",
+    a: "わかった。で、お客さんへの影響は？",
+    b: "なんでそうなったか、最初から説明して。",
+    aiSide: "B",
+    video: "07_q5_reveal.mp4"
+  },
+];
+
+// 進行の並び。type は video / quiz / qr / standby / text
+// cue は進行役へのメモ（★画面には出ません。C キーの印刷用カンペにだけ出ます）
+function buildShow() {
+  const s = [];
+  s.push({ type: "standby", title: "AI佐々木社長", sub: "まもなく始まります",
+           label: "開演前（待機）", cue: "開場中はこれを映しておく。MCの合図で →" });
+  s.push({ type: "video", src: "01_opening.mp4", label: "#1 オープニング動画（36秒）",
+           cue: "MCが振ったら →。終わっても自動で進まないので、受けてから →" });
+  s.push({ type: "video", src: "02_greeting.mp4", label: "#2 AI社長 最初の挨拶（24秒）",
+           cue: "MCの受け（3秒）のあと →" });
+
+  QUIZ.forEach((q, i) => {
+    const n = i + 1;
+    s.push({ type: "quiz-q", n, quiz: q, label: `Q${n} 設問`,
+             cue: "MCが設問を読む。読み終えたら →" });
+    s.push({ type: "quiz-ab", n, quiz: q, label: `Q${n} A/B 提示`,
+             cue: "MCがA・Bを同じトーンで読む → 拍手を取る → 取り終えたら →" });
+    s.push({ type: "video", src: q.video, label: `Q${n} 正解発表 動画（20秒）`,
+             cue: "再生。終わったら →（自動では進みません）" });
+    s.push({ type: "quiz-answer", n, quiz: q, label: `Q${n} 正解（AI＝${q.aiSide}）`,
+             cue: "★ご本人に一言もらう。ここが一番笑うので急がない。落ち着いたら →" });
+  });
+
+  s.push({ type: "qr", label: "#5 クロージング QR",
+           cue: "「お手元のスマホでどうぞ」。合言葉はスライドに出ています（読み上げると確実）" });
+  s.push({ type: "standby", title: "ありがとうございました", sub: "",
+           label: "終了", cue: "そのまま映しておいてOK" });
+  return s;
+}
+
+/* ================================================================
+   ここから下は進行の仕組み。通常は触らなくて大丈夫です
+   ================================================================ */
+const SHOW = buildShow();
+const stage = document.getElementById("stage");
+const els = [];      // スライドのDOM
+const videos = [];   // { el, ok } 動画の読み込み状態
+let idx = 0;
+let started = false;
+let t0 = null;
+
+const esc = (s) => String(s == null ? "" : s)
+  .replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// --- スライドを全部つくって重ねる（あとで作らない＝切り替えで待たない）---
+SHOW.forEach((sl, i) => {
+  const d = document.createElement("div");
+  d.className = "slide" + (sl.type === "video" ? " plain" : "");
+  d.dataset.i = i;
+
+  if (sl.type === "standby") {
+    d.innerHTML = `<div class="standby-title">${esc(sl.title)}</div>` +
+      (sl.sub ? `<div class="standby-sub">${esc(sl.sub)}</div>` : "");
+
+  } else if (sl.type === "video") {
+    const v = document.createElement("video");
+    v.src = VIDEO_DIR + sl.src;
+    v.preload = "auto";
+    v.playsInline = true;
+    v.controls = false;
+    d.appendChild(v);
+    // ファイルが無くても通し稽古できるよう、代役を裏に置いておく
+    const ph = document.createElement("div");
+    ph.className = "missing";
+    ph.style.display = "none";
+    ph.innerHTML = `<b>動画がまだありません</b><br>${esc(VIDEO_DIR + sl.src)}<br>` +
+      `<span style="color:#93a89b">ここに ${esc(sl.label)} が入ります</span>`;
+    d.appendChild(ph);
+    videos[i] = { el: v, ph, ok: null };
+
+  } else if (sl.type === "quiz-q") {
+    d.innerHTML = `<div class="qnum">Q${sl.n}</div><div class="qtext">${esc(sl.quiz.q)}</div>`;
+
+  } else if (sl.type === "quiz-ab") {
+    d.innerHTML = `<div class="kicker">どちらが本物の佐々木社長？</div>
+      <div class="ab">
+        <div class="opt"><span class="tag">A</span><p>${esc(sl.quiz.a)}</p></div>
+        <div class="opt"><span class="tag">B</span><p>${esc(sl.quiz.b)}</p></div>
+      </div>`;
+
+  } else if (sl.type === "quiz-answer") {
+    const ai = sl.quiz.aiSide;
+    const real = ai === "A" ? "B" : "A";
+    d.innerHTML = `<div class="verdict">本物は <span class="hit">${real}</span> でした</div>
+      <div class="ab" style="margin-top:5vh">
+        <div class="opt ${real === "A" ? "win" : "lose"}"><span class="tag">A</span><p>${esc(sl.quiz.a)}</p></div>
+        <div class="opt ${real === "B" ? "win" : "lose"}"><span class="tag">B</span><p>${esc(sl.quiz.b)}</p></div>
+      </div>
+      <div class="sub">${esc(ai)} は AI佐々木社長 の答えでした</div>`;
+
+  } else if (sl.type === "qr") {
+    const img = document.createElement("img");
+    img.src = "../assets/qr/qr_slide_1920.png";
+    img.alt = "AI社長アプリの入場QRコード";
+    img.onerror = () => {
+      d.innerHTML = `<div class="qr-fallback">スマホで読み取ってください<br>
+        <code>https://ai-shacho-981107538052.asia-northeast1.run.app/</code><br>
+        <span style="color:#93a89b;font-size:2.4vh">
+        （QR画像が見つかりません。scripts/make_qr_slide.sh を実行してください）</span></div>`;
+    };
+    d.classList.add("qr", "plain");   // 周りは黒。スライド画像だけを見せる
+    d.appendChild(img);
+
+  } else {
+    d.innerHTML = `<div class="qtext">${esc(sl.text || "")}</div>`;
+  }
+
+  stage.appendChild(d);
+  els.push(d);
+});
+
+// --- 事前読み込み（本番でバッファ待ちを出さないため）---
+const bootBar = document.getElementById("bootBar");
+const bootStat = document.getElementById("bootStat");
+const bootErr = document.getElementById("bootErr");
+const startBtn = document.getElementById("startBtn");
+
+const vlist = videos.filter(Boolean);
+let loaded = 0;
+function bump(okMsgIdx, ok) {
+  loaded++;
+  if (!ok) videos[okMsgIdx].ok = false;
+  const pct = vlist.length ? Math.round((loaded / vlist.length) * 100) : 100;
+  bootBar.style.width = pct + "%";
+  bootStat.textContent = `動画 ${loaded} / ${vlist.length} 本 読み込み済み`;
+  if (loaded >= vlist.length) finishBoot();
+}
+function finishBoot() {
+  const missing = videos.map((v, i) => (v && v.ok === false ? SHOW[i].src : null)).filter(Boolean);
+  if (missing.length) {
+    bootErr.innerHTML = `⚠️ 見つからない動画が ${missing.length} 本あります：<br>` +
+      missing.map(esc).join("　/　") +
+      `<br><span style="color:#93a89b">その場面は差し込み用の代役が出ます。通し稽古はこのまま進められます。</span>`;
+    bootStat.textContent = `読み込み完了（${vlist.length - missing.length} / ${vlist.length} 本）`;
+  } else {
+    bootStat.textContent = `読み込み完了（${vlist.length} 本すべて）`;
+  }
+  startBtn.disabled = false;
+  startBtn.focus();
+}
+if (!vlist.length) finishBoot();
+videos.forEach((v, i) => {
+  if (!v) return;
+  let done = false;
+  const ok = () => { if (!done) { done = true; v.ok = true; bump(i, true); } };
+  const ng = () => { if (!done) { done = true; v.ph.style.display = ""; v.el.style.display = "none"; bump(i, false); } };
+  v.el.addEventListener("canplaythrough", ok, { once: true });
+  v.el.addEventListener("error", ng, { once: true });
+  // 読み込みが極端に遅い場合も先へ進める（本番で止まらないように）
+  setTimeout(() => { if (!done) ok(); }, 20000);
+  v.el.load();
+});
+
+// --- 開始（ここで音声を解錠し、フルスクリーンにする）---
+startBtn.addEventListener("click", async () => {
+  // 無音で一瞬再生してすぐ止める＝以降の play() が許可される
+  for (const v of vlist) {
+    if (!v.el || v.ok === false) continue;
+    try { v.el.muted = true; await v.el.play(); v.el.pause(); v.el.currentTime = 0; v.el.muted = false; }
+    catch (e) { /* 解錠できなくても進む */ }
+  }
+  document.getElementById("boot").classList.add("done");
+  try { await document.documentElement.requestFullscreen(); } catch (e) { /* 手動でF11 */ }
+  try { await navigator.wakeLock.request("screen"); } catch (e) { /* 非対応でも進む */ }
+  started = true;
+  t0 = Date.now();
+  show(0);
+  tick();
+});
+
+// --- スライドの見せ替え ---
+function currentVideo() {
+  const v = videos[idx];
+  return v && v.ok !== false ? v.el : null;
+}
+function show(n) {
+  n = Math.max(0, Math.min(SHOW.length - 1, n));
+  const prev = currentVideo();
+  if (prev) prev.pause();
+  els[idx].classList.remove("on");
+  idx = n;
+  els[idx].classList.add("on");
+  const v = currentVideo();
+  if (v) {
+    v.currentTime = 0;
+    // 再生できなくても画面は切り替わっている（音だけ出ない状態にはしない）
+    v.play().catch(() => { bootErr.textContent = "動画の再生がブロックされました。"; });
+  }
+  paintHud();
+}
+const next = () => show(idx + 1);
+const back = () => show(idx - 1);
+
+// --- キー操作 ---
+document.addEventListener("keydown", (e) => {
+  if (!started) return;
+  const k = e.key;
+
+  if (k === " " || k === "Spacebar") {
+    e.preventDefault();               // 画面が飛ぶのを防ぐ
+    const v = currentVideo();
+    if (v) { v.paused ? v.play().catch(() => {}) : v.pause(); paintHud(); }
+    return;                           // ★Space では絶対に進まない
+  }
+  if (k === "ArrowRight" || k === "Enter" || k === "PageDown") { e.preventDefault(); next(); return; }
+  if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); back(); return; }
+  if (k === "b" || k === "B") { document.getElementById("blackout").classList.toggle("on"); return; }
+  if (k === "h" || k === "H") { document.getElementById("hud").classList.toggle("on"); return; }
+  if (k === "c" || k === "C") { printCue(); return; }
+  if (k === "f" || k === "F") { document.documentElement.requestFullscreen().catch(() => {}); return; }
+});
+// クリック／タップでも進む（リモコン式のプレゼンターに対応）
+document.addEventListener("click", (e) => {
+  if (!started || e.target.closest("#hud")) return;
+  next();
+});
+
+// --- 進行情報の帯（★既定は非表示）---
+function paintHud() {
+  const cur = SHOW[idx], nx = SHOW[idx + 1];
+  document.getElementById("hudNow").textContent = `${idx + 1}/${SHOW.length}　${cur.label}`;
+  document.getElementById("hudNext").textContent = nx ? `次 → ${nx.label}` : "（最後です）";
+  const v = currentVideo();
+  document.getElementById("hudV").textContent = v ? (v.paused ? "⏸ 一時停止中" : "▶ 再生中") : "";
+}
+function tick() {
+  if (t0) {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    document.getElementById("hudClock").textContent =
+      String(Math.floor(s / 60)).padStart(2, "0") + ":" + String(s % 60).padStart(2, "0");
+  }
+  const v = currentVideo();
+  if (v) document.getElementById("hudV").textContent = v.paused ? "⏸ 一時停止中" : "▶ 再生中";
+  setTimeout(tick, 500);
+}
+
+// --- 印刷用カンペ（★これを紙で持つ。画面には出さない）---
+function printCue() {
+  const rows = SHOW.map((s, i) => `<tr>
+      <td class="n">${i + 1}</td>
+      <td class="l">${esc(s.label)}</td>
+      <td>${esc(s.cue || "")}</td>
+    </tr>`).join("");
+  const w = window.open("", "_blank", "width=900,height=1100");
+  if (!w) { alert("ポップアップがブロックされました。許可してから C をもう一度押してください。"); return; }
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="utf-8">
+    <title>進行カンペ｜AI社長 余興</title><style>
+    body{font-family:"Hiragino Sans","Noto Sans JP",sans-serif;margin:18mm 14mm;color:#111}
+    h1{font-size:16pt;margin:0 0 4mm}
+    .keys{font-size:10pt;background:#f2f5f1;border:1px solid #cfd8d0;padding:3mm 4mm;border-radius:3mm;margin-bottom:5mm;line-height:1.9}
+    table{width:100%;border-collapse:collapse;font-size:10.5pt}
+    th,td{border-bottom:1px solid #ddd;padding:2.6mm 2mm;text-align:left;vertical-align:top}
+    th{background:#eef3ec;font-size:9.5pt}
+    td.n{width:8mm;color:#888}
+    td.l{width:52mm;font-weight:700}
+    tr{break-inside:avoid}
+    @page{size:A4;margin:14mm}
+    </style></head><body>
+    <h1>進行カンペ｜AI社長 余興</h1>
+    <div class="keys">
+      <b>→ / Enter / クリック</b>＝次へ　　<b>Space</b>＝動画の再生・一時停止（進みません）
+      <b>←</b>＝戻る<br>
+      <b>B</b>＝暗転　　<b>H</b>＝進行情報の帯（※会場に映るので本番中は消す）　　<b>F</b>＝フルスクリーン<br>
+      ★動画は終わっても自動で進みません。MCの合図で → を押してください。
+    </div>
+    <table><thead><tr><th>#</th><th>画面</th><th>進行役がやること</th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    </body></html>`);
+  w.document.close();
+  setTimeout(() => w.print(), 400);
+}
+
+// --- カーソルを自動で隠す ---
+let curTimer = null;
+document.addEventListener("mousemove", () => {
+  document.body.classList.remove("hide-cursor");
+  clearTimeout(curTimer);
+  curTimer = setTimeout(() => document.body.classList.add("hide-cursor"), 2000);
+});
+
+// --- 誤って閉じないように ---
+window.addEventListener("beforeunload", (e) => {
+  if (started) { e.preventDefault(); e.returnValue = ""; }
+});
+</script>
+</body>
+</html>

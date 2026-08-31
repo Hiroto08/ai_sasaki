@@ -14,3 +14,7 @@ assets/*
 !assets/README.md
 # QRは本人の情報を含まず、再生成の手間を省きたいので共有する
 !assets/qr/
+
+# 本番進行ランナーが読む動画。容量が大きく本人の顔・声を含むためコミットしない
+docs/video/*
+!docs/video/README.md
