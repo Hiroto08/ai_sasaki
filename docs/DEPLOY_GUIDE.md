@@ -325,6 +325,23 @@ cd ~/ai_sasaki && git pull && gcloud run deploy ai-shacho --source . --region as
 
 （約3分で反映。環境変数は前回設定が引き継がれる）
 
+### イベント中に返答の長さだけ変えたい
+
+**短すぎる／長すぎると感じたら、Cloud Shell で数値を書き換えて入れ直すだけ。**
+
+```bash
+cd ~/ai_sasaki
+# maxSentences（文数）と maxChars（文字数）を書き換える
+#   短くしたい: 3 / 130    もっと短く: 2 / 90    長くしたい: 5 / 210
+sed -i 's/"maxSentences": [0-9]*/"maxSentences": 5/' data/config.json
+sed -i 's/"maxChars": [0-9]*/"maxChars": 210/' data/config.json
+grep -A 3 '"replyLength"' data/config.json   # 変わったか確認
+gcloud run deploy ai-shacho --source . --region asia-northeast1
+```
+
+> 💡 ローカルで動かしている場合は `data/config.json` を保存するだけで即反映されます
+> （再起動不要）。Cloud Run はコンテナに焼き込まれるため、再デプロイが必要です。
+
 ### 合言葉だけ変えたい（再デプロイ不要・数十秒）
 
 ```bash
