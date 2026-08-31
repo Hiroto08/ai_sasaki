@@ -92,8 +92,38 @@
   .avatar-frame {
     background: #fff; border-radius: 50% 50% 24px 24px; padding: 14px 14px 0;
     box-shadow: var(--shadow-1); border: 1px solid var(--line); overflow: hidden;
+    /* 待っているあいだも静止画にしない。ゆっくり呼吸させると「居る」感じが出る */
+    animation: breathe 5.2s ease-in-out infinite;
+    transition: box-shadow .35s ease, border-color .35s ease;
   }
-  .avatar-pane .name { font-weight: 700; font-size: 15px; letter-spacing: .03em; }
+  @keyframes breathe {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50%      { transform: translateY(-2px) scale(1.012); }
+  }
+  /* 喋っているあいだは淡いライムの光をまとう（誰が話しているかが一目で分かる） */
+  .avatar-frame.speaking {
+    border-color: var(--lime);
+    box-shadow: 0 0 0 3px rgba(184, 217, 53, .28), 0 6px 20px rgba(0, 40, 25, .14);
+  }
+  /* 考えているあいだは呼吸を少し速める＝間が持つ */
+  .avatar-frame.thinking { animation-duration: 2.6s; }
+  #head { transition: transform .5s ease; }
+  .avatar-pane .name { font-weight: 700; font-size: 15px; letter-spacing: .03em; text-align: center; }
+  /* いまの状態（オンライン／考えている／話している）。緑の点で「居る」ことを示す */
+  .avatar-pane .state {
+    display: block; font-size: 11px; font-weight: 500; color: var(--ink-3);
+    letter-spacing: .02em; margin-top: 2px;
+  }
+  .avatar-pane .state::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--lime); margin-right: 5px; vertical-align: 1px;
+    box-shadow: 0 0 0 0 rgba(184, 217, 53, .7); animation: pulseDot 2.4s ease-out infinite;
+  }
+  @keyframes pulseDot {
+    0%   { box-shadow: 0 0 0 0 rgba(184, 217, 53, .65); }
+    70%  { box-shadow: 0 0 0 6px rgba(184, 217, 53, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(184, 217, 53, 0); }
+  }
   .avatar-pane .title { font-size: 12px; color: var(--ink-2); text-align: center; line-height: 1.7; }
   .avatar-pane .note { font-size: 10px; color: var(--ink-3); text-align: center; line-height: 1.6; }
   .tts-toggle { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
@@ -117,7 +147,9 @@
   .mode-toggle .switch.on::after { content: "🌶️"; left: 26px; }
 
   /* ---- チャット ---- */
-  .chat-pane { flex: 1; display: flex; flex-direction: column; background: var(--bg); }
+  /* min-width:0 … flex項目は既定で中身より縮まない。横スクロールする要素を
+     内側に持つので、これが無いとチャット欄全体が中身の幅まで広がってしまう */
+  .chat-pane { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--bg); }
   .messages { flex: 1; overflow-y: auto; padding: 22px 22px 10px; display: flex; flex-direction: column; gap: 14px; scroll-behavior: smooth; }
   .messages::-webkit-scrollbar { width: 8px; }
   .messages::-webkit-scrollbar-thumb { background: #c9d5cb; border-radius: 8px; }
@@ -125,8 +157,19 @@
   .msg {
     max-width: 76%; padding: 12px 16px; border-radius: var(--radius);
     font-size: 14px; line-height: 1.85; white-space: pre-wrap;
-    animation: msgIn .28s ease both;
+    /* fill-mode は付けない。付けるとアニメーションが走らない環境で
+       opacity:0 のまま貼りついて、吹き出しが空白に見える事故が起きる */
+    animation: msgIn .28s ease;
   }
+  /* AIが混ぜてくるマークダウン記法の表示（mdToHtml で復元される） */
+  .msg strong { font-weight: 700; color: var(--deep-3); }
+  .msg em { font-style: normal; background: linear-gradient(transparent 62%, var(--lime-tint) 62%); }
+  .msg code {
+    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace; font-size: .92em;
+    background: rgba(0, 0, 0, .05); border-radius: 4px; padding: 1px 5px;
+  }
+  .msg.user strong { color: inherit; }
+  .msg.user em { background: rgba(255, 255, 255, .22); }
   .msg.user {
     align-self: flex-end; background: linear-gradient(135deg, var(--deep-2), var(--deep-3));
     color: #fff; border-bottom-right-radius: 5px; box-shadow: var(--shadow-1);
@@ -150,9 +193,24 @@
   .typing .dots i:nth-child(3) { animation-delay: .3s; }
   @keyframes bounce { 0%, 60%, 100% { transform: none; opacity: .35; } 30% { transform: translateY(-5px); opacity: 1; } }
 
-  /* ---- 提案チップ ---- */
-  .suggest { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 22px 10px; }
-  .suggest button { flex-shrink: 0; }
+  /* ---- 提案チップ（横1列。数を増やしても縦に伸びず、スワイプで送る）---- */
+  /* min-width:0 が無いと、横に並んだチップの合計幅がそのまま
+     チャット欄の最小幅として効いてしまい、吹き出しが画面外へ飛ぶ */
+  .suggest-wrap { position: relative; min-width: 0; overflow: hidden; }
+  /* 右端にフェードをかけて「まだ続きがある」ことを見せる */
+  .suggest-wrap::after {
+    content: ""; position: absolute; right: 0; top: 0; bottom: 0; width: 34px;
+    background: linear-gradient(to right, rgba(247, 249, 246, 0), var(--bg) 78%);
+    pointer-events: none;
+  }
+  .suggest {
+    display: flex; flex-wrap: nowrap; gap: 8px; padding: 4px 22px 10px;
+    overflow-x: auto; overscroll-behavior-x: contain;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+  }
+  .suggest::-webkit-scrollbar { display: none; }
+  .suggest button { flex-shrink: 0; scroll-snap-align: start; white-space: nowrap; }
   .suggest button {
     font-size: 12px; font-weight: 600; padding: 7px 14px; border-radius: 999px;
     border: 1px solid var(--line); background: var(--card); color: var(--deep-2);
@@ -241,6 +299,11 @@
     background: repeating-linear-gradient(115deg, transparent 0 90px, rgba(255,255,255,.025) 90px 92px);
   }
   @keyframes cardIn { from { opacity: 0; transform: translateY(16px) scale(.985); } to { opacity: 1; transform: none; } }
+  /* 合言葉が通った瞬間。カードがすっと引いて、緑幕が明けるように会場へ入る */
+  .gate.opening { animation: gateOut .42s cubic-bezier(.4, 0, .2, 1) forwards; }
+  .gate.opening .gate-card { animation: cardOut .34s cubic-bezier(.4, 0, .2, 1) forwards; }
+  @keyframes gateOut { to { opacity: 0; } }
+  @keyframes cardOut { to { opacity: 0; transform: translateY(-10px) scale(1.04); } }
   .gate-card {
     position: relative; background: var(--card); border-radius: 22px; padding: 34px 30px 26px;
     max-width: 400px; width: 100%; text-align: center; box-shadow: var(--shadow-2);
@@ -284,25 +347,25 @@
       justify-content: flex-start; align-items: center; gap: 10px;
       padding: 8px 14px; border-right: none; border-bottom: 1px solid var(--line);
     }
-    .avatar-frame { border-radius: 12px; padding: 4px 4px 0; }
-    .avatar-pane svg, #avatarPhoto { width: 46px !important; height: 53px !important; }
-    .avatar-pane .name { font-size: 12px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .avatar-frame { border-radius: 14px; padding: 4px 4px 0; }
+    /* 46pxだと「アイコン」に見えて相手がいる感じが出ない。会話相手として認識できる大きさにする */
+    .avatar-pane svg, #avatarPhoto { width: 60px !important; height: 69px !important; }
+    .avatar-pane .name { font-size: 12.5px; font-weight: 700; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    /* 名前の下に、いまの状態を一行で出す（考えている／話している） */
+    .avatar-pane .state { font-size: 10.5px; }
     .avatar-pane .title, .avatar-pane .note, .tts-toggle { display: none; }
     .mode-toggle { margin-left: auto; font-size: 11px; padding: 4px 10px; flex-shrink: 0; }
     .mode-toggle span { white-space: nowrap; }
     .messages { padding: 16px 14px 8px; }
     .msg { max-width: 88%; font-size: 13.5px; }
-    .suggest {
-      flex-wrap: nowrap; overflow-x: auto; padding: 4px 14px 8px;
-      scrollbar-width: none; -webkit-overflow-scrolling: touch;
-    }
-    .suggest::-webkit-scrollbar { display: none; }
+    /* 横スクロールの指定は共通側に移した。ここは余白だけ詰める */
+    .suggest { padding: 4px 14px 8px; }
     .disclaimer summary { padding: 5px 12px; gap: 6px; }
     header .sub { display: none; }
     .disclaimer { font-size: 10px; }
   }
   @media (prefers-reduced-motion: reduce) {
-    .msg, .gate-card { animation: none; }
+    .msg, .gate-card, .avatar-frame, .avatar-pane .state::before { animation: none; }
     * { transition: none !important; }
   }
 
@@ -425,7 +488,7 @@
         </g>
       </svg>
       </div>
-      <div class="name" id="avatarName">AI社長（シミュレーション）</div>
+      <div class="name"><span id="avatarName">AI社長（シミュレーション）</span><span class="state" id="avatarState">オンライン</span></div>
       <div class="title" id="avatarTitle">モデル：佐々木丈也氏<br>三井住友カード 代表取締役社長<br><small id="avatarNote">※イラストは実在の容姿を再現していません</small></div>
       <div class="mode-toggle">
         <span id="modeLabelNormal">😊 通常</span>
@@ -437,11 +500,25 @@
     </aside>
     <section class="chat-pane">
       <div class="messages" id="messages"></div>
-      <div class="suggest" id="suggest">
-        <button data-msg="おみくじを引いてください">🎋 おみくじ</button>
-        <button data-msg="ゴルフの調子はどうですか？">⛳ ゴルフの調子は</button>
-        <button data-msg="やる気が出ません">😮‍💨 やる気が出ない</button>
-        <button data-msg="辛口で一言ください" data-spicy="1">🌶️ 辛口で一言</button>
+      <!-- 候補の質問。横1列に連なり、指でスワイプして選ぶ。増やすときはボタンを足すだけ -->
+      <div class="suggest-wrap">
+        <div class="suggest" id="suggest">
+          <button data-msg="おみくじを引いてください">🎋 おみくじ</button>
+          <button data-msg="辛口で一言ください" data-spicy="1">🌶️ 辛口で一言</button>
+          <button data-msg="丸一日休みが取れたら何をしますか？">🏌️ 丸一日休みが取れたら</button>
+          <button data-msg="やる気が出ません">😮‍💨 やる気が出ない</button>
+          <button data-msg="部下が会議に遅刻してきました。なんと言いますか？">⏰ 部下が遅刻してきた</button>
+          <button data-msg="キャッシュレス度を診断してください">💳 キャッシュレス度診断</button>
+          <button data-msg="今日のランチ、何を食べたらいいですか？">🍜 ランチ何にしよう</button>
+          <button data-msg="巨人、最近どうですか？">⚾ 巨人どうですか</button>
+          <button data-msg="仕事で失敗してしまいました…">😰 失敗しちゃいました</button>
+          <button data-msg="転職しようか迷っています">🤔 転職を迷ってる</button>
+          <button data-msg="上司とうまくいきません">😑 上司と合わない</button>
+          <button data-msg="クイズを出してください">💡 クイズ出して</button>
+          <button data-msg="社長になって一番変わったことは何ですか？">👔 社長になって変わったこと</button>
+          <button data-msg="人を見るとき、どこを見ていますか？">👀 人のどこを見てる？</button>
+          <button data-msg="佐々木さん、おめでとうございます！">🎉 おめでとうございます</button>
+        </div>
       </div>
       <!-- 会場イベント用：ご本人への思い出投稿（memoryEnabled が true のときだけ表示） -->
       <div class="memory-bar" id="memoryBar" style="display:none">
@@ -522,6 +599,11 @@ let chatMode = sessionStorage.getItem("chatMode") || "normal";
 let greetings = { modeToSpicy: [], modeToNormal: [], spicyPunch: "" };
 const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
+// 触覚フィードバック（対応端末のみ。非対応・PCでは何も起きない）
+function buzz(ms) {
+  try { if (navigator.vibrate) navigator.vibrate(ms); } catch { /* 無視 */ }
+}
+
 // --- アバターアニメーション ---
 const eyes = document.getElementById("eyes");
 const eyesClosed = document.getElementById("eyesClosed");
@@ -545,7 +627,27 @@ setInterval(() => { // 口パク（写真モードでは軽い揺れアニメー
   } else {
     mouthShape.setAttribute("d", speaking && Math.random() > 0.35 ? MOUTH_OPEN : MOUTH_CLOSED);
   }
+  // 喋っているあいだは枠が淡く光る＝いま話しているのはこの人、と分かる
+  if (avatarFrame) avatarFrame.classList.toggle("speaking", speaking);
+  paintState();
 }, 130);
+
+let thinkingNow = false;
+// 名前の下の一行。相手がいまどういう状態かを常に見せておく
+function paintState() {
+  const el = document.getElementById("avatarState");
+  if (!el) return;
+  const label = speaking ? "話しています" : thinkingNow ? "考えています" : "オンライン";
+  if (el.textContent !== label) el.textContent = label;
+}
+// 考えているあいだの状態。視線をわずかに外して「間」を作る。
+function setThinking(on) {
+  thinkingNow = !!on;
+  if (avatarFrame) avatarFrame.classList.toggle("thinking", thinkingNow);
+  const head = document.getElementById("head");
+  if (head) head.style.transform = on ? "translateX(-2px) rotate(-1.2deg)" : "";
+  paintState();
+}
 
 // サーバー設定を取得（表示名・写真アバター・動作モード・モード定義）
 fetch("/api/config").then(r => r.json()).then(cfg => {
@@ -596,10 +698,20 @@ const gateBtn = document.getElementById("gateBtn");
 const gateError = document.getElementById("gateError");
 
 function openChat(greeting) {
-  gate.style.display = "none";
-  addMsg("assistant", greeting ||
-    "ようこそ！私は佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。なんでもどうぞ。");
-  input.focus();
+  // 合言葉が通った瞬間を「扉が開いた」感じにする。
+  // いきなり画面が切り替わるより、一拍かけて開くほうが会場の体験になじむ。
+  buzz([10, 40, 16]);
+  gate.classList.add("opening");
+  const text = greeting ||
+    "ようこそ！私は佐々木社長の公開発言をもとにつくられた、エンタメ用のAIパロディ社長です。なんでもどうぞ。";
+  setTimeout(() => {
+    gate.style.display = "none";
+    gate.classList.remove("opening");
+    // 最初のひとことも、一拍ずつ出す（ここが第一印象になる）
+    startSpeaking(text);
+    addMsgBeats(text);
+    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) input.focus();
+  }, 420);
 }
 
 gateForm.addEventListener("submit", async (e) => {
@@ -717,7 +829,7 @@ renderMode();
 function startSpeaking(text) {
   speaking = true;
   if (ttsToggle.checked && "speechSynthesis" in window) {
-    const u = new SpeechSynthesisUtterance(text.replace(/※.*$/s, ""));
+    const u = new SpeechSynthesisUtterance(stripMd(text).replace(/※.*$/s, ""));
     u.lang = "ja-JP"; u.rate = 1.0;
     const v = speechSynthesis.getVoices().find(v => v.lang.startsWith("ja"));
     if (v) u.voice = v;
@@ -731,13 +843,77 @@ function startSpeaking(text) {
 
 // --- チャット ---
 // 「考えています…」インジケーターを表示して要素を返す（呼び出し側で remove する）
+// 待ち時間の見せ方。毎回まったく同じ文言だと機械が処理している感じが強くなるので、
+// 「人がいま口を開こうとしている」ように読める文言を回す（発言そのものは書かない）。
+const THINKING_LINES = [
+  "AI社長が考えています",
+  "AI社長が一拍おいています",
+  "AI社長が口を開こうとしています",
+  "AI社長が腕を組んでいます",
+];
+let thinkingIdx = Math.floor(Math.random() * THINKING_LINES.length);
 function showThinking() {
   const typing = document.createElement("div");
   typing.className = "typing";
-  typing.innerHTML = 'AI社長が考えています <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
+  const label = THINKING_LINES[thinkingIdx++ % THINKING_LINES.length];
+  typing.innerHTML = label + ' <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>';
   messagesEl.appendChild(typing);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollToEnd(true);
+  setThinking(true);
   return typing;
+}
+
+// AIが **強調** のようなマークダウン記法を混ぜてくることがある。
+// プロンプト側でも禁止しているが、出てしまったときにそのまま記号が見えないよう
+// 表示側でも受け止める。HTMLは必ずエスケープしてから最小限の記法だけ復元する。
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function mdToHtml(text) {
+  return escapeHtml(text)
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/(^|[\s（「])\*(?!\s)([^*\n]+?)\*(?=$|[\s。、）」！？])/g, "$1<em>$2</em>")
+    .replace(/`([^`\n]+?)`/g, "<code>$1</code>")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+// 読み上げ・口パク用。記号は読ませない
+function stripMd(text) {
+  return String(text)
+    .replace(/\*{1,3}([^*]+?)\*{1,3}/g, "$1")
+    .replace(/`([^`]+?)`/g, "$1")
+    .replace(/^#{1,6}\s+/gm, "");
+}
+
+// 利用者が自分で上にスクロールして読んでいるときは、追いかけて下げない。
+// 下端近くにいるときだけ自動で追従する（会話UIの基本作法）。
+function nearBottom() {
+  return messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 90;
+}
+function scrollToEnd(force) {
+  if (force || nearBottom()) messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+// 返答を「話し言葉の一拍」ごとに切る。
+// この社長は3文以内・短文で話す設計なので、まとめて出すとリズムが死ぬ。
+// 句点と改行で切って、間を置きながら出すと「いま喋っている」感になる。
+function splitBeats(text) {
+  const beats = [];
+  const lines = String(text).split("\n");
+  lines.forEach((line, li) => {
+    if (li > 0) beats.push("\n");
+    if (!line.trim()) return;
+    const parts = line.match(/[^。！？!?]*[。！？!?]+|[^。！？!?]+/g) || [line];
+    for (const p of parts) if (p) beats.push(p);
+  });
+  return beats;
+}
+// 一拍あたりの間。長い文ほど少し長く置くが、上限は設ける（待たせすぎない）
+function beatDelay(s) {
+  const base = 240 + s.length * 18;
+  const pause = /^[\s　]*(……|…)/.test(s) ? 300 : 0; // 「……」で始まる拍は溜める
+  return Math.min(Math.max(base, 300), 900) + pause;
 }
 
 function addMsg(role, text) {
@@ -747,10 +923,49 @@ function addMsg(role, text) {
     const who = document.createElement("div");
     who.className = "who"; who.textContent = "AI社長";
     div.appendChild(who);
+    const body = document.createElement("span");
+    body.innerHTML = mdToHtml(text);
+    div.appendChild(body);
+  } else {
+    // 利用者の入力はそのまま文字として扱う（記法を解釈しない）
+    div.appendChild(document.createTextNode(text));
   }
-  div.appendChild(document.createTextNode(text));
   messagesEl.appendChild(div);
-  messagesEl.scrollTop = messagesEl.scrollHeight;
+  scrollToEnd(role === "user");
+  return div;
+}
+
+// 返答を一拍ずつ出す。吹き出しは先に置くので「返事が始まった」瞬間は速い。
+async function addMsgBeats(text) {
+  const div = document.createElement("div");
+  div.className = "msg bot";
+  const who = document.createElement("div");
+  who.className = "who"; who.textContent = "AI社長";
+  div.appendChild(who);
+  const body = document.createElement("span");
+  div.appendChild(body);
+  messagesEl.appendChild(div);
+  scrollToEnd(true);
+
+  // 動きを減らす設定の人には、一拍ずつではなく一度に出す
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    body.innerHTML = mdToHtml(text);
+    scrollToEnd(true);
+    return div;
+  }
+
+  let shown = "";
+  const beats = splitBeats(text);
+  for (let i = 0; i < beats.length; i++) {
+    shown += beats[i];
+    body.innerHTML = mdToHtml(shown);
+    scrollToEnd(false);
+    if (i === 0) buzz(14); // 返事が来た合図（対応端末のみ）
+    if (i < beats.length - 1 && beats[i] !== "\n") {
+      await new Promise((r) => setTimeout(r, beatDelay(beats[i])));
+    }
+  }
+  return div;
 }
 
 async function send(text) {
@@ -758,6 +973,7 @@ async function send(text) {
   addMsg("user", text);
   history.push({ role: "user", content: text });
   input.value = ""; sendBtn.disabled = true;
+  buzz(8);
   const typing = showThinking();
   // 辛口切替後の最初の発話 かつ 決め台詞(spicyPunch)が設定されている場合のみ、
   // 2秒考えてから決め台詞→生成回答、の演出を行う（spicyPunchが空なら演出なし＝非表示）
@@ -794,7 +1010,9 @@ async function send(text) {
     }
     if (data.error) { addMsg("assistant", "エラーが発生しました: " + data.error); return; }
     history.push({ role: "assistant", content: data.reply });
-    addMsg("assistant", data.reply);
+    // 口を先に動かしはじめてから、一拍ずつ文字を出す（口と文字が揃う）
+    startSpeaking(data.reply);
+    await addMsgBeats(data.reply);
     if (typeof data.remaining === "number") {
       document.getElementById("remaining").textContent =
         data.remaining > 0 ? `あと ${data.remaining} 回お話しできます` : "本日の会話上限に達しました";
@@ -803,12 +1021,17 @@ async function send(text) {
     if (data.mode === "ai" || data.mode === "demo") {
       modeBadge.textContent = data.mode === "ai" ? "AI応答モード" : "デモモード（定型応答）";
     }
-    startSpeaking(data.reply);
   } catch (e) {
     typing.remove();
     addMsg("assistant", "通信エラーが発生しました。");
   } finally {
-    if (!input.disabled) { sendBtn.disabled = false; input.focus(); }
+    setThinking(false);
+    if (!input.disabled) {
+      sendBtn.disabled = false;
+      // スマホで毎回フォーカスを戻すとキーボードがせり上がり、
+      // せっかくの返事とアバターが隠れてしまう。マウスのある端末だけ戻す。
+      if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) input.focus();
+    }
   }
 }
 

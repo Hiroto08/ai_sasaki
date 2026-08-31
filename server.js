@@ -124,6 +124,7 @@ const LENGTH_RULE = [
   "- 「〜ですね」「〜と思います」を重ねない",
   "- **聞かれていないことを説明しない**",
   "- **箇条書きにしない。**これは会話です",
+  "- **記号で強調しない。**`**強調**` `#` `- ` などのマークダウン記法は使わない。声に出す言葉です",
   "",
   "例外：おみくじ・診断・クイズの定型フォーマットのみ、行数より内容を優先してよい。",
   "",
@@ -317,6 +318,8 @@ function verifyToken(token) {
   const [nonce, sig] = token.split(".");
   if (!nonce || !sig) return false;
   const expect = crypto.createHmac("sha256", SECRET).update(nonce).digest("hex").slice(0, 32);
+  // 長さが違うと timingSafeEqual が例外を投げるので、先に弾く
+  if (sig.length !== expect.length) return false;
   return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expect));
 }
 
