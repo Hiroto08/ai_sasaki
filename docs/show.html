@@ -7,7 +7,7 @@
 <style>
   /* ============================================================
      本番進行ランナー
-     タイトル → 登場動画 → 自己紹介動画 →（設問→動画→AI社長の回答）×3 → QR
+     タイトル → 登場動画 → 自己紹介動画 →（設問→動画→AI社長の回答）×3 → 総評 → QR
      を1枚のページで通す。ページ遷移が起きないので画面切り替えが発生しない。
      本編のあいだには「つなぎスライド」を挟んであり、MCが喋っている間はそれを映す。
 
@@ -200,6 +200,42 @@
     margin-top: 5vh; max-width: 84vw; white-space: pre-wrap;
   }
 
+  /* ---- 総評スライド（クライマックス。継続可否を会場に問う）---- */
+  .slide.judge {
+    background:
+      radial-gradient(90% 70% at 50% -12%, rgba(226,86,74,.22) 0%, transparent 58%),
+      radial-gradient(70% 55% at 50% 110%, rgba(184,217,53,.14) 0%, transparent 60%),
+      linear-gradient(150deg, #1a0a08 0%, #00281b 55%, #00120d 100%);
+  }
+  .slide.judge::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, transparent 0 6px, rgba(255,255,255,.016) 6px 7px);
+  }
+  .judge .badge {
+    display: inline-block; border: 2px solid #e2564a; color: #ff8c7f;
+    font-size: calc(2.4vh * var(--t)); font-weight: 800; letter-spacing: .5em;
+    padding: 1.1vh 3vh; border-radius: 4px; margin-bottom: 3.5vh; padding-right: 1.5vh;
+  }
+  .judge .kicker3 {
+    font-size: calc(4.4vh * var(--t)); letter-spacing: .5em; color: var(--lime);
+    font-weight: 800; margin-bottom: 4vh; padding-left: .5em;
+  }
+  .judge .ask3 {
+    font-size: calc(7.4vh * var(--t)); font-weight: 800; line-height: 1.55;
+    white-space: pre-wrap; line-break: strict; overflow-wrap: normal; max-width: 94vw;
+  }
+  .judge .opts { display: flex; gap: 6vh; margin-top: 6vh; }
+  .judge .opt3 {
+    min-width: 26vh; padding: 3vh 5vh; border-radius: 2vh;
+    border: 3px solid rgba(184,217,53,.5); background: rgba(184,217,53,.1);
+    font-size: calc(5.6vh * var(--t)); font-weight: 800; letter-spacing: .12em;
+  }
+  .judge .opt3:last-child { border-color: rgba(226,86,74,.5); background: rgba(226,86,74,.1); }
+  .judge .foot3 {
+    position: absolute; left: 0; right: 0; bottom: 5vh;
+    font-size: calc(2.6vh * var(--t)); color: rgba(255,255,255,.5); letter-spacing: .2em;
+  }
+
   /* ---- QR ---- */
   .qr-fallback { font-size: calc(4.2vh * var(--t)); line-height: 1.9; }
   .qr-fallback code { color: var(--lime); font-size: calc(3.8vh * var(--t)); word-break: break-all; }
@@ -367,6 +403,15 @@ const QR_URL = "https://ai-shacho-981107538052.asia-northeast1.run.app/";
 // 名前が違っても、開始画面にドロップすれば割り当たります。
 const VIDEO_DIR = "video/";
 
+// 総評スライド（Q3のあと・QRの前）。会場と社長に継続可否を判断してもらう
+const JUDGE = {
+  badge: "JUDGE",
+  kicker: "総　評",
+  ask:    "「President-1.0」の開発を\n続行してよいか？",
+  options: ["継　続", "中　止"],
+  foot:   "ご判断は、会場の拍手と 社長の一声で",
+};
+
 // つなぎスライドの共通部分（MCが喋っている間に映しておく画面）
 const BRIDGE = {
   mark: "AI社長（President-1.0）",
@@ -382,7 +427,7 @@ const USE_BRIDGE = true;
 const QA = [
   {
     no: "Q1",
-    q: "急に丸一日、自由に過ごせる休暇が取れました。\n\nあなたなら、何をしますか？",
+    q: "急に丸一日、自由に過ごせる\n休暇が取れました。\n\nあなたなら、何をしますか？",
     a: "言うまでもなく、ゴルフ。",   // AI社長の回答
     video: "03_q1.mp4",
     bridge: { n: "TEST 02", cap: "検証、続けます" },
@@ -396,10 +441,10 @@ const QA = [
   },
   {
     no: "Q3",
-    q: "朝、予定を確認したら\n30分しか空き時間がありませんでした。\nその枠に急遽、小澤さんが\n打ち合わせをセットしてきました。\n\nその時、どうしますか？",
+    q: "朝、予定を確認したら\n30分しか空き時間が\nありませんでした。\nその枠に急遽、小澤さんが\n打ち合わせをセットしてきました。\n\nその時、どうしますか？",
     a: "喫煙欲を優先して、\n気にせずタバコを吸いに行く。",
     video: "05_q3.mp4",
-    bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" },
+    bridge: { n: "FINAL", cap: "検証は、以上です" },
   },
 ];
 
@@ -432,6 +477,12 @@ QA.forEach((x) => {
   CONTENT.push({ type: "quiz-a", no: x.no, a: x.a, q: x.q, label: `${x.no} AI社長の回答`,
     cue: "★ここが一番笑うところ。ご本人に一言もらう。落ち着いたら →", bridge: x.bridge });
 });
+
+// 総評（会場と社長に継続可否を判断してもらう）
+CONTENT.push({ type: "judge", label: "★ 総評（継続可否の判断）",
+  cue: "「継続か、中止か」を会場に問う → 拍手で判定 → ★最後に社長へ振る。" +
+       "『社長、いかがでしょうか』。一声もらったら →",
+  bridge: { n: "RESULT", cap: "検証結果は、\n皆さまの手元で" } });
 
 CONTENT.push(
   { type: "qr", label: "⑦ 入場QR（クロージング）",
@@ -523,6 +574,17 @@ SHOW.forEach((sl, i) => {
         (sit ? `<span class="sit">${esc(sit)}</span>` : "") +
         `<span class="ask">${esc(ask.trim())}</span>` +
       `</div>`;
+
+  } else if (sl.type === "judge") {
+    d.classList.add("judge");
+    d.innerHTML =
+      (JUDGE.badge ? `<div class="badge">${esc(JUDGE.badge)}</div>` : "") +
+      `<div class="kicker3">${esc(JUDGE.kicker)}</div>` +
+      `<div class="ask3">${esc(JUDGE.ask).replace(/\n/g, "<br>")}</div>` +
+      `<div class="opts">` +
+        (JUDGE.options || []).map((o) => `<div class="opt3">${esc(o)}</div>`).join("") +
+      `</div>` +
+      (JUDGE.foot ? `<div class="foot3">${esc(JUDGE.foot)}</div>` : "");
 
   } else if (sl.type === "quiz-a") {
     d.classList.add("answer");
